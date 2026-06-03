@@ -16,6 +16,8 @@ export default function Home() {
   const [delayOffset, setDelayOffset] = useState(0);
   const [ghostEnabled, setGhostEnabled] = useState(false);
   const [ghostInterval, setGhostInterval] = useState(10);
+  const [ghostCount, setGhostCount] = useState(4);
+  const [ghostOpacity, setGhostOpacity] = useState(0.75);
   const [bufferFill, setBufferFill] = useState(0);
   const captureRef = useRef(null);
 
@@ -110,6 +112,8 @@ export default function Home() {
               delayOffset={delayOffset}
               ghostEnabled={ghostEnabled}
               ghostInterval={ghostInterval}
+              ghostCount={ghostCount}
+              ghostOpacity={ghostOpacity}
               isActive={isActive}
             />
           </div>
@@ -212,47 +216,66 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* ── SECONDARY CONTROLS ── */}
-              <div className="flex items-center gap-3">
-                {/* Ghost toggle */}
-                <button
-                  onClick={() => setGhostEnabled(g => !g)}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-xs font-mono transition-all ${
-                    ghostEnabled
-                      ? 'bg-primary/30 border-primary/50 text-white'
-                      : 'bg-white/5 border-white/10 text-white/40'
-                  }`}
-                >
-                  <Layers className="w-3.5 h-3.5" />
-                  Ghost
-                </button>
-
-                {/* Ghost interval — only when ghost is on */}
-                {ghostEnabled && (
-                  <motion.div
-                    initial={{ opacity: 0, width: 0 }}
-                    animate={{ opacity: 1, width: 'auto' }}
-                    exit={{ opacity: 0, width: 0 }}
-                    className="flex-1 flex items-center gap-2"
+              {/* ── GHOST CONTROLS ── */}
+              <div className="space-y-3">
+                {/* Ghost toggle header */}
+                <div className="flex items-center justify-between">
+                  <button
+                    onClick={() => setGhostEnabled(g => !g)}
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-mono transition-all ${
+                      ghostEnabled
+                        ? 'bg-primary/30 border-primary/50 text-white'
+                        : 'bg-white/5 border-white/10 text-white/40'
+                    }`}
                   >
-                    <ControlSlider
-                      value={ghostInterval}
-                      min={1}
-                      max={30}
-                      step={1}
-                      onChange={setGhostInterval}
-                    />
-                    <span className="text-xs font-mono text-white/50 whitespace-nowrap">{ghostInterval}f</span>
-                  </motion.div>
-                )}
+                    <Layers className="w-3.5 h-3.5" />
+                    Ghost Blend
+                  </button>
+                  {/* Stop button */}
+                  <button
+                    onClick={handleStop}
+                    className="w-9 h-9 rounded-full bg-white/10 border border-white/15 flex items-center justify-center active:scale-95 transition-transform"
+                  >
+                    <CameraOff className="w-4 h-4 text-white/70" />
+                  </button>
+                </div>
 
-                {/* Stop button */}
-                <button
-                  onClick={handleStop}
-                  className="ml-auto w-9 h-9 rounded-full bg-white/10 border border-white/15 flex items-center justify-center active:scale-95 transition-transform"
-                >
-                  <CameraOff className="w-4 h-4 text-white/70" />
-                </button>
+                {/* Ghost sub-controls */}
+                <AnimatePresence>
+                  {ghostEnabled && (
+                    <motion.div
+                      key="ghost-panel"
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="space-y-3 pt-1">
+                        {/* Interval */}
+                        <GhostSliderRow
+                          label="Interval"
+                          valueLabel={`${ghostInterval}f`}
+                          value={ghostInterval} min={1} max={30} step={1}
+                          onChange={setGhostInterval}
+                        />
+                        {/* Count */}
+                        <GhostSliderRow
+                          label="Layers"
+                          valueLabel={`${ghostCount}`}
+                          value={ghostCount} min={2} max={10} step={1}
+                          onChange={setGhostCount}
+                        />
+                        {/* Opacity */}
+                        <GhostSliderRow
+                          label="Opacity"
+                          valueLabel={`${Math.round(ghostOpacity * 100)}%`}
+                          value={ghostOpacity} min={0.05} max={1} step={0.05}
+                          onChange={setGhostOpacity}
+                        />
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             </div>
           </div>
@@ -265,11 +288,14 @@ export default function Home() {
   );
 }
 
-function StatPill({ label, value }) {
+function GhostSliderRow({ label, valueLabel, value, min, max, step, onChange }) {
   return (
-    <div className="flex-1 px-3 py-2 rounded-xl bg-white/5 border border-white/8 text-center">
-      <p className="text-[9px] font-mono uppercase tracking-widest text-white/30 mb-0.5">{label}</p>
-      <p className="text-xs font-mono text-white/80">{value}</p>
+    <div className="flex items-center gap-3">
+      <span className="text-[10px] font-mono uppercase tracking-widest text-white/40 w-14 shrink-0">{label}</span>
+      <div className="flex-1">
+        <ControlSlider value={value} min={min} max={max} step={step} onChange={onChange} />
+      </div>
+      <span className="text-xs font-mono text-white/60 w-10 text-right shrink-0 tabular-nums">{valueLabel}</span>
     </div>
   );
 }

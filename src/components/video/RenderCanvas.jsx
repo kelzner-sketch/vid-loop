@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useCallback } from 'react';
 
-export default function RenderCanvas({ videoRef, getFrame, delayOffset, ghostEnabled, ghostInterval, isActive }) {
+export default function RenderCanvas({ videoRef, getFrame, delayOffset, ghostEnabled, ghostInterval, ghostCount, ghostOpacity, isActive }) {
   const canvasRef = useRef(null);
   const rafRef = useRef(null);
   const containerRef = useRef(null);
@@ -50,16 +50,18 @@ export default function RenderCanvas({ videoRef, getFrame, delayOffset, ghostEna
     const useBuffer = delayOffset > 0;
 
     if (ghostEnabled) {
-      const ghostCount = 4;
-      for (let i = ghostCount - 1; i >= 0; i--) {
-        const alpha = i === 0 ? 1.0 : Math.max(0.08, 1.0 - i * 0.25);
+      const count = ghostCount ?? 4;
+      const baseOpacity = ghostOpacity ?? 0.75;
+      for (let i = count - 1; i >= 0; i--) {
+        // Oldest ghost is most transparent; the "current" frame (i=0) is fully opaque
+        const alpha = i === 0 ? 1.0 : baseOpacity * (1 - i / count);
         const offset = delayOffset + i * ghostInterval;
         if (offset === 0 && video) {
           drawCover(video, alpha);
         } else {
           const frame = getFrame(offset);
           if (frame) drawCover(frame, alpha);
-          else if (i === 0 && video) drawCover(video, alpha); // fallback to live
+          else if (i === 0 && video) drawCover(video, alpha);
         }
       }
     } else {
@@ -78,7 +80,7 @@ export default function RenderCanvas({ videoRef, getFrame, delayOffset, ghostEna
 
     ctx.globalAlpha = 1;
     rafRef.current = requestAnimationFrame(render);
-  }, [videoRef, getFrame, delayOffset, ghostEnabled, ghostInterval, isActive]);
+  }, [videoRef, getFrame, delayOffset, ghostEnabled, ghostInterval, ghostCount, ghostOpacity, isActive]);
 
   useEffect(() => {
     if (isActive) {
