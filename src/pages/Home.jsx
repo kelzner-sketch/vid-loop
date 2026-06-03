@@ -1,25 +1,25 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
-import { Camera, CameraOff, Layers, Clock, Gauge, Eye } from 'lucide-react';
+import { Camera, CameraOff, Layers, Clock, Eye, ChevronUp, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import useCamera from '@/components/video/useCamera';
 import useFrameBuffer from '@/components/video/useFrameBuffer';
 import RenderCanvas from '@/components/video/RenderCanvas';
 import ControlSlider from '@/components/video/ControlSlider';
-import StatusBadge from '@/components/video/StatusBadge';
 
 export default function Home() {
   const { videoRef, isActive, error, start, stop } = useCamera();
   const { pushFrame, getFrame, getBufferLength, clearBuffer, maxBufferSize } = useFrameBuffer();
 
   const [delayOffset, setDelayOffset] = useState(0);
-  const [ghostEnabled, setGhostEnabled] = useState(true);
+  const [ghostEnabled, setGhostEnabled] = useState(false);
   const [ghostInterval, setGhostInterval] = useState(10);
   const [bufferFill, setBufferFill] = useState(0);
+  const [controlsOpen, setControlsOpen] = useState(true);
   const captureRef = useRef(null);
 
-  // Capture frames from the hidden video element into the ring buffer
+  // Capture frames into the ring buffer at ~30fps
   const captureLoop = useCallback(() => {
     if (videoRef.current && videoRef.current.readyState >= 2) {
       pushFrame(videoRef.current);
@@ -37,190 +37,244 @@ export default function Home() {
     };
   }, [isActive, captureLoop]);
 
-  const handleToggle = async () => {
-    if (isActive) {
-      stop();
-      clearBuffer();
-      setBufferFill(0);
-      setDelayOffset(0);
-    } else {
-      await start();
-    }
+  const handleStart = async () => {
+    await start();
   };
 
+  const handleStop = () => {
+    stop();
+    clearBuffer();
+    setBufferFill(0);
+    setDelayOffset(0);
+  };
+
+  const delaySeconds = (delayOffset / 30).toFixed(2);
   const fillPercent = Math.round((bufferFill / maxBufferSize) * 100);
+  const isDelayed = delayOffset > 0;
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      {/* Header */}
-      <header className="border-b border-border/50 px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
-            <Eye className="w-4 h-4 text-primary" />
-          </div>
-          <div>
-            <h1 className="text-lg font-semibold font-heading tracking-tight">FrameDelay</h1>
-            <p className="text-xs text-muted-foreground">Live video buffer & ghost layering</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-4">
-          <StatusBadge active={isActive} label={isActive ? 'Live' : 'Offline'} />
-          {isActive && (
-            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-secondary border border-border">
-              <Gauge className="w-3.5 h-3.5 text-muted-foreground" />
-              <span className="text-xs font-mono text-muted-foreground">Buffer {fillPercent}%</span>
-            </div>
-          )}
-        </div>
-      </header>
+    <div className="fixed inset-0 bg-black flex flex-col overflow-hidden">
 
-      <div className="flex-1 flex flex-col lg:flex-row gap-0">
-        {/* Video Display */}
-        <div className="flex-1 flex items-center justify-center p-4 lg:p-8 relative">
-          <AnimatePresence mode="wait">
-            {!isActive ? (
-              <motion.div
-                key="idle"
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                className="flex flex-col items-center gap-6 text-center max-w-md"
-              >
-                <div className="w-20 h-20 rounded-2xl bg-secondary border border-border flex items-center justify-center">
-                  <Camera className="w-8 h-8 text-muted-foreground" />
-                </div>
-                <div>
-                  <h2 className="text-xl font-semibold font-heading mb-2">Start Camera</h2>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    Grant camera access to begin capturing frames. Scrub through time and layer ghost trails over your live feed.
-                  </p>
-                </div>
-                {error && (
-                  <p className="text-sm text-destructive bg-destructive/10 px-4 py-2 rounded-lg">{error}</p>
-                )}
-                <Button onClick={handleToggle} size="lg" className="gap-2 px-8">
-                  <Camera className="w-4 h-4" />
-                  Enable Camera
-                </Button>
-              </motion.div>
-            ) : (
-              <motion.div
-                key="active"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="w-full h-full max-h-[70vh] lg:max-h-full flex items-center justify-center relative"
-              >
-                <div className="relative w-full max-w-3xl aspect-video rounded-xl overflow-hidden bg-black border border-border/50 shadow-2xl shadow-primary/5">
-                  <RenderCanvas
-                    getFrame={getFrame}
-                    delayOffset={delayOffset}
-                    ghostEnabled={ghostEnabled}
-                    ghostInterval={ghostInterval}
-                    isActive={isActive}
-                  />
-                  {/* Overlay badges */}
-                  <div className="absolute top-3 left-3 flex gap-2">
-                    {delayOffset > 0 && (
-                      <div className="px-2.5 py-1 rounded-md bg-black/60 backdrop-blur-sm text-xs font-mono text-white">
-                        -{Math.round(delayOffset / 30 * 100) / 100}s
-                      </div>
-                    )}
-                    {ghostEnabled && (
-                      <div className="px-2.5 py-1 rounded-md bg-primary/60 backdrop-blur-sm text-xs font-mono text-white flex items-center gap-1">
-                        <Layers className="w-3 h-3" />
-                        Ghost
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* Hidden video element for capture */}
-          <video ref={videoRef} playsInline muted className="hidden" />
-        </div>
-
-        {/* Controls Panel */}
-        {isActive && (
-          <motion.aside
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.15 }}
-            className="w-full lg:w-80 border-t lg:border-t-0 lg:border-l border-border bg-card p-6 space-y-8 overflow-y-auto"
+      {/* ── IDLE SCREEN ── */}
+      <AnimatePresence>
+        {!isActive && (
+          <motion.div
+            key="idle"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-8 px-8 bg-background"
           >
-            <div className="flex items-center justify-between">
-              <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Controls</h2>
-              <Button variant="ghost" size="sm" onClick={handleToggle} className="text-destructive hover:text-destructive gap-1.5">
-                <CameraOff className="w-3.5 h-3.5" />
-                Stop
+            {/* Logo mark */}
+            <div className="relative">
+              <div className="w-24 h-24 rounded-3xl bg-primary/10 border border-primary/20 flex items-center justify-center">
+                <Eye className="w-10 h-10 text-primary" />
+              </div>
+              <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-accent animate-pulse" />
+            </div>
+
+            <div className="text-center space-y-2">
+              <h1 className="text-3xl font-bold font-heading tracking-tight text-foreground">FrameDelay</h1>
+              <p className="text-sm text-muted-foreground leading-relaxed max-w-xs">
+                Live camera feed with ring-buffer scrubbing and multi-frame ghost layering.
+              </p>
+            </div>
+
+            <div className="w-full max-w-xs space-y-3">
+              {error && (
+                <p className="text-sm text-destructive bg-destructive/10 border border-destructive/20 px-4 py-3 rounded-xl text-center">
+                  {error}
+                </p>
+              )}
+              <Button onClick={handleStart} size="lg" className="w-full gap-2 h-14 text-base rounded-2xl">
+                <Camera className="w-5 h-5" />
+                Enable Camera
               </Button>
             </div>
 
-            {/* Scrub Delay */}
-            <ControlSlider
-              label="Scrub Delay"
-              icon={Clock}
-              value={delayOffset}
-              min={0}
-              max={maxBufferSize}
-              step={1}
-              onChange={setDelayOffset}
-              unit=" frames"
-            />
-
-            <div className="h-px bg-border" />
-
-            {/* Ghost Toggle */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Layers className="w-4 h-4 text-primary" />
-                <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Ghost Layering</span>
-              </div>
-              <Switch checked={ghostEnabled} onCheckedChange={setGhostEnabled} />
-            </div>
-
-            {/* Ghost Interval */}
-            {ghostEnabled && (
-              <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}>
-                <ControlSlider
-                  label="Ghost Interval"
-                  icon={Layers}
-                  value={ghostInterval}
-                  min={1}
-                  max={30}
-                  step={1}
-                  onChange={setGhostInterval}
-                  unit=" frames"
-                />
-              </motion.div>
-            )}
-
-            <div className="h-px bg-border" />
-
-            {/* Info */}
-            <div className="space-y-3">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Info</h3>
-              <div className="grid grid-cols-2 gap-3">
-                <InfoCard label="Buffer" value={`${bufferFill}/${maxBufferSize}`} />
-                <InfoCard label="Delay" value={`${Math.round(delayOffset / 30 * 100) / 100}s`} />
-                <InfoCard label="Ghosts" value={ghostEnabled ? '4 layers' : 'Off'} />
-                <InfoCard label="Interval" value={`${ghostInterval}f`} />
-              </div>
-            </div>
-          </motion.aside>
+            <p className="text-xs text-muted-foreground/60 text-center max-w-xs">
+              Works in browser — opens front or rear camera. On iPhone, use Safari for full access.
+            </p>
+          </motion.div>
         )}
-      </div>
+      </AnimatePresence>
+
+      {/* ── LIVE VIEW ── */}
+      {isActive && (
+        <>
+          {/* Full-screen canvas */}
+          <div className="absolute inset-0">
+            <RenderCanvas
+              getFrame={getFrame}
+              delayOffset={delayOffset}
+              ghostEnabled={ghostEnabled}
+              ghostInterval={ghostInterval}
+              isActive={isActive}
+            />
+          </div>
+
+          {/* ── TOP HUD ── */}
+          <div className="absolute top-0 left-0 right-0 z-10 flex items-start justify-between px-5 pt-12 pb-6"
+            style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, transparent 100%)' }}>
+
+            {/* Left: status */}
+            <div className="flex flex-col gap-1.5">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-accent animate-pulse" />
+                <span className="text-xs font-mono text-white/80 uppercase tracking-widest">
+                  {isDelayed ? 'DELAYED' : 'LIVE'}
+                </span>
+              </div>
+              {isDelayed && (
+                <motion.div
+                  initial={{ opacity: 0, y: -4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="px-2.5 py-1 rounded-lg bg-white/10 backdrop-blur-md border border-white/10"
+                >
+                  <span className="text-sm font-mono text-white">−{delaySeconds}s</span>
+                </motion.div>
+              )}
+            </div>
+
+            {/* Right: ghost badge + stop */}
+            <div className="flex items-center gap-3">
+              {ghostEnabled && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-primary/50 backdrop-blur-md border border-primary/30"
+                >
+                  <Layers className="w-3 h-3 text-white" />
+                  <span className="text-xs font-mono text-white">GHOST</span>
+                </motion.div>
+              )}
+              <button
+                onClick={handleStop}
+                className="w-9 h-9 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center active:scale-95 transition-transform"
+              >
+                <CameraOff className="w-4 h-4 text-white" />
+              </button>
+            </div>
+          </div>
+
+          {/* ── BUFFER PROGRESS BAR ── */}
+          <div className="absolute top-0 left-0 right-0 z-20 h-0.5">
+            <div
+              className="h-full bg-accent transition-all duration-300"
+              style={{ width: `${fillPercent}%` }}
+            />
+          </div>
+
+          {/* ── BOTTOM CONTROLS PANEL ── */}
+          <div className="absolute bottom-0 left-0 right-0 z-10">
+            {/* Toggle tab */}
+            <div className="flex justify-center mb-1">
+              <button
+                onClick={() => setControlsOpen(o => !o)}
+                className="flex items-center gap-1 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-white/70 text-xs font-mono"
+              >
+                {controlsOpen ? <ChevronDown className="w-3 h-3" /> : <ChevronUp className="w-3 h-3" />}
+                {controlsOpen ? 'hide' : 'controls'}
+              </button>
+            </div>
+
+            <AnimatePresence>
+              {controlsOpen && (
+                <motion.div
+                  key="controls"
+                  initial={{ y: 120, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  exit={{ y: 120, opacity: 0 }}
+                  transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                  className="mx-3 mb-8 rounded-3xl overflow-hidden"
+                  style={{ background: 'rgba(10,10,20,0.85)', backdropFilter: 'blur(24px)', border: '1px solid rgba(255,255,255,0.08)' }}
+                >
+                  <div className="px-5 pt-5 pb-6 space-y-5">
+
+                    {/* Scrub delay slider */}
+                    <div className="space-y-2.5">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Clock className="w-3.5 h-3.5 text-primary" />
+                          <span className="text-[11px] font-mono uppercase tracking-widest text-white/50">Scrub Delay</span>
+                        </div>
+                        <span className="text-sm font-mono text-white">{delaySeconds}s</span>
+                      </div>
+                      <ControlSlider
+                        value={delayOffset}
+                        min={0}
+                        max={Math.max(1, bufferFill - 1)}
+                        step={1}
+                        onChange={setDelayOffset}
+                      />
+                    </div>
+
+                    <div className="h-px bg-white/8" />
+
+                    {/* Ghost toggle row */}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Layers className="w-3.5 h-3.5 text-primary" />
+                        <span className="text-[11px] font-mono uppercase tracking-widest text-white/50">Ghost Layers</span>
+                      </div>
+                      <Switch
+                        checked={ghostEnabled}
+                        onCheckedChange={setGhostEnabled}
+                      />
+                    </div>
+
+                    {/* Ghost interval slider */}
+                    <AnimatePresence>
+                      {ghostEnabled && (
+                        <motion.div
+                          key="ghost-interval"
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          className="overflow-hidden"
+                        >
+                          <div className="space-y-2.5 pt-1">
+                            <div className="flex items-center justify-between">
+                              <span className="text-[11px] font-mono uppercase tracking-widest text-white/50">Ghost Interval</span>
+                              <span className="text-sm font-mono text-white">{ghostInterval}f</span>
+                            </div>
+                            <ControlSlider
+                              value={ghostInterval}
+                              min={1}
+                              max={30}
+                              step={1}
+                              onChange={setGhostInterval}
+                            />
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+
+                    {/* Stats row */}
+                    <div className="flex gap-2 pt-1">
+                      <StatPill label="Buffer" value={`${fillPercent}%`} />
+                      <StatPill label="Frames" value={`${bufferFill}`} />
+                      <StatPill label="Ghosts" value={ghostEnabled ? `4×` : 'off'} />
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </>
+      )}
+
+      {/* Hidden video element */}
+      <video ref={videoRef} playsInline muted className="hidden" />
     </div>
   );
 }
 
-function InfoCard({ label, value }) {
+function StatPill({ label, value }) {
   return (
-    <div className="px-3 py-2.5 rounded-lg bg-secondary border border-border">
-      <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5">{label}</p>
-      <p className="text-sm font-mono font-medium text-foreground">{value}</p>
+    <div className="flex-1 px-3 py-2 rounded-xl bg-white/5 border border-white/8 text-center">
+      <p className="text-[9px] font-mono uppercase tracking-widest text-white/30 mb-0.5">{label}</p>
+      <p className="text-xs font-mono text-white/80">{value}</p>
     </div>
   );
 }

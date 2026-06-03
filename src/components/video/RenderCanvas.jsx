@@ -54,8 +54,8 @@ export default function RenderCanvas({ getFrame, delayOffset, ghostEnabled, ghos
   return (
     <canvas
       ref={canvasRef}
-      className="w-full h-full object-contain rounded-xl"
-      style={{ imageRendering: 'auto' }}
+      className="w-full h-full"
+      style={{ objectFit: 'cover', display: 'block' }}
     />
   );
 }
