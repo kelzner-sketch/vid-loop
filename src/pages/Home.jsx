@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
-import { Camera, CameraOff, Layers, Clock, Eye, ChevronUp, ChevronDown } from 'lucide-react';
+import { Camera, CameraOff, Layers, Clock, Eye, Play } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import useCamera from '@/components/video/useCamera';
 import useFrameBuffer from '@/components/video/useFrameBuffer';
 import RenderCanvas from '@/components/video/RenderCanvas';
 import ControlSlider from '@/components/video/ControlSlider';
+import ScrubBar from '@/components/video/ScrubBar';
 
 export default function Home() {
   const { videoRef, isActive, error, start, stop } = useCamera();
@@ -16,7 +17,6 @@ export default function Home() {
   const [ghostEnabled, setGhostEnabled] = useState(false);
   const [ghostInterval, setGhostInterval] = useState(10);
   const [bufferFill, setBufferFill] = useState(0);
-  const [controlsOpen, setControlsOpen] = useState(true);
   const captureRef = useRef(null);
 
   // Capture frames into the ring buffer at ~30fps
@@ -167,100 +167,94 @@ export default function Home() {
           </div>
 
           {/* ── BOTTOM CONTROLS PANEL ── */}
-          <div className="absolute bottom-0 left-0 right-0 z-10">
-            {/* Toggle tab */}
-            <div className="flex justify-center mb-1">
-              <button
-                onClick={() => setControlsOpen(o => !o)}
-                className="flex items-center gap-1 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-white/70 text-xs font-mono"
-              >
-                {controlsOpen ? <ChevronDown className="w-3 h-3" /> : <ChevronUp className="w-3 h-3" />}
-                {controlsOpen ? 'hide' : 'controls'}
-              </button>
-            </div>
+          <div className="absolute bottom-0 left-0 right-0 z-10"
+            style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 70%, transparent 100%)' }}
+          >
+            <div className="px-5 pb-10 pt-8 space-y-4">
 
-            <AnimatePresence>
-              {controlsOpen && (
-                <motion.div
-                  key="controls"
-                  initial={{ y: 120, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  exit={{ y: 120, opacity: 0 }}
-                  transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                  className="mx-3 mb-8 rounded-3xl overflow-hidden"
-                  style={{ background: 'rgba(10,10,20,0.85)', backdropFilter: 'blur(24px)', border: '1px solid rgba(255,255,255,0.08)' }}
-                >
-                  <div className="px-5 pt-5 pb-6 space-y-5">
-
-                    {/* Scrub delay slider */}
-                    <div className="space-y-2.5">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <Clock className="w-3.5 h-3.5 text-primary" />
-                          <span className="text-[11px] font-mono uppercase tracking-widest text-white/50">Scrub Delay</span>
-                        </div>
-                        <span className="text-sm font-mono text-white">{delaySeconds}s</span>
-                      </div>
-                      <ControlSlider
-                        value={delayOffset}
-                        min={0}
-                        max={Math.max(1, bufferFill - 1)}
-                        step={1}
-                        onChange={setDelayOffset}
-                      />
-                    </div>
-
-                    <div className="h-px bg-white/8" />
-
-                    {/* Ghost toggle row */}
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Layers className="w-3.5 h-3.5 text-primary" />
-                        <span className="text-[11px] font-mono uppercase tracking-widest text-white/50">Ghost Layers</span>
-                      </div>
-                      <Switch
-                        checked={ghostEnabled}
-                        onCheckedChange={setGhostEnabled}
-                      />
-                    </div>
-
-                    {/* Ghost interval slider */}
-                    <AnimatePresence>
-                      {ghostEnabled && (
-                        <motion.div
-                          key="ghost-interval"
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: 'auto', opacity: 1 }}
-                          exit={{ height: 0, opacity: 0 }}
-                          className="overflow-hidden"
-                        >
-                          <div className="space-y-2.5 pt-1">
-                            <div className="flex items-center justify-between">
-                              <span className="text-[11px] font-mono uppercase tracking-widest text-white/50">Ghost Interval</span>
-                              <span className="text-sm font-mono text-white">{ghostInterval}f</span>
-                            </div>
-                            <ControlSlider
-                              value={ghostInterval}
-                              min={1}
-                              max={30}
-                              step={1}
-                              onChange={setGhostInterval}
-                            />
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-
-                    {/* Stats row */}
-                    <div className="flex gap-2 pt-1">
-                      <StatPill label="Buffer" value={`${fillPercent}%`} />
-                      <StatPill label="Frames" value={`${bufferFill}`} />
-                      <StatPill label="Ghosts" value={ghostEnabled ? `4×` : 'off'} />
-                    </div>
+              {/* ── SCRUB BAR ── */}
+              <div className="space-y-2">
+                {/* Labels */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
+                    <Clock className="w-3 h-3 text-white/40" />
+                    <span className="text-[10px] font-mono uppercase tracking-widest text-white/40">Scrub</span>
                   </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+                  <div className="flex items-center gap-2">
+                    {isDelayed && (
+                      <button
+                        onClick={() => setDelayOffset(0)}
+                        className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-accent/20 border border-accent/30 text-accent text-[10px] font-mono"
+                      >
+                        <Play className="w-2.5 h-2.5" />
+                        LIVE
+                      </button>
+                    )}
+                    <span className="text-sm font-mono text-white tabular-nums">
+                      {isDelayed ? `−${delaySeconds}s` : 'live'}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Custom scrub track */}
+                <ScrubBar
+                  value={delayOffset}
+                  max={Math.max(1, bufferFill - 1)}
+                  onChange={setDelayOffset}
+                  bufferFill={bufferFill}
+                  maxBufferSize={maxBufferSize}
+                />
+
+                {/* Time markers */}
+                <div className="flex justify-between text-[9px] font-mono text-white/25 px-0.5">
+                  <span>−{(Math.max(1, bufferFill - 1) / 30).toFixed(1)}s</span>
+                  <span>now</span>
+                </div>
+              </div>
+
+              {/* ── SECONDARY CONTROLS ── */}
+              <div className="flex items-center gap-3">
+                {/* Ghost toggle */}
+                <button
+                  onClick={() => setGhostEnabled(g => !g)}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-xs font-mono transition-all ${
+                    ghostEnabled
+                      ? 'bg-primary/30 border-primary/50 text-white'
+                      : 'bg-white/5 border-white/10 text-white/40'
+                  }`}
+                >
+                  <Layers className="w-3.5 h-3.5" />
+                  Ghost
+                </button>
+
+                {/* Ghost interval — only when ghost is on */}
+                {ghostEnabled && (
+                  <motion.div
+                    initial={{ opacity: 0, width: 0 }}
+                    animate={{ opacity: 1, width: 'auto' }}
+                    exit={{ opacity: 0, width: 0 }}
+                    className="flex-1 flex items-center gap-2"
+                  >
+                    <ControlSlider
+                      value={ghostInterval}
+                      min={1}
+                      max={30}
+                      step={1}
+                      onChange={setGhostInterval}
+                    />
+                    <span className="text-xs font-mono text-white/50 whitespace-nowrap">{ghostInterval}f</span>
+                  </motion.div>
+                )}
+
+                {/* Stop button */}
+                <button
+                  onClick={handleStop}
+                  className="ml-auto w-9 h-9 rounded-full bg-white/10 border border-white/15 flex items-center justify-center active:scale-95 transition-transform"
+                >
+                  <CameraOff className="w-4 h-4 text-white/70" />
+                </button>
+              </div>
+            </div>
           </div>
         </>
       )}
