@@ -105,6 +105,7 @@ export default function Home() {
           {/* Full-screen canvas */}
           <div className="absolute inset-0">
             <RenderCanvas
+              videoRef={videoRef}
               getFrame={getFrame}
               delayOffset={delayOffset}
               ghostEnabled={ghostEnabled}
