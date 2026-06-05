@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
-import { Camera, CameraOff, Layers, Clock, Eye, Play } from 'lucide-react';
+import { Camera, CameraOff, Layers, Clock, Eye, Play, Circle, Square, Download } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import useCamera from '@/components/video/useCamera';
 import useFrameBuffer from '@/components/video/useFrameBuffer';
@@ -19,7 +19,13 @@ export default function Home() {
   const [ghostCount, setGhostCount] = useState(4);
   const [ghostOpacity, setGhostOpacity] = useState(0.75);
   const [bufferFill, setBufferFill] = useState(0);
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordingTime, setRecordingTime] = useState(0);
   const captureRef = useRef(null);
+  const mediaRecorderRef = useRef(null);
+  const recordingChunksRef = useRef([]);
+  const recordingTimerRef = useRef(null);
+  const canvasRef = useRef(null);
 
   // Capture frames into the ring buffer at ~30fps
   const captureLoop = useCallback(() => {
@@ -44,11 +50,43 @@ export default function Home() {
   };
 
   const handleStop = () => {
+    if (isRecording) stopRecording();
     stop();
     clearBuffer();
     setBufferFill(0);
     setDelayOffset(0);
   };
+
+  const startRecording = useCallback(() => {
+    // Find the canvas element rendered by RenderCanvas
+    const canvas = document.querySelector('canvas');
+    if (!canvas) return;
+    const stream = canvas.captureStream(30);
+    const recorder = new MediaRecorder(stream, { mimeType: 'video/webm;codecs=vp9' });
+    recordingChunksRef.current = [];
+    recorder.ondataavailable = (e) => { if (e.data.size > 0) recordingChunksRef.current.push(e.data); };
+    recorder.onstop = () => {
+      const blob = new Blob(recordingChunksRef.current, { type: 'video/webm' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `framedelay-${Date.now()}.webm`;
+      a.click();
+      URL.revokeObjectURL(url);
+    };
+    recorder.start();
+    mediaRecorderRef.current = recorder;
+    setIsRecording(true);
+    setRecordingTime(0);
+    recordingTimerRef.current = setInterval(() => setRecordingTime(t => t + 1), 1000);
+  }, []);
+
+  const stopRecording = useCallback(() => {
+    mediaRecorderRef.current?.stop();
+    clearInterval(recordingTimerRef.current);
+    setIsRecording(false);
+    setRecordingTime(0);
+  }, []);
 
   const delaySeconds = (delayOffset / 30).toFixed(2);
   const fillPercent = Math.round((bufferFill / maxBufferSize) * 100);
@@ -141,7 +179,7 @@ export default function Home() {
               )}
             </div>
 
-            {/* Right: ghost badge + stop */}
+            {/* Right: ghost badge + record + stop */}
             <div className="flex items-center gap-3">
               {ghostEnabled && (
                 <motion.div
@@ -153,6 +191,31 @@ export default function Home() {
                   <span className="text-xs font-mono text-white">GHOST</span>
                 </motion.div>
               )}
+
+              {/* Record button */}
+              <button
+                onClick={isRecording ? stopRecording : startRecording}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full backdrop-blur-md border font-mono text-xs transition-all active:scale-95 ${
+                  isRecording
+                    ? 'bg-red-500/80 border-red-400/60 text-white'
+                    : 'bg-white/10 border-white/20 text-white/80'
+                }`}
+              >
+                {isRecording ? (
+                  <>
+                    <Square className="w-3 h-3 fill-white" />
+                    <span className="tabular-nums">
+                      {String(Math.floor(recordingTime / 60)).padStart(2,'0')}:{String(recordingTime % 60).padStart(2,'0')}
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <Circle className="w-3 h-3 fill-red-400 text-red-400" />
+                    REC
+                  </>
+                )}
+              </button>
+
               <button
                 onClick={handleStop}
                 className="w-9 h-9 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center active:scale-95 transition-transform"
