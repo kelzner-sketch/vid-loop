@@ -171,7 +171,7 @@ export default function Home() {
             </div>
 
             <div className="text-center space-y-2">
-              <h1 className="text-3xl font-bold font-heading tracking-tight text-foreground">CamudderSt</h1>
+              <h1 className="text-3xl font-bold font-heading tracking-tight text-foreground">StudderCam</h1>
               <p className="text-sm text-muted-foreground leading-relaxed max-w-xs">
                 Live camera feed with ring-buffer scrubbing and multi-frame ghost layering.
               </p>
