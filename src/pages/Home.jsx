@@ -16,9 +16,13 @@ export default function Home() {
   const [facingMode, setFacingMode] = useState('user');
   const [delayOffset, setDelayOffset] = useState(0);
   const [ghostEnabled, setGhostEnabled] = useState(false);
+  const [ghostActive, setGhostActive] = useState(false);
+  const [ghostDelay, setGhostDelay] = useState(3);
+  const [ghostCountdown, setGhostCountdown] = useState(null);
   const [ghostInterval, setGhostInterval] = useState(10);
   const [ghostCount, setGhostCount] = useState(4);
   const [ghostOpacity, setGhostOpacity] = useState(0.75);
+  const ghostCountdownRef = useRef(null);
   const [bufferFill, setBufferFill] = useState(0);
   const [isRecording, setIsRecording] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
@@ -62,8 +66,42 @@ export default function Home() {
     }
   };
 
+  const toggleGhost = () => {
+    if (ghostEnabled) {
+      // Turn off — cancel any countdown
+      clearInterval(ghostCountdownRef.current);
+      setGhostEnabled(false);
+      setGhostActive(false);
+      setGhostCountdown(null);
+    } else {
+      // Turn on — start countdown
+      setGhostEnabled(true);
+      if (ghostDelay > 0) {
+        setGhostCountdown(ghostDelay);
+        setGhostActive(false);
+        let remaining = ghostDelay;
+        ghostCountdownRef.current = setInterval(() => {
+          remaining -= 1;
+          if (remaining <= 0) {
+            clearInterval(ghostCountdownRef.current);
+            setGhostCountdown(null);
+            setGhostActive(true);
+          } else {
+            setGhostCountdown(remaining);
+          }
+        }, 1000);
+      } else {
+        setGhostActive(true);
+      }
+    }
+  };
+
   const handleStop = () => {
     if (isRecording) stopRecording();
+    clearInterval(ghostCountdownRef.current);
+    setGhostEnabled(false);
+    setGhostActive(false);
+    setGhostCountdown(null);
     stop();
     clearBuffer();
     setBufferFill(0);
@@ -167,7 +205,7 @@ export default function Home() {
               videoRef={videoRef}
               getFrame={getFrame}
               delayOffset={delayOffset}
-              ghostEnabled={ghostEnabled}
+              ghostEnabled={ghostActive}
               ghostInterval={ghostInterval}
               ghostCount={ghostCount}
               ghostOpacity={ghostOpacity}
@@ -204,10 +242,12 @@ export default function Home() {
                 <motion.div
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-primary/50 backdrop-blur-md border border-primary/30"
+                  className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg backdrop-blur-md border ${ghostActive ? 'bg-primary/50 border-primary/30' : 'bg-yellow-500/40 border-yellow-400/40'}`}
                 >
                   <Layers className="w-3 h-3 text-white" />
-                  <span className="text-xs font-mono text-white">GHOST</span>
+                  <span className="text-xs font-mono text-white">
+                    {ghostCountdown !== null ? `GHOST ${ghostCountdown}` : 'GHOST'}
+                  </span>
                 </motion.div>
               )}
 
@@ -311,7 +351,7 @@ export default function Home() {
                 {/* Ghost toggle header */}
                 <div className="flex items-center justify-between">
                   <button
-                    onClick={() => setGhostEnabled(g => !g)}
+                    onClick={toggleGhost}
                     className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-mono transition-all ${
                       ghostEnabled
                         ? 'bg-primary/30 border-primary/50 text-white'
@@ -319,7 +359,7 @@ export default function Home() {
                     }`}
                   >
                     <Layers className="w-3.5 h-3.5" />
-                    Ghost Blend
+                    {ghostCountdown !== null ? `Ghost in ${ghostCountdown}s…` : 'Ghost Blend'}
                   </button>
                   {/* Stop button */}
                   <button
@@ -341,6 +381,13 @@ export default function Home() {
                       className="overflow-hidden"
                     >
                       <div className="space-y-3 pt-1">
+                        {/* Delay */}
+                        <GhostSliderRow
+                          label="Delay"
+                          valueLabel={ghostDelay === 0 ? 'off' : `${ghostDelay}s`}
+                          value={ghostDelay} min={0} max={10} step={1}
+                          onChange={setGhostDelay}
+                        />
                         {/* Interval */}
                         <GhostSliderRow
                           label="Interval"
