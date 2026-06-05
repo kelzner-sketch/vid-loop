@@ -6,11 +6,11 @@ export default function useCamera() {
   const videoRef = useRef(null);
   const streamRef = useRef(null);
 
-  const start = useCallback(async () => {
+  const start = useCallback(async (facingMode = 'user') => {
     setError(null);
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: 'user' },
+        video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode },
         audio: false
       });
       streamRef.current = stream;

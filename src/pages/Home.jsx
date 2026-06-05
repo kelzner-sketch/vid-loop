@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
-import { Camera, CameraOff, Layers, Clock, Eye, Play, Circle, Square, Download } from 'lucide-react';
+import { Camera, CameraOff, Layers, Clock, Eye, Play, Circle, Square, Download, SwitchCamera } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import useCamera from '@/components/video/useCamera';
 import useFrameBuffer from '@/components/video/useFrameBuffer';
@@ -13,6 +13,7 @@ export default function Home() {
   const { videoRef, isActive, error, start, stop } = useCamera();
   const { pushFrame, getFrame, getBufferLength, clearBuffer, maxBufferSize } = useFrameBuffer();
 
+  const [facingMode, setFacingMode] = useState('user');
   const [delayOffset, setDelayOffset] = useState(0);
   const [ghostEnabled, setGhostEnabled] = useState(false);
   const [ghostInterval, setGhostInterval] = useState(10);
@@ -46,7 +47,19 @@ export default function Home() {
   }, [isActive, captureLoop]);
 
   const handleStart = async () => {
-    await start();
+    await start(facingMode);
+  };
+
+  const handleSwitchCamera = async () => {
+    const next = facingMode === 'user' ? 'environment' : 'user';
+    setFacingMode(next);
+    if (isActive) {
+      stop();
+      clearBuffer();
+      setBufferFill(0);
+      setDelayOffset(0);
+      await start(next);
+    }
   };
 
   const handleStop = () => {
@@ -214,6 +227,14 @@ export default function Home() {
                     REC
                   </>
                 )}
+              </button>
+
+              {/* Switch camera */}
+              <button
+                onClick={handleSwitchCamera}
+                className="w-9 h-9 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center active:scale-95 transition-transform"
+              >
+                <SwitchCamera className="w-4 h-4 text-white" />
               </button>
 
               <button
