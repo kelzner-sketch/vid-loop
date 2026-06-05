@@ -75,15 +75,21 @@ export default function Home() {
     const canvas = document.querySelector('canvas');
     if (!canvas) return;
     const stream = canvas.captureStream(30);
-    const recorder = new MediaRecorder(stream, { mimeType: 'video/webm;codecs=vp9' });
+    const mimeType = MediaRecorder.isTypeSupported('video/mp4')
+      ? 'video/mp4'
+      : MediaRecorder.isTypeSupported('video/webm;codecs=vp9')
+        ? 'video/webm;codecs=vp9'
+        : 'video/webm';
+    const recorder = new MediaRecorder(stream, { mimeType });
     recordingChunksRef.current = [];
     recorder.ondataavailable = (e) => { if (e.data.size > 0) recordingChunksRef.current.push(e.data); };
     recorder.onstop = () => {
-      const blob = new Blob(recordingChunksRef.current, { type: 'video/webm' });
+      const isMP4 = mimeType.startsWith('video/mp4');
+      const blob = new Blob(recordingChunksRef.current, { type: mimeType });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `framedelay-${Date.now()}.webm`;
+      a.download = `framedelay-${Date.now()}.${isMP4 ? 'mp4' : 'webm'}`;
       a.click();
       URL.revokeObjectURL(url);
     };
