@@ -52,9 +52,10 @@ export default function RenderCanvas({ videoRef, getFrame, delayOffset, ghostEna
     if (ghostEnabled) {
       const count = ghostCount ?? 4;
       const baseOpacity = ghostOpacity ?? 0.75;
+      // Draw oldest ghost first (back to front), so newest is on top
       for (let i = count - 1; i >= 0; i--) {
-        // Oldest ghost is most transparent; the "current" frame (i=0) is fully opaque
-        const alpha = i === 0 ? 1.0 : baseOpacity * (1 - i / count);
+        // i=0 is the "current" frame (fully opaque), i=count-1 is oldest (most faded)
+        const alpha = i === 0 ? 1.0 : baseOpacity * ((count - i) / count);
         const offset = delayOffset + i * ghostInterval;
         if (offset === 0 && video) {
           drawCover(video, alpha);
