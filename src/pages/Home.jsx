@@ -658,9 +658,9 @@ export default function Home() {
 
               {/* Hidden video element */}
               <video ref={videoRef} playsInline muted className="hidden" />
-              </div>);
-
-}
+              </div>
+              );
+              }
 
 function GhostSliderRow({ label, valueLabel, value, min, max, step, onChange }) {
   return (
