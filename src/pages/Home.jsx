@@ -29,7 +29,7 @@ export default function Home() {
   // Ping-pong loop mode
   const [loopEnabled, setLoopEnabled] = useState(false);
   const [loopDepth, setLoopDepth] = useState(30); // frames to ping-pong through
-  const [loopSpeed, setLoopSpeed] = useState(1);  // frames advanced per render tick
+  const [loopSpeed, setLoopSpeed] = useState(1); // frames advanced per render tick
   const loopStateRef = useRef({ dir: 1, pos: 0 }); // internal mutable state, no re-render
   const loopRafRef = useRef(null);
   const loopEnabledRef = useRef(false);
@@ -76,7 +76,7 @@ export default function Home() {
   }, [loopEnabled, loopDepth, loopSpeed]);
 
   const toggleLoop = () => {
-    setLoopEnabled(prev => {
+    setLoopEnabled((prev) => {
       if (prev) {
         // turning off — snap back to live
         setDelayOffset(0);
@@ -108,7 +108,7 @@ export default function Home() {
       const len = getBufferLength();
       setBufferFill(len);
       // Once buffer has enough frames, lock the default delay in place
-      setDelayOffset(prev => (prev > 0 && prev >= len ? Math.max(0, len - 1) : prev));
+      setDelayOffset((prev) => prev > 0 && prev >= len ? Math.max(0, len - 1) : prev);
     }
     captureRef.current = requestAnimationFrame(captureLoop);
   }, [pushFrame, getBufferLength, videoRef]);
@@ -217,9 +217,9 @@ export default function Home() {
         setSavedClip({ url: file_url });
         setTimeout(() => setSavedClip(null), 5000);
       } catch (e) {
+
         // upload failed silently — local download already triggered
-      }
-      URL.revokeObjectURL(localUrl);
+      }URL.revokeObjectURL(localUrl);
     };
     recorder.start();
     mediaRecorderRef.current = recorder;
@@ -260,7 +260,7 @@ export default function Home() {
           
             {/* Logo mark */}
             <div className="relative">
-              <div className="w-24 h-24 rounded-3xl bg-primary/10 border border-primary/20 flex items-center justify-center">
+              <div className="w-24 h-24 rounded-3xl border border-primary/20 flex items-center justify-center opacity-100 bg-[hsl(var(--background))]">
                 <Camera className="w-10 h-10 text-primary" />
               </div>
               <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-sky-300 animate-pulse" />
@@ -296,9 +296,9 @@ export default function Home() {
       {isActive &&
       <>
           {/* Recording border pulse */}
-          {isRecording && (
-            <div className="absolute inset-0 z-20 pointer-events-none rounded-none border-4 border-red-500 animate-pulse" />
-          )}
+          {isRecording &&
+        <div className="absolute inset-0 z-20 pointer-events-none rounded-none border-4 border-red-500 animate-pulse" />
+        }
 
           {/* Full-screen canvas */}
           <div className="absolute inset-0">
@@ -317,19 +317,19 @@ export default function Home() {
 
           {/* ── SAVED CLIP TOAST ── */}
           <AnimatePresence>
-            {savedClip && (
-              <motion.div
-                key="saved-toast"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 20 }}
-                className="absolute bottom-32 left-1/2 -translate-x-1/2 z-30 flex items-center gap-3 px-4 py-3 rounded-2xl bg-black/80 backdrop-blur-md border border-white/20 text-white text-sm font-mono whitespace-nowrap"
-              >
+            {savedClip &&
+          <motion.div
+            key="saved-toast"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            className="absolute bottom-32 left-1/2 -translate-x-1/2 z-30 flex items-center gap-3 px-4 py-3 rounded-2xl bg-black/80 backdrop-blur-md border border-white/20 text-white text-sm font-mono whitespace-nowrap">
+            
                 <Film className="w-4 h-4 text-primary" />
                 Clip saved!
                 <Link to="/gallery" className="text-primary underline text-xs">View Gallery</Link>
               </motion.div>
-            )}
+          }
           </AnimatePresence>
 
           {/* ── TOP HUD ── */}
@@ -344,7 +344,7 @@ export default function Home() {
                   {loopEnabled ? 'LOOP' : isDelayed ? 'DELAYED' : 'LIVE'}
                 </span>
                 <Link to="/gallery"
-                  className="ml-1 flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/10 border border-white/20 text-white/70 text-[10px] font-mono hover:bg-white/20 transition-colors">
+              className="ml-1 flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/10 border border-white/20 text-white/70 text-[10px] font-mono hover:bg-white/20 transition-colors">
                   <Film className="w-2.5 h-2.5" />GALLERY
                 </Link>
               </div>
@@ -425,21 +425,21 @@ export default function Home() {
 
           {/* ── CONTROLS PANEL — adapts portrait/landscape ── */}
           {isLandscape ? (
-            /* ── LANDSCAPE: compact right-side strip ── */
-            <div className="absolute right-0 top-0 bottom-0 z-10 flex flex-col justify-end"
-              style={{ background: 'linear-gradient(to left, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.3) 70%, transparent 100%)', width: '200px' }}>
+        /* ── LANDSCAPE: compact right-side strip ── */
+        <div className="absolute right-0 top-0 bottom-0 z-10 flex flex-col justify-end"
+        style={{ background: 'linear-gradient(to left, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.3) 70%, transparent 100%)', width: '200px' }}>
               <div className="px-3 pb-8 pt-4 space-y-3">
                 {/* Scrub */}
                 <div className="space-y-1">
                   <div className="flex items-center justify-between">
                     <span className="text-[9px] font-mono uppercase tracking-widest text-white/40">Scrub</span>
                     <div className="flex items-center gap-1.5">
-                      {isDelayed && (
-                        <button onClick={() => setDelayOffset(0)}
-                          className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-accent/20 border border-accent/30 text-accent text-[9px] font-mono">
+                      {isDelayed &&
+                  <button onClick={() => setDelayOffset(0)}
+                  className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-accent/20 border border-accent/30 text-accent text-[9px] font-mono">
                           <Play className="w-2 h-2" />LIVE
                         </button>
-                      )}
+                  }
                       <span className="text-xs font-mono text-white tabular-nums">{isDelayed ? `−${delaySeconds}s` : 'live'}</span>
                     </div>
                   </div>
@@ -447,36 +447,36 @@ export default function Home() {
                 </div>
                 {/* Ghost toggle */}
                 <button onClick={toggleGhost}
-                  className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl border text-xs font-mono transition-all ${ghostEnabled ? 'bg-primary/30 border-primary/50 text-white' : 'bg-white/5 border-white/10 text-white/40'}`}>
+            className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl border text-xs font-mono transition-all ${ghostEnabled ? 'bg-primary/30 border-primary/50 text-white' : 'bg-white/5 border-white/10 text-white/40'}`}>
                   <Layers className="w-3 h-3" />
                   {ghostCountdown !== null ? `Ghost ${ghostCountdown}s…` : 'Ghost Blend'}
                 </button>
                 {/* Ghost sliders — compact */}
-                {ghostEnabled && (
-                  <div className="space-y-2">
+                {ghostEnabled &&
+            <div className="space-y-2">
                     <GhostSliderRow label="Intv" valueLabel={`${ghostInterval}f`} value={ghostInterval} min={1} max={30} step={1} onChange={setGhostInterval} />
                     <GhostSliderRow label="Lyrs" valueLabel={`${ghostCount}`} value={ghostCount} min={2} max={10} step={1} onChange={setGhostCount} />
                     <GhostSliderRow label="Fade" valueLabel={`${Math.round(ghostOpacity * 100)}%`} value={ghostOpacity} min={0.05} max={1} step={0.05} onChange={setGhostOpacity} />
                   </div>
-                )}
+            }
                 {/* Loop toggle + sliders — compact */}
                 <button onClick={toggleLoop}
-                  className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl border text-xs font-mono transition-all ${loopEnabled ? 'bg-accent/30 border-accent/50 text-white' : 'bg-white/5 border-white/10 text-white/40'}`}>
+            className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl border text-xs font-mono transition-all ${loopEnabled ? 'bg-accent/30 border-accent/50 text-white' : 'bg-white/5 border-white/10 text-white/40'}`}>
                   <Repeat2 className="w-3 h-3" />
                   Loop
                 </button>
-                {loopEnabled && (
-                  <div className="space-y-2">
+                {loopEnabled &&
+            <div className="space-y-2">
                     <GhostSliderRow label="Dpth" valueLabel={`${(loopDepth / 30).toFixed(1)}s`} value={loopDepth} min={5} max={Math.max(5, bufferFill - 1)} step={1} onChange={setLoopDepth} />
                     <GhostSliderRow label="Spd" valueLabel={`${loopSpeed}x`} value={loopSpeed} min={0.25} max={4} step={0.25} onChange={setLoopSpeed} />
                   </div>
-                )}
+            }
               </div>
-            </div>
-          ) : (
-            /* ── PORTRAIT: bottom panel ── */
-            <div className="absolute bottom-0 left-0 right-0 z-10"
-              style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 70%, transparent 100%)' }}>
+            </div>) : (
+
+        /* ── PORTRAIT: bottom panel ── */
+        <div className="absolute bottom-0 left-0 right-0 z-10"
+        style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 70%, transparent 100%)' }}>
               <div className="px-5 pb-10 pt-8 space-y-5">
                 {/* Scrub */}
                 <div className="space-y-2">
@@ -486,12 +486,12 @@ export default function Home() {
                       <span className="text-[10px] font-mono uppercase tracking-widest text-white/40">Scrub</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      {isDelayed && (
-                        <button onClick={() => setDelayOffset(0)}
-                          className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-accent/20 border border-accent/30 text-accent text-[10px] font-mono">
+                      {isDelayed &&
+                  <button onClick={() => setDelayOffset(0)}
+                  className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-accent/20 border border-accent/30 text-accent text-[10px] font-mono">
                           <Play className="w-2.5 h-2.5" />LIVE
                         </button>
-                      )}
+                  }
                       <span className="text-sm font-mono text-white tabular-nums">{isDelayed ? `−${delaySeconds}s` : 'live'}</span>
                     </div>
                   </div>
@@ -505,18 +505,18 @@ export default function Home() {
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <button onClick={toggleGhost}
-                      className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-mono transition-all ${ghostEnabled ? 'bg-primary/30 border-primary/50 text-white' : 'bg-white/5 border-white/10 text-white/40'}`}>
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-mono transition-all ${ghostEnabled ? 'bg-primary/30 border-primary/50 text-white' : 'bg-white/5 border-white/10 text-white/40'}`}>
                       <Layers className="w-3.5 h-3.5" />
                       {ghostCountdown !== null ? `Ghost in ${ghostCountdown}s…` : 'Ghost Blend'}
                     </button>
                     <button onClick={handleStop}
-                      className="w-9 h-9 rounded-full bg-white/10 border border-white/15 flex items-center justify-center active:scale-95 transition-transform">
+                className="w-9 h-9 rounded-full bg-white/10 border border-white/15 flex items-center justify-center active:scale-95 transition-transform">
                       <CameraOff className="w-4 h-4 text-white/70" />
                     </button>
                   </div>
                   <AnimatePresence>
-                    {ghostEnabled && (
-                      <motion.div key="ghost-panel" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
+                    {ghostEnabled &&
+                <motion.div key="ghost-panel" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
                         <div className="space-y-3 pt-1">
                           <GhostSliderRow label="Delay" valueLabel={ghostDelay === 0 ? 'off' : `${ghostDelay}s`} value={ghostDelay} min={0} max={10} step={1} onChange={setGhostDelay} />
                           <GhostSliderRow label="Interval" valueLabel={`${ghostInterval}f`} value={ghostInterval} min={1} max={30} step={1} onChange={setGhostInterval} />
@@ -524,31 +524,31 @@ export default function Home() {
                           <GhostSliderRow label="Opacity" valueLabel={`${Math.round(ghostOpacity * 100)}%`} value={ghostOpacity} min={0.05} max={1} step={0.05} onChange={setGhostOpacity} />
                         </div>
                       </motion.div>
-                    )}
+                }
                   </AnimatePresence>
                 </div>
 
                 {/* Loop (ping-pong) controls */}
                 <div className="space-y-3">
                   <button onClick={toggleLoop}
-                    className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-mono transition-all ${loopEnabled ? 'bg-accent/30 border-accent/50 text-white' : 'bg-white/5 border-white/10 text-white/40'}`}>
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-mono transition-all ${loopEnabled ? 'bg-accent/30 border-accent/50 text-white' : 'bg-white/5 border-white/10 text-white/40'}`}>
                     <Repeat2 className="w-3.5 h-3.5" />
                     Loop
                   </button>
                   <AnimatePresence>
-                    {loopEnabled && (
-                      <motion.div key="loop-panel" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
+                    {loopEnabled &&
+                <motion.div key="loop-panel" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
                         <div className="space-y-3 pt-1">
                           <GhostSliderRow label="Depth" valueLabel={`${(loopDepth / 30).toFixed(1)}s`} value={loopDepth} min={5} max={Math.max(5, bufferFill - 1)} step={1} onChange={setLoopDepth} />
                           <GhostSliderRow label="Speed" valueLabel={`${loopSpeed}x`} value={loopSpeed} min={0.25} max={4} step={0.25} onChange={setLoopSpeed} />
                         </div>
                       </motion.div>
-                    )}
+                }
                   </AnimatePresence>
                 </div>
               </div>
-            </div>
-          )}
+            </div>)
+        }
         </>
       }
 
