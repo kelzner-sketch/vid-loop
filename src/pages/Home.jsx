@@ -261,7 +261,7 @@ export default function Home() {
             {/* Logo mark */}
             <div className="relative">
               <div className="w-24 h-24 rounded-3xl bg-primary/10 border border-primary/20 flex items-center justify-center">
-                <Eye className="w-10 h-10 text-primary" />
+                <Camera className="w-10 h-10 text-primary" />
               </div>
               <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-accent animate-pulse" />
             </div>
