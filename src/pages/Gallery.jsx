@@ -112,7 +112,11 @@ export default function Gallery() {
     // Subscribe to clip changes for real-time updates
     const unsubscribe = base44.entities.Clip.subscribe((event) => {
       if (event.type === 'create') {
-        setClips((prev) => [event.data, ...prev]);
+        setClips((prev) => {
+          // Dedupe: don't add if clip with same ID already exists
+          if (prev.some((c) => c.id === event.data.id)) return prev;
+          return [event.data, ...prev];
+        });
       } else if (event.type === 'update') {
         setClips((prev) => prev.map((c) => c.id === event.id ? event.data : c));
       } else if (event.type === 'delete') {
