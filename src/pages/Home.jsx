@@ -477,9 +477,9 @@ export default function Home() {
 
           {/* ── CONTROLS PANEL — adapts portrait/landscape ── */}
           {isLandscape ? (
-          <>
-          {/* ── LANDSCAPE: left-side controls ── */}
-          <motion.div 
+            <>
+              {/* ── LANDSCAPE: left-side controls ── */}
+              <motion.div 
            className="absolute left-0 top-0 bottom-0 z-10 flex flex-col pointer-events-none"
            style={{ background: 'linear-gradient(to right, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.3) 70%, transparent 100%)', width: '130px' }}
            animate={{ x: isRecording ? -130 : 0 }}
@@ -578,12 +578,11 @@ export default function Home() {
                     </div>
                   }
                 </div>
-              </motion.div>
+                </motion.div>
               </>
-              ) : (
-
-        /* ── PORTRAIT: bottom panel ── */
-        <div className="absolute bottom-0 left-0 right-0 z-10" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 70%, transparent 100%)', maxHeight: '65vh', display: 'flex', flexDirection: 'column' }}>
+            ) : (
+              /* ── PORTRAIT: bottom panel ── */
+              <div className="absolute bottom-0 left-0 right-0 z-10" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 70%, transparent 100%)', maxHeight: '65vh', display: 'flex', flexDirection: 'column' }}>
               <div className="overflow-y-auto overscroll-contain px-5 pt-8 space-y-5" style={{ paddingBottom: 'calc(2rem + env(safe-area-inset-bottom) + 56px)' }}>
                 {/* Scrub */}
                 <div className="space-y-2">
@@ -657,9 +656,9 @@ export default function Home() {
               </div>)
               }
 
-      {/* Hidden video element */}
-      <video ref={videoRef} playsInline muted className="hidden" />
-    </div>);
+              {/* Hidden video element */}
+              <video ref={videoRef} playsInline muted className="hidden" />
+              </div>);
 
 }
 
