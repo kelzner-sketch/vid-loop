@@ -107,9 +107,7 @@ export default function Gallery() {
   };
 
   useEffect(() => {
-    loadClips();
-    
-    // Subscribe to clip changes for real-time updates
+    // Set up subscription first so it's ready to catch new clips
     const unsubscribe = base44.entities.Clip.subscribe((event) => {
       if (event.type === 'create') {
         setClips((prev) => {
@@ -123,6 +121,9 @@ export default function Gallery() {
         setClips((prev) => prev.filter((c) => c.id !== event.id));
       }
     });
+
+    // Then load initial clips
+    loadClips();
     
     return unsubscribe;
   }, []);
