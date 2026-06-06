@@ -228,9 +228,9 @@ export default function Home() {
 
 
 
+
         // upload failed silently — local download already triggered
-      }URL.revokeObjectURL(localUrl);};recorder.start();mediaRecorderRef.current = recorder;setIsRecording(true);setRecordingTime(0);recordingTimerRef._lastTime = 0;recordingTimerRef.current = setInterval(() => {setRecordingTime((t) => {recordingTimerRef._lastTime = t + 1;return t + 1;
-          });
+      }URL.revokeObjectURL(localUrl);};recorder.start();mediaRecorderRef.current = recorder;setIsRecording(true);setRecordingTime(0);recordingTimerRef._lastTime = 0;recordingTimerRef.current = setInterval(() => {setRecordingTime((t) => {recordingTimerRef._lastTime = t + 1;return t + 1;});
       }, 1000);
   }, []);
 
@@ -268,7 +268,7 @@ export default function Home() {
 
             <div className="text-center space-y-2">
               <h1 className="font-heading tracking-tight text-foreground font-light lowercase text-center text-4xl">VidLoop</h1>
-              <p className="text-sm text-muted-foreground leading-relaxed max-w-xs">VidLoop — A live camera tool that lets you scrub back through the last few seconds of footage, layer motion ghost trails, and loop clips in a ping-pong effect. Record and share directly from your phone.
+              <p className="text-sm text-muted-foreground leading-relaxed max-w-xs">Live camera tool that lets you scrub back through the last few seconds of footage, layer motion ghost trails, and loop clips in a ping-pong effect. Record and share directly from your phone.
 
             </p>
             </div>
