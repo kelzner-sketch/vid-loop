@@ -84,7 +84,7 @@ export default function Home() {
     if (user) {
       debounceRef.current = setTimeout(() => {
         base44.auth.updateMe({ preferences: prefs });
-      }, 500);
+      }, 1000);
     }
     return () => clearTimeout(debounceRef.current);
   }, [facingMode, loopEnabled, loopDepth, loopSpeed, ghostDelay, ghostInterval, ghostCount, ghostOpacity, user]);
