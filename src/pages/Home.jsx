@@ -225,13 +225,13 @@ export default function Home() {
 
 
 
+
         // upload failed silently — local download already triggered
-      }URL.revokeObjectURL(localUrl);};recorder.start();mediaRecorderRef.current = recorder;setIsRecording(true);setRecordingTime(0);recordingTimerRef._lastTime = 0;recordingTimerRef.current = setInterval(() => {
-      setRecordingTime((t) => {
-        recordingTimerRef._lastTime = t + 1;
-        return t + 1;
-      });
-    }, 1000);
+      }URL.revokeObjectURL(localUrl);};recorder.start();mediaRecorderRef.current = recorder;setIsRecording(true);setRecordingTime(0);recordingTimerRef._lastTime = 0;recordingTimerRef.current = setInterval(() => {setRecordingTime((t) => {
+          recordingTimerRef._lastTime = t + 1;
+          return t + 1;
+        });
+      }, 1000);
   }, []);
 
   const stopRecording = useCallback(() => {
@@ -279,7 +279,7 @@ export default function Home() {
                   {error}
                 </p>
             }
-              <Button onClick={handleStart} size="lg" className="w-full gap-2 h-14 text-base rounded-2xl">
+              <Button onClick={handleStart} size="lg" className="w-full gap-2 h-14 rounded-2xl lowercase text-center text-lg">
                 <Camera className="w-5 h-5" />
                 Enable Camera
               </Button>
