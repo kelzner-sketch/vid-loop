@@ -1,673 +1,352 @@
-import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
-import { Camera, CameraOff, Layers, Clock, Eye, Play, Circle, Square, Download, SwitchCamera, Repeat2, Film } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
-import { useTabNav } from '@/components/TabNavigator';
-import { useAuth } from '@/lib/AuthContext';
-import { useRecording } from '@/lib/RecordingContext';
+import React, { useRef, useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
+import MobileHeader from '@/components/MobileHeader';
+import ControlSlider from '@/components/video/ControlSlider';
+import RenderCanvas from '@/components/video/RenderCanvas';
+import ScrubBar from '@/components/video/ScrubBar';
 import useCamera from '@/components/video/useCamera';
 import useFrameBuffer from '@/components/video/useFrameBuffer';
-import RenderCanvas from '@/components/video/RenderCanvas';
-import ControlSlider from '@/components/video/ControlSlider';
-import ScrubBar from '@/components/video/ScrubBar';
+import StatusBadge from '@/components/video/StatusBadge';
+import { useRecording } from '@/lib/RecordingContext';
+import { useAuth } from '@/lib/AuthContext';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Home() {
-  const navigate = useNavigate();
-  const { switchTab } = useTabNav();
-  const { setIsRecording: setRecordingContext } = useRecording();
-  const { videoRef, isActive, error, start, stop } = useCamera();
-  const { pushFrame, getFrame, getBufferLength, clearBuffer, maxBufferSize } = useFrameBuffer();
+  const videoRef = useRef(null);
+  const canvasRef = useRef(null);
+  const recordingCanvasRef = useRef(null);
+  const streamRef = useRef(null);
+  const mediaRecorderRef = useRef(null);
+  const chunksRef = useRef([]);
+  const frameBufferRef = useRef(useFrameBuffer(300));
 
   const { user } = useAuth();
-  
-  // Load persisted prefs from localStorage or database
-  const loadPrefs = () => {
-    try {return JSON.parse(localStorage.getItem('vidloop_prefs') || '{}');} catch {return {};}
-  };
-  const prefs = loadPrefs();
 
-  const [facingMode, setFacingMode] = useState(prefs.facingMode ?? 'environment');
-  const [delayOffset, setDelayOffset] = useState(15);
-  const [ghostEnabled, setGhostEnabled] = useState(false);
-  const [ghostActive, setGhostActive] = useState(false);
-  const [ghostDelay, setGhostDelay] = useState(prefs.ghostDelay ?? 0);
-  const [ghostCountdown, setGhostCountdown] = useState(null);
-  const [ghostInterval, setGhostInterval] = useState(prefs.ghostInterval ?? 4);
-  const [ghostCount, setGhostCount] = useState(prefs.ghostCount ?? 6);
-  const [ghostOpacity, setGhostOpacity] = useState(prefs.ghostOpacity ?? 0.8);
-  const ghostCountdownRef = useRef(null);
-
-  // Ping-pong loop mode
-  const [loopEnabled, setLoopEnabled] = useState(prefs.loopEnabled ?? true);
-  const [loopDepth, setLoopDepth] = useState(prefs.loopDepth ?? 30); // frames to ping-pong through
-  const [loopSpeed, setLoopSpeed] = useState(prefs.loopSpeed ?? 1); // frames advanced per render tick
-  const loopStateRef = useRef({ dir: 1, pos: 0 }); // internal mutable state, no re-render
-  const loopRafRef = useRef(null);
-  const loopEnabledRef = useRef(false);
-
-  const [bufferFill, setBufferFill] = useState(0);
-  const [isLandscape, setIsLandscape] = useState(() => window.innerWidth > window.innerHeight);
+  // Recording state
   const [isRecording, setIsRecording] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
-  const [savedClip, setSavedClip] = useState(null); // {url, duration} shown after save
-  const captureRef = useRef(null);
-  const mediaRecorderRef = useRef(null);
-  const recordingChunksRef = useRef([]);
-  const recordingTimerRef = useRef(null);
-  const canvasRef = useRef(null); // forwarded from RenderCanvas
+  const { setRecordingStatus } = useRecording();
 
-  // Load settings from database if authenticated
+  // Playback state
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+
+  // Effect controls
+  const [delayOffset, setDelayOffset] = useState(0);
+  const [ghostEnabled, setGhostEnabled] = useState(true);
+  const [ghostDelay, setGhostDelay] = useState(0);
+  const [ghostInterval, setGhostInterval] = useState(4);
+  const [ghostCount, setGhostCount] = useState(6);
+  const [ghostOpacity, setGhostOpacity] = useState(0.8);
+
+  // Persistent settings
+  const [persistedGhostEnabled, setPersistedGhostEnabled] = useState(true);
+  const [persistedLoopEnabled, setPersistedLoopEnabled] = useState(true);
+
+  // Load persisted settings
   useEffect(() => {
     if (user) {
-      const dbPrefs = user.preferences || {};
-      if (dbPrefs.ghostDelay !== undefined) setGhostDelay(dbPrefs.ghostDelay);
-      if (dbPrefs.ghostInterval !== undefined) setGhostInterval(dbPrefs.ghostInterval);
-      if (dbPrefs.ghostCount !== undefined) setGhostCount(dbPrefs.ghostCount);
-      if (dbPrefs.ghostOpacity !== undefined) setGhostOpacity(dbPrefs.ghostOpacity);
-      if (dbPrefs.loopDepth !== undefined) setLoopDepth(dbPrefs.loopDepth);
-      if (dbPrefs.loopSpeed !== undefined) setLoopSpeed(dbPrefs.loopSpeed);
-      if (dbPrefs.loopEnabled !== undefined) setLoopEnabled(dbPrefs.loopEnabled);
-      if (dbPrefs.facingMode !== undefined) setFacingMode(dbPrefs.facingMode);
+      base44.auth.me().then(userData => {
+        if (userData?.ghostEnabled !== undefined) setPersistedGhostEnabled(userData.ghostEnabled);
+        if (userData?.loopEnabled !== undefined) setPersistedLoopEnabled(userData.loopEnabled);
+        setGhostEnabled(userData?.ghostEnabled ?? true);
+      });
+    } else {
+      const saved = localStorage.getItem('ghostSettings');
+      if (saved) {
+        const { ghostEnabled: ge, loopEnabled: le } = JSON.parse(saved);
+        setPersistedGhostEnabled(ge ?? true);
+        setPersistedLoopEnabled(le ?? true);
+        setGhostEnabled(ge ?? true);
+      }
     }
   }, [user]);
 
-  // Persist preferences to localStorage and database with debounce
-  const debounceRef = useRef(null);
-  useEffect(() => {
-    clearTimeout(debounceRef.current);
-    const prefs = {
-      facingMode, loopEnabled, loopDepth, loopSpeed,
-      ghostDelay, ghostInterval, ghostCount, ghostOpacity
-    };
-    localStorage.setItem('vidloop_prefs', JSON.stringify(prefs));
+  // Save settings
+  const saveSettings = (ghostEn, loopEn) => {
     if (user) {
-      debounceRef.current = setTimeout(() => {
-        base44.auth.updateMe({ preferences: prefs });
-      }, 1000);
+      base44.auth.updateMe({ ghostEnabled: ghostEn, loopEnabled: loopEn }).catch(() => {});
+    } else {
+      localStorage.setItem('ghostSettings', JSON.stringify({ ghostEnabled: ghostEn, loopEnabled: loopEn }));
     }
-    return () => clearTimeout(debounceRef.current);
-  }, [facingMode, loopEnabled, loopDepth, loopSpeed, ghostDelay, ghostInterval, ghostCount, ghostOpacity, user]);
-
-  // Keep refs in sync so the RAF loop always reads latest values
-  loopEnabledRef.current = loopEnabled;
-
-  // Ping-pong loop — drives delayOffset automatically
-  useEffect(() => {
-    if (!loopEnabled) {
-      if (loopRafRef.current) cancelAnimationFrame(loopRafRef.current);
-      return;
-    }
-    const tick = () => {
-      if (!loopEnabledRef.current) return;
-      const state = loopStateRef.current;
-      state.pos += state.dir * loopSpeed;
-      if (state.pos >= loopDepth) {
-        state.pos = loopDepth;
-        state.dir = -1;
-      } else if (state.pos <= 0) {
-        state.pos = 0;
-        state.dir = 1;
-      }
-      setDelayOffset(Math.round(state.pos));
-      loopRafRef.current = requestAnimationFrame(tick);
-    };
-    loopStateRef.current = { dir: 1, pos: 0 };
-    loopRafRef.current = requestAnimationFrame(tick);
-    return () => {
-      if (loopRafRef.current) cancelAnimationFrame(loopRafRef.current);
-    };
-  }, [loopEnabled, loopDepth, loopSpeed]);
-
-  const toggleLoop = () => {
-    setLoopEnabled((prev) => {
-      if (prev) {
-        // turning off — snap back to live
-        setDelayOffset(0);
-      }
-      return !prev;
-    });
   };
 
-  // Track orientation changes without restarting camera (debounced)
+  const { cameraActive, cameraError, startCamera, stopCamera } = useCamera(videoRef);
+
+  // Setup recording canvas stream
   useEffect(() => {
-    let timer;
-    const update = () => {
-      clearTimeout(timer);
-      timer = setTimeout(() => setIsLandscape(window.innerWidth > window.innerHeight), 150);
+    if (!recordingCanvasRef.current || !isRecording) return;
+    const recordingStream = recordingCanvasRef.current.captureStream(30);
+    streamRef.current = recordingStream;
+
+    const mediaRecorder = new MediaRecorder(recordingStream);
+    mediaRecorderRef.current = mediaRecorder;
+    chunksRef.current = [];
+
+    mediaRecorder.ondataavailable = e => chunksRef.current.push(e.data);
+    mediaRecorder.onstop = async () => {
+      const blob = new Blob(chunksRef.current, { type: 'video/webm' });
+      try {
+        const { file_url } = await base44.integrations.Core.UploadFile({ file: blob });
+        await base44.entities.Clip.create({
+          title: `Recording ${new Date().toLocaleString()}`,
+          file_url,
+          duration: recordingTime / 1000,
+        });
+      } catch (error) {
+        console.error('Upload failed:', error);
+      }
     };
-    window.addEventListener('resize', update);
-    window.addEventListener('orientationchange', update);
+
+    mediaRecorder.start();
     return () => {
-      window.removeEventListener('resize', update);
-      window.removeEventListener('orientationchange', update);
-      clearTimeout(timer);
+      if (mediaRecorder.state === 'recording') mediaRecorder.stop();
     };
+  }, [isRecording, recordingTime]);
+
+  // Recording timer
+  useEffect(() => {
+    if (!isRecording) return;
+    const interval = setInterval(() => {
+      setRecordingTime(t => t + 100);
+    }, 100);
+    return () => clearInterval(interval);
+  }, [isRecording]);
+
+  // Playback loop
+  useEffect(() => {
+    if (!isPlaying || !videoRef.current) return;
+    const animationId = setInterval(() => {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      setCurrentTime(t => {
+        const next = t + 1 / 30;
+        if (next >= duration) return persistedLoopEnabled ? 0 : duration;
+        return next;
+      });
+    }, 1000 / 30);
+    return () => clearInterval(animationId);
+  }, [isPlaying, duration, persistedLoopEnabled]);
+
+  // Update frame buffer with delay
+  useEffect(() => {
+    const frameBuffer = frameBufferRef.current;
+    const interval = setInterval(() => {
+      if (videoRef.current && videoRef.current.readyState === videoRef.current.HAVE_ENOUGH_DATA) {
+        frameBuffer.addFrame(videoRef.current);
+      }
+    }, 1000 / 30);
+    return () => clearInterval(interval);
   }, []);
 
-  // Capture frames into the ring buffer at ~30fps
-  const captureLoop = useCallback(() => {
-    if (videoRef.current && videoRef.current.readyState >= 2) {
-      pushFrame(videoRef.current);
-      const len = getBufferLength();
-      setBufferFill(len);
-      // Once buffer has enough frames, lock the default delay in place
-      setDelayOffset((prev) => prev > 0 && prev >= len ? Math.max(0, len - 1) : prev);
-    }
-    captureRef.current = requestAnimationFrame(captureLoop);
-  }, [pushFrame, getBufferLength, videoRef]);
-
-  useEffect(() => {
-    if (isActive) {
-      captureRef.current = requestAnimationFrame(captureLoop);
-    }
-    return () => {
-      if (captureRef.current) cancelAnimationFrame(captureRef.current);
-    };
-  }, [isActive, captureLoop]);
-
-  const handleStart = async () => {
-    await start(facingMode);
+  const getFrame = (delayMs) => {
+    const frameIndex = Math.max(0, frameBufferRef.current.length - Math.round(delayMs * 30 / 1000));
+    return frameBufferRef.current.getFrame(frameIndex);
   };
 
-  const handleSwitchCamera = async () => {
-    const next = facingMode === 'user' ? 'environment' : 'user';
-    setFacingMode(next);
-    if (isActive) {
-      stop();
-      clearBuffer();
-      setBufferFill(0);
-      setDelayOffset(0);
-      await start(next);
-    }
-  };
-
-  const toggleGhost = () => {
-    if (ghostEnabled) {
-      // Turn off — cancel any countdown
-      clearInterval(ghostCountdownRef.current);
-      setGhostEnabled(false);
-      setGhostActive(false);
-      setGhostCountdown(null);
-    } else {
-      // Turn on — start countdown
-      setGhostEnabled(true);
-      if (ghostDelay > 0) {
-        setGhostCountdown(ghostDelay);
-        setGhostActive(false);
-        let remaining = ghostDelay;
-        ghostCountdownRef.current = setInterval(() => {
-          remaining -= 1;
-          if (remaining <= 0) {
-            clearInterval(ghostCountdownRef.current);
-            setGhostCountdown(null);
-            setGhostActive(true);
-          } else {
-            setGhostCountdown(remaining);
-          }
-        }, 1000);
-      } else {
-        setGhostActive(true);
-      }
-    }
-  };
-
-  const handleStop = () => {
-    if (isRecording) stopRecording();
-    clearInterval(ghostCountdownRef.current);
-    setGhostEnabled(false);
-    setGhostActive(false);
-    setGhostCountdown(null);
-    setLoopEnabled(false);
-    stop();
-    clearBuffer();
-    setBufferFill(0);
-    setDelayOffset(0);
-  };
-
-  const startRecording = useCallback(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const stream = canvas.captureStream(30);
-    const mimeType = MediaRecorder.isTypeSupported('video/mp4') ?
-    'video/mp4' :
-    MediaRecorder.isTypeSupported('video/webm;codecs=vp9') ?
-    'video/webm;codecs=vp9' :
-    'video/webm';
-    const recorder = new MediaRecorder(stream, { mimeType });
-    recordingChunksRef.current = [];
-    recorder.ondataavailable = (e) => {if (e.data.size > 0) recordingChunksRef.current.push(e.data);};
-    recorder.onstop = async () => {
-      const isMP4 = mimeType.startsWith('video/mp4');
-      const blob = new Blob(recordingChunksRef.current, { type: mimeType });
-      const duration = recordingTimerRef._lastTime || 0;
-
-      // Trigger browser download
-      const localUrl = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = localUrl;
-      a.download = `vid-loop-${Date.now()}.${isMP4 ? 'mp4' : 'webm'}`;
-      a.click();
-
-      // Upload to storage and save to gallery
+  const handleStartRecording = async () => {
+    if (!cameraActive) {
       try {
-        const file = new File([blob], `vid-loop-${Date.now()}.${isMP4 ? 'mp4' : 'webm'}`, { type: mimeType });
-        const { file_url } = await base44.integrations.Core.UploadFile({ file });
-        await base44.entities.Clip.create({
-          file_url,
-          duration: recordingTimerRef._lastTime || null,
-          title: `Clip ${new Date().toLocaleTimeString()}`
-        });
-        setSavedClip({ url: file_url });
-        setTimeout(() => setSavedClip(null), 5000);
-      } catch (e) {
-        console.error('Upload failed:', e);
+        await startCamera();
+      } catch (error) {
+        console.error('Camera error:', error);
+        return;
       }
-      URL.revokeObjectURL(localUrl);
-    };
-    recorder.start();
-    mediaRecorderRef.current = recorder;
+    }
     setIsRecording(true);
-    setRecordingContext(true);
     setRecordingTime(0);
-    recordingTimerRef._lastTime = 0;
-    recordingTimerRef.current = setInterval(() => {
-      setRecordingTime((t) => {
-        recordingTimerRef._lastTime = t + 1;
-        return t + 1;
-      });
-    }, 1000);
-  }, [setRecordingContext]);
+    setRecordingStatus(true);
+  };
 
-  const stopRecording = useCallback(() => {
-    mediaRecorderRef.current?.stop();
-    clearInterval(recordingTimerRef.current);
+  const handleStopRecording = () => {
     setIsRecording(false);
-    setRecordingContext(false);
-    setRecordingTime(0);
-  }, [setRecordingContext]);
+    setRecordingStatus(false);
+  };
 
-  const delaySeconds = (delayOffset / 30).toFixed(2);
-
-
-
-
-
-
-  const fillPercent = Math.round(bufferFill / maxBufferSize * 100);
-  const isDelayed = delayOffset > 0;
+  const handlePlayPause = () => {
+    if (!duration) return;
+    setIsPlaying(!isPlaying);
+  };
 
   return (
-    <div className="fixed inset-0 bg-black flex flex-col overflow-hidden">
+    <div className="fixed inset-0 flex flex-col bg-gradient-to-b from-slate-900 to-slate-950 landscape:flex-row">
+      <MobileHeader />
 
-      {/* ── IDLE SCREEN ── */}
-      <AnimatePresence>
-        {!isActive &&
-        <motion.div
-          key="idle"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-8 px-8 bg-background">
-          
-            {/* Logo mark */}
-            <div className="relative">
-              <img src="https://media.base44.com/images/public/6a2067de3230ec7bd237c422/26d8fea39_vid-loop-icon.png" alt="VidLoop" className="w-24 h-24 rounded-3xl" />
-              <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full animate-pulse bg-[#ff0000]" />
-            </div>
-
-            <div className="text-center space-y-2">
-              <h1 className="font-heading tracking-tight text-foreground font-light lowercase text-center text-4xl">Vid-Loop</h1>
-              <p className="text-sm text-muted-foreground leading-relaxed max-w-xs">Live camera tool that lets you scrub back through the last few seconds of footage, layer motion ghost trails, and loop clips in a ping-pong effect. Record and share directly from your phone.
-
-            </p>
-            </div>
-
-            <div className="w-full max-w-xs space-y-3">
-              {error &&
-            <p className="text-sm text-destructive bg-destructive/10 border border-destructive/20 px-4 py-3 rounded-xl text-center">
-                  {error}
-                </p>
-            }
-              <Button onClick={handleStart} size="lg" className="w-full gap-2 h-14 rounded-2xl lowercase text-center text-xl bg-[hsl(var(--primary))]">
-               <Camera className="w-8 h-8" />
-               Enable Camera
-              </Button>
-            </div>
-
-            <p className="text-xs text-muted-foreground/60 text-center max-w-xs">
-              Works in browser — opens front or rear camera. On iPhone, use Safari for full access.
-            </p>
-          </motion.div>
-        }
-      </AnimatePresence>
-
-      {/* ── LIVE VIEW ── */}
-      {isActive &&
-      <>
-          {/* Recording border pulse */}
-          {isRecording &&
-        <div className="absolute inset-0 z-20 pointer-events-none rounded-none border-4 border-red-500 animate-pulse" />
-        }
-
-          {/* Full-screen canvas */}
-          <div className="absolute inset-0">
+      <div className="flex-1 flex flex-col landscape:flex-row gap-4 p-4 landscape:p-6 landscape:pt-20">
+        {/* Canvas/Preview */}
+        <div className="flex-1 flex flex-col landscape:w-2/3">
+          <div className="relative bg-black rounded-lg overflow-hidden flex-1 shadow-2xl">
             <RenderCanvas
-            videoRef={videoRef}
-            getFrame={getFrame}
-            delayOffset={delayOffset}
-            ghostEnabled={ghostActive}
-            ghostInterval={ghostInterval}
-            ghostCount={ghostCount}
-            ghostOpacity={ghostOpacity}
-            isActive={isActive}
-            canvasRefOut={canvasRef} />
-          
-          </div>
-
-          {/* ── SAVED CLIP TOAST ── */}
-          <AnimatePresence>
-            {savedClip &&
-          <motion.div
-            key="saved-toast"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-            className="absolute bottom-32 left-1/2 -translate-x-1/2 z-30 flex items-center gap-3 px-4 py-3 rounded-2xl bg-black/80 backdrop-blur-md border border-white/20 text-white text-sm font-mono whitespace-nowrap">
-            
-                <Film className="w-4 h-4 text-primary" />
-                Clip saved!
-                <button onClick={() => { switchTab('/gallery'); navigate('/gallery'); }} className="text-primary underline text-xs">View Gallery</button>
-              </motion.div>
-          }
-          </AnimatePresence>
-
-          {/* ── TOP HUD ── */}
-          <div className="absolute top-0 left-0 right-0 z-10 flex items-start justify-between px-5 pb-6"
-        style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, transparent 100%)', paddingTop: 'calc(3rem + env(safe-area-inset-top))' }}>
-
-            {/* Left: status + gallery */}
-            <div className="flex flex-col gap-1.5">
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-accent animate-pulse" />
-                <span className="text-xs font-mono text-white/80 uppercase tracking-widest">
-                  {loopEnabled ? 'LOOP' : isDelayed ? 'DELAYED' : 'LIVE'}
-                </span>
-                <button onClick={() => { switchTab('/gallery'); navigate('/gallery'); }}
-              className="ml-1 flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/10 border border-white/20 text-white/70 text-[10px] font-mono hover:bg-white/20 transition-colors">
-                  <Film className="w-2.5 h-2.5" />GALLERY
-                </button>
+              videoRef={videoRef}
+              getFrame={getFrame}
+              delayOffset={delayOffset}
+              ghostEnabled={ghostEnabled}
+              ghostInterval={ghostInterval}
+              ghostCount={ghostCount}
+              ghostOpacity={ghostOpacity}
+              isActive={isRecording || isPlaying}
+              canvasRefOut={recordingCanvasRef}
+            />
+            {cameraError && (
+              <div className="absolute inset-0 bg-black/80 flex items-center justify-center">
+                <p className="text-red-400 text-sm">{cameraError}</p>
               </div>
-              {isDelayed &&
-            <motion.div
-              initial={{ opacity: 0, y: -4 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="px-2.5 py-1 rounded-lg bg-white/10 backdrop-blur-md border border-white/10">
-              
-                  <span className="text-sm font-mono text-white">−{delaySeconds}s</span>
-                </motion.div>
-            }
-            </div>
-
-            {/* Right: ghost badge + record + stop */}
-            <div className="flex items-center gap-3">
-              {ghostEnabled &&
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg backdrop-blur-md border ${ghostActive ? 'bg-primary/50 border-primary/30' : 'bg-yellow-500/40 border-yellow-400/40'}`}>
-              
-                  <Layers className="w-3 h-3 text-white" />
-                  <span className="text-xs font-mono text-white">
-                    {ghostCountdown !== null ? `GHOST ${ghostCountdown}` : 'GHOST'}
-                  </span>
-                </motion.div>
-            }
-
-              {/* Record button */}
-              <button
-              onClick={isRecording ? stopRecording : startRecording}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full backdrop-blur-md border font-mono text-xs transition-all active:scale-95 ${
-              isRecording ?
-              'bg-red-500/80 border-red-400/60 text-white' :
-              'bg-white/10 border-white/20 text-white/80'}`
-              }>
-              
-                {isRecording ?
-              <>
-                    <Square className="w-3 h-3 fill-white" />
-                    <span className="tabular-nums">
-                      {String(Math.floor(recordingTime / 60)).padStart(2, '0')}:{String(recordingTime % 60).padStart(2, '0')}
-                    </span>
-                  </> :
-
-              <>
-                    <Circle className="w-3 h-3 fill-red-400 text-red-400" />
-                    REC
-                  </>
-              }
-              </button>
-
-              {/* Switch camera toggle */}
-              <button
-              onClick={handleSwitchCamera}
-              className="flex items-center gap-0 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-xs font-mono overflow-hidden active:scale-95 transition-all">
-                <span className={`px-3 py-1.5 transition-colors ${facingMode === 'environment' ? 'bg-white text-black' : 'text-white/50'}`}>REAR</span>
-                <span className={`px-3 py-1.5 transition-colors ${facingMode === 'user' ? 'bg-white text-black' : 'text-white/50'}`}>FRONT</span>
-              </button>
-
-              <button
-              onClick={handleStop}
-              className="w-9 h-9 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center active:scale-95 transition-transform">
-              
-                <CameraOff className="w-4 h-4 text-white" />
-              </button>
-            </div>
+            )}
+            <StatusBadge isRecording={isRecording} recordingTime={recordingTime} />
           </div>
 
-          {/* ── BUFFER PROGRESS BAR ── */}
-          <div className="absolute top-0 left-0 right-0 z-20 h-0.5">
-            <div
-            className="h-full bg-accent transition-all duration-300"
-            style={{ width: `${fillPercent}%` }} />
-          
-          </div>
-
-          {/* ── CONTROLS PANEL — adapts portrait/landscape ── */}
-          {isLandscape ? (
-            <>
-              {/* ── LANDSCAPE: left-side controls ── */}
-              <motion.div 
-           className="absolute left-0 top-0 bottom-0 z-10 flex flex-col pointer-events-none"
-           style={{ background: 'linear-gradient(to right, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.3) 70%, transparent 100%)', width: '130px' }}
-           animate={{ x: isRecording ? -130 : 0 }}
-           transition={{ duration: 0.3 }}
-          >
-              {/* Record/camera controls at top-left */}
-              <div className="flex flex-col gap-3 z-40 pointer-events-auto pt-4 px-2">
-                {/* Record button */}
-                <button
-                  onClick={isRecording ? stopRecording : startRecording}
-                  className={`flex items-center justify-center gap-2 px-4 py-2 rounded-lg backdrop-blur-md border font-mono text-[10px] transition-all active:scale-95 pointer-events-auto ${
-                    isRecording ?
-                      'bg-red-500/80 border-red-400/60 text-white' :
-                      'bg-white/10 border-white/20 text-white/80'
-                  }`}
-                  title={isRecording ? 'Stop recording' : 'Start recording'}
-                >
-                  {isRecording ? (
-                    <>
-                      <Square className="w-3 h-3 fill-white" />
-                      <span className="tabular-nums text-[9px]">
-                        {String(Math.floor(recordingTime / 60)).padStart(2, '0')}:{String(recordingTime % 60).padStart(2, '0')}
-                      </span>
-                    </>
-                  ) : (
-                    <>
-                      <Circle className="w-3 h-3 fill-red-400" />
-                      <span>REC</span>
-                    </>
-                  )}
-                </button>
-
-                {/* Camera switch */}
-                <button
-                  onClick={handleSwitchCamera}
-                  className="flex items-center gap-0 rounded-lg bg-white/10 backdrop-blur-md border border-white/20 text-[10px] font-mono overflow-hidden active:scale-95 transition-all pointer-events-auto"
-                >
-                  <span className={`px-3 py-2 transition-colors ${facingMode === 'environment' ? 'bg-white text-black' : 'text-white/50'}`}>R</span>
-                  <span className={`px-3 py-2 transition-colors ${facingMode === 'user' ? 'bg-white text-black' : 'text-white/50'}`}>F</span>
-                </button>
-              </div>
-
-              {/* Left panel sliders - Scrub only */}
-              <div className="px-2 pt-4 pb-4 space-y-2 overflow-y-auto overscroll-contain pointer-events-auto text-[7px]" style={{ marginTop: '0px' }}>
-                {/* Scrub */}
-                <div className="space-y-0.5">
-                  <div className="flex flex-col gap-0.5">
-                    <span className="text-[6px] font-mono uppercase tracking-widest text-white/40">SCRUB</span>
-                    <div className="flex items-center gap-0.5">
-                      {isDelayed &&
-                        <button onClick={() => setDelayOffset(0)}
-                          className="flex items-center gap-0.5 px-0.5 py-0.5 rounded bg-accent/20 border border-accent/30 text-accent text-[6px] font-mono">
-                          <Play className="w-1 h-1" />L
-                        </button>
-                      }
-                      <span className="text-[6px] font-mono text-white tabular-nums">{isDelayed ? `−${delaySeconds}s` : 'live'}</span>
-                    </div>
+          {/* Playback controls */}
+          {!isRecording && (
+            <div className="mt-3 space-y-2">
+              {duration > 0 && (
+                <>
+                  <ScrubBar currentTime={currentTime} duration={duration} onScrub={setCurrentTime} />
+                  <div className="flex items-center gap-2 text-xs text-white/60">
+                    <span>{Math.floor(currentTime)}s</span>
+                    <span>/</span>
+                    <span>{Math.floor(duration)}s</span>
                   </div>
-                  <ScrubBar value={delayOffset} max={Math.max(1, bufferFill - 1)} onChange={setDelayOffset} bufferFill={bufferFill} maxBufferSize={maxBufferSize} />
-                  </div>
-              </div>
-              </motion.div>
-
-              {/* Right-side panel: Loop and Ghost controls */}
-              <motion.div 
-                className="absolute right-0 top-0 bottom-0 z-10 flex flex-col pointer-events-none"
-                style={{ background: 'linear-gradient(to left, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.3) 70%, transparent 100%)', width: '130px' }}
-                animate={{ x: isRecording ? 130 : 0 }}
-                transition={{ duration: 0.3 }}
+                </>
+              )}
+              <button
+                onClick={handlePlayPause}
+                disabled={!duration}
+                className="w-full bg-primary text-primary-foreground py-2 rounded-lg disabled:opacity-50 text-sm font-medium"
               >
-                <div className="px-2 pt-4 pb-4 space-y-2 overflow-y-auto overscroll-contain pointer-events-auto text-[7px]">
-                  {/* Loop toggle + sliders */}
-                  <button onClick={toggleLoop}
-                    className={`w-full flex items-center gap-1 px-1 py-0.5 rounded border text-[6px] font-mono transition-all ${loopEnabled ? 'bg-accent/30 border-accent/50 text-white' : 'bg-white/5 border-white/10 text-white/40'}`}>
-                    <Repeat2 className="w-2 h-2" />
-                    LOOP
-                  </button>
-                  {loopEnabled &&
-                    <div className="space-y-1">
-                      <CompactSlider label="D" valueLabel={`${(loopDepth / 30).toFixed(1)}s`} value={loopDepth} min={5} max={Math.max(5, bufferFill - 1)} step={1} onChange={setLoopDepth} compact />
-                      <CompactSlider label="S" valueLabel={`${loopSpeed}x`} value={loopSpeed} min={0.25} max={4} step={0.25} onChange={setLoopSpeed} compact />
-                    </div>
-                  }
+                {isPlaying ? 'Pause' : 'Play'}
+              </button>
+            </div>
+          )}
+        </div>
 
-                  {/* Ghost toggle */}
-                  <button onClick={toggleGhost}
-                    className={`w-full flex items-center gap-1 px-1 py-0.5 rounded border text-[6px] font-mono transition-all ${ghostEnabled ? 'bg-primary/30 border-primary/50 text-white' : 'bg-white/5 border-white/10 text-white/40'}`}>
-                    <Layers className="w-2 h-2" />
-                    GHOST
-                  </button>
-                  {ghostEnabled &&
-                    <div className="space-y-1">
-                      <CompactSlider label="I" valueLabel={`${ghostInterval}f`} value={ghostInterval} min={1} max={30} step={1} onChange={setGhostInterval} compact />
-                      <CompactSlider label="L" valueLabel={`${ghostCount}`} value={ghostCount} min={2} max={10} step={1} onChange={setGhostCount} compact />
-                      <CompactSlider label="O" valueLabel={`${Math.round(ghostOpacity * 100)}%`} value={ghostOpacity} min={0.05} max={1} step={0.05} onChange={setGhostOpacity} compact />
-                    </div>
-                  }
-                </div>
-                </motion.div>
-              </>
-            ) : (
-              /* ── PORTRAIT: bottom panel ── */
-              <div className="absolute bottom-0 left-0 right-0 z-10" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 70%, transparent 100%)', maxHeight: '65vh', display: 'flex', flexDirection: 'column' }}>
-              <div className="overflow-y-auto overscroll-contain px-5 pt-8 space-y-5" style={{ paddingBottom: 'calc(2rem + env(safe-area-inset-bottom) + 56px)' }}>
-                {/* Scrub */}
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-1.5">
-                      <Clock className="w-3 h-3 text-white/40" />
-                      <span className="text-[10px] font-mono uppercase tracking-widest text-white/40">Scrub</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {isDelayed &&
-                  <button onClick={() => setDelayOffset(0)}
-                  className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-accent/20 border border-accent/30 text-accent text-[10px] font-mono">
-                          <Play className="w-2.5 h-2.5" />LIVE
-                        </button>
-                  }
-                      <span className="text-sm font-mono text-white tabular-nums">{isDelayed ? `−${delaySeconds}s` : 'live'}</span>
-                    </div>
+        {/* Controls */}
+        <div className="landscape:w-1/3 space-y-4 max-h-[calc(100vh-200px)] overflow-y-auto">
+          {/* Record button */}
+          <button
+            onClick={isRecording ? handleStopRecording : handleStartRecording}
+            className={`w-full py-3 rounded-lg font-medium transition ${
+              isRecording
+                ? 'bg-red-600 text-white hover:bg-red-700'
+                : 'bg-primary text-primary-foreground hover:bg-primary/90'
+            }`}
+          >
+            {isRecording ? 'Stop Recording' : 'Start Recording'}
+          </button>
+
+          {/* Effect controls */}
+          <div className="bg-slate-800/50 rounded-lg p-4 space-y-4">
+            <div className="flex items-center justify-between">
+              <label className="text-sm font-medium text-white">Ghost Effect</label>
+              <button
+                onClick={() => {
+                  const newState = !ghostEnabled;
+                  setGhostEnabled(newState);
+                  setPersistedGhostEnabled(newState);
+                  saveSettings(newState, persistedLoopEnabled);
+                }}
+                className={`px-3 py-1 rounded text-xs font-medium ${
+                  ghostEnabled ? 'bg-primary text-primary-foreground' : 'bg-slate-600 text-white'
+                }`}
+              >
+                {ghostEnabled ? 'On' : 'Off'}
+              </button>
+            </div>
+
+            {ghostEnabled && (
+              <div className="space-y-3 text-xs">
+                <div>
+                  <div className="flex justify-between mb-1">
+                    <span>Delay</span>
+                    <span>{ghostDelay === 0 ? 'off' : `${ghostDelay}s`}</span>
                   </div>
-                  <ScrubBar value={delayOffset} max={Math.max(1, bufferFill - 1)} onChange={setDelayOffset} bufferFill={bufferFill} maxBufferSize={maxBufferSize} />
-                  <div className="flex justify-between text-[9px] font-mono text-white/25 px-0.5">
-                    <span>−{(Math.max(1, bufferFill - 1) / 30).toFixed(1)}s</span>
-                    <span>now</span>
-                  </div>
+                  <ControlSlider value={ghostDelay} min={0} max={10} step={1} onChange={setGhostDelay} />
                 </div>
-                {/* Loop (ping-pong) controls */}
-                 <div className="space-y-3">
-                   <button onClick={toggleLoop}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-mono transition-all ${loopEnabled ? 'bg-accent/30 border-accent/50 text-white' : 'bg-white/5 border-white/10 text-white/40'}`}>
-                     <Repeat2 className="w-3.5 h-3.5" />
-                     Loop
-                   </button>
-                   <AnimatePresence>
-                     {loopEnabled &&
-                <motion.div key="loop-panel" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
-                         <div className="space-y-3 pt-1">
-                           <GhostSliderRow label="Depth" valueLabel={`${(loopDepth / 30).toFixed(1)}s`} value={loopDepth} min={5} max={Math.max(5, bufferFill - 1)} step={1} onChange={setLoopDepth} />
-                           <GhostSliderRow label="Speed" valueLabel={`${loopSpeed}x`} value={loopSpeed} min={0.25} max={4} step={0.25} onChange={setLoopSpeed} />
-                         </div>
-                       </motion.div>
-                }
-                   </AnimatePresence>
-                 </div>
 
-                 {/* Ghost controls */}
-                 <div className="space-y-3">
-                   <div className="flex items-center justify-between">
-                     <button onClick={toggleGhost}
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-mono transition-all ${ghostEnabled ? 'bg-primary/30 border-primary/50 text-white' : 'bg-white/5 border-white/10 text-white/40'}`}>
-                       <Layers className="w-3.5 h-3.5" />
-                       {ghostCountdown !== null ? `Ghost in ${ghostCountdown}s…` : 'Ghost Blend'}
-                     </button>
-                     <button onClick={handleStop}
-                className="w-9 h-9 rounded-full bg-white/10 border border-white/15 flex items-center justify-center active:scale-95 transition-transform">
-                       <CameraOff className="w-4 h-4 text-white/70" />
-                     </button>
-                   </div>
-                   <AnimatePresence>
-                     {ghostEnabled && (
-                       <motion.div key="ghost-panel" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
-                         <div className="space-y-3 pt-1">
-                           <GhostSliderRow label="Delay" valueLabel={ghostDelay === 0 ? 'off' : `${ghostDelay}s`} value={ghostDelay} min={0} max={10} step={1} onChange={setGhostDelay} />
-                           <GhostSliderRow label="Interval" valueLabel={`${ghostInterval}f`} value={ghostInterval} min={1} max={30} step={1} onChange={setGhostInterval} />
-                           <GhostSliderRow label="Layers" valueLabel={`${ghostCount}`} value={ghostCount} min={2} max={10} step={1} onChange={setGhostCount} />
-                           <GhostSliderRow label="Opacity" valueLabel={`${Math.round(ghostOpacity * 100)}%`} value={ghostOpacity} min={0.05} max={1} step={0.05} onChange={setGhostOpacity} />
-                         </div>
-                       </motion.div>
-                     )}
-                   </AnimatePresence>
-                 </div>
-                 </div>
-                 );
-                 }
+                <div>
+                  <div className="flex justify-between mb-1">
+                    <span>Interval</span>
+                    <span>{ghostInterval}f</span>
+                  </div>
+                  <ControlSlider value={ghostInterval} min={1} max={30} step={1} onChange={setGhostInterval} />
+                </div>
 
-                 export default Home;
+                <div>
+                  <div className="flex justify-between mb-1">
+                    <span>Layers</span>
+                    <span>{ghostCount}</span>
+                  </div>
+                  <ControlSlider value={ghostCount} min={2} max={10} step={1} onChange={setGhostCount} />
+                </div>
 
-                 function GhostSliderRow({ label, valueLabel, value, min, max, step, onChange }) {
-                 return (
+                <div>
+                  <div className="flex justify-between mb-1">
+                    <span>Opacity</span>
+                    <span>{Math.round(ghostOpacity * 100)}%</span>
+                  </div>
+                  <ControlSlider value={ghostOpacity} min={0.05} max={1} step={0.05} onChange={setGhostOpacity} />
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Delay offset */}
+          <div className="bg-slate-800/50 rounded-lg p-4">
+            <div className="flex justify-between mb-2">
+              <label className="text-sm font-medium text-white">Delay Offset</label>
+              <span className="text-xs text-white/60">{delayOffset}ms</span>
+            </div>
+            <ControlSlider value={delayOffset} min={0} max={500} step={10} onChange={setDelayOffset} />
+          </div>
+
+          {/* Loop control */}
+          <div className="bg-slate-800/50 rounded-lg p-4">
+            <div className="flex items-center justify-between">
+              <label className="text-sm font-medium text-white">Loop Playback</label>
+              <button
+                onClick={() => {
+                  const newState = !persistedLoopEnabled;
+                  setPersistedLoopEnabled(newState);
+                  saveSettings(persistedGhostEnabled, newState);
+                }}
+                className={`px-3 py-1 rounded text-xs font-medium ${
+                  persistedLoopEnabled ? 'bg-primary text-primary-foreground' : 'bg-slate-600 text-white'
+                }`}
+              >
+                {persistedLoopEnabled ? 'On' : 'Off'}
+              </button>
+            </div>
+          </div>
+
+          {/* Ghost panel */}
+          <AnimatePresence>
+            {ghostEnabled && (
+              <motion.div key="ghost-panel" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
+                <div className="space-y-3 pt-1">
+                  <GhostSliderRow label="Delay" valueLabel={ghostDelay === 0 ? 'off' : `${ghostDelay}s`} value={ghostDelay} min={0} max={10} step={1} onChange={setGhostDelay} />
+                  <GhostSliderRow label="Interval" valueLabel={`${ghostInterval}f`} value={ghostInterval} min={1} max={30} step={1} onChange={setGhostInterval} />
+                  <GhostSliderRow label="Layers" valueLabel={`${ghostCount}`} value={ghostCount} min={2} max={10} step={1} onChange={setGhostCount} />
+                  <GhostSliderRow label="Opacity" valueLabel={`${Math.round(ghostOpacity * 100)}%`} value={ghostOpacity} min={0.05} max={1} step={0.05} onChange={setGhostOpacity} />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function GhostSliderRow({ label, valueLabel, value, min, max, step, onChange }) {
+  return (
     <div className="flex items-center gap-3">
       <span className="text-[10px] font-mono uppercase tracking-widest text-white/40 w-14 shrink-0">{label}</span>
       <div className="flex-1">
         <ControlSlider value={value} min={min} max={max} step={step} onChange={onChange} />
       </div>
       <span className="text-xs font-mono text-white/60 w-10 text-right shrink-0 tabular-nums">{valueLabel}</span>
-    </div>);
-
+    </div>
+  );
 }
 
 function CompactSlider({ label, valueLabel, value, min, max, step, onChange, compact }) {
