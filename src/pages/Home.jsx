@@ -476,9 +476,8 @@ export default function Home() {
             </div>) : (
 
         /* ── PORTRAIT: bottom panel ── */
-        <div className="absolute bottom-0 left-0 right-0 z-10"
-        style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 70%, transparent 100%)' }}>
-              <div className="px-5 pt-8 space-y-5" style={{ paddingBottom: 'calc(6rem + env(safe-area-inset-bottom) + 56px)' }}>
+        <div className="absolute bottom-0 left-0 right-0 z-10" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 70%, transparent 100%)', maxHeight: '65vh', display: 'flex', flexDirection: 'column' }}>
+              <div className="overflow-y-auto overscroll-contain px-5 pt-8 space-y-5" style={{ paddingBottom: 'calc(2rem + env(safe-area-inset-bottom) + 56px)' }}>
                 {/* Scrub */}
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
