@@ -293,8 +293,8 @@ export default function Home() {
                 </p>
             }
               <Button onClick={handleStart} size="lg" className="w-full gap-2 h-14 rounded-2xl lowercase text-center text-xl bg-[hsl(var(--primary))]">
-                <Camera className="w-5 h-5" />
-                Enable Camera
+               <Camera className="w-8 h-8" />
+               Enable Camera
               </Button>
             </div>
 
