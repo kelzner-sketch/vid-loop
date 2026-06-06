@@ -196,23 +196,18 @@ export default function Home() {
             <StatusBadge isRecording={isRecording} recordingTime={recordingTime} />
           </div>
 
-          {/* Playback controls */}
-          {!isRecording && (
-            <div className="mt-3 space-y-2">
-              {duration > 0 && (
-                <>
-                  <ScrubBar currentTime={currentTime} duration={duration} onScrub={setCurrentTime} />
-                  <div className="flex items-center gap-2 text-xs text-white/60">
-                    <span>{Math.floor(currentTime)}s</span>
-                    <span>/</span>
-                    <span>{Math.floor(duration)}s</span>
-                  </div>
-                </>
-              )}
+          {/* Playback controls - only show when not recording */}
+          {!isRecording && duration > 0 && (
+            <div className="mt-4 space-y-3">
+              <ScrubBar currentTime={currentTime} duration={duration} onScrub={setCurrentTime} />
+              <div className="flex items-center justify-center gap-2 text-sm text-white/60 font-medium">
+                <span>{Math.floor(currentTime)}s</span>
+                <span>/</span>
+                <span>{Math.floor(duration)}s</span>
+              </div>
               <button
                 onClick={handlePlayPause}
-                disabled={!duration}
-                className="w-full bg-primary text-primary-foreground py-2 rounded-lg disabled:opacity-50 text-sm font-medium"
+                className="w-full bg-primary text-primary-foreground py-2 rounded-lg text-sm font-semibold hover:bg-primary/90"
               >
                 {isPlaying ? 'Pause' : 'Play'}
               </button>
@@ -220,12 +215,12 @@ export default function Home() {
           )}
         </div>
 
-        {/* Controls */}
-        <div className="landscape:w-1/3 space-y-4 max-h-[calc(100vh-200px)] overflow-y-auto">
+        {/* Controls - Right Panel */}
+        <div className="landscape:w-2/5 space-y-6 max-h-[calc(100vh-200px)] overflow-y-auto landscape:overflow-y-visible landscape:max-h-none">
           {/* Record button */}
           <button
             onClick={isRecording ? handleStopRecording : handleStartRecording}
-            className={`w-full py-3 rounded-lg font-medium transition ${
+            className={`w-full py-4 rounded-lg font-semibold text-lg transition ${
               isRecording
                 ? 'bg-red-600 text-white hover:bg-red-700'
                 : 'bg-primary text-primary-foreground hover:bg-primary/90'
@@ -234,10 +229,10 @@ export default function Home() {
             {isRecording ? 'Stop Recording' : 'Start Recording'}
           </button>
 
-          {/* Effect controls */}
-          <div className="bg-slate-800/50 rounded-lg p-4 space-y-4">
+          {/* Ghost Effect Toggle */}
+          <div className="bg-slate-800/50 rounded-lg p-6 space-y-4">
             <div className="flex items-center justify-between">
-              <label className="text-sm font-medium text-white">Ghost Effect</label>
+              <label className="text-lg font-semibold text-white">Ghost Effect</label>
               <button
                 onClick={() => {
                   const newState = !ghostEnabled;
@@ -245,7 +240,7 @@ export default function Home() {
                   setPersistedGhostEnabled(newState);
                   saveSettings(newState, persistedLoopEnabled);
                 }}
-                className={`px-3 py-1 rounded text-xs font-medium ${
+                className={`px-4 py-2 rounded text-sm font-semibold ${
                   ghostEnabled ? 'bg-primary text-primary-foreground' : 'bg-slate-600 text-white'
                 }`}
               >
@@ -254,35 +249,35 @@ export default function Home() {
             </div>
 
             {ghostEnabled && (
-              <div className="space-y-3 text-xs">
+              <div className="space-y-5">
                 <div>
-                  <div className="flex justify-between mb-1">
-                    <span>Delay</span>
-                    <span>{ghostDelay === 0 ? 'off' : `${ghostDelay}s`}</span>
+                  <div className="flex justify-between mb-2">
+                    <span className="text-base font-medium">Delay</span>
+                    <span className="text-sm text-white/70">{ghostDelay === 0 ? 'off' : `${ghostDelay}s`}</span>
                   </div>
                   <ControlSlider value={ghostDelay} min={0} max={10} step={1} onChange={setGhostDelay} />
                 </div>
 
                 <div>
-                  <div className="flex justify-between mb-1">
-                    <span>Interval</span>
-                    <span>{ghostInterval}f</span>
+                  <div className="flex justify-between mb-2">
+                    <span className="text-base font-medium">Interval</span>
+                    <span className="text-sm text-white/70">{ghostInterval}f</span>
                   </div>
                   <ControlSlider value={ghostInterval} min={1} max={30} step={1} onChange={setGhostInterval} />
                 </div>
 
                 <div>
-                  <div className="flex justify-between mb-1">
-                    <span>Layers</span>
-                    <span>{ghostCount}</span>
+                  <div className="flex justify-between mb-2">
+                    <span className="text-base font-medium">Layers</span>
+                    <span className="text-sm text-white/70">{ghostCount}</span>
                   </div>
                   <ControlSlider value={ghostCount} min={2} max={10} step={1} onChange={setGhostCount} />
                 </div>
 
                 <div>
-                  <div className="flex justify-between mb-1">
-                    <span>Opacity</span>
-                    <span>{Math.round(ghostOpacity * 100)}%</span>
+                  <div className="flex justify-between mb-2">
+                    <span className="text-base font-medium">Opacity</span>
+                    <span className="text-sm text-white/70">{Math.round(ghostOpacity * 100)}%</span>
                   </div>
                   <ControlSlider value={ghostOpacity} min={0.05} max={1} step={0.05} onChange={setGhostOpacity} />
                 </div>
@@ -290,26 +285,26 @@ export default function Home() {
             )}
           </div>
 
-          {/* Delay offset */}
-          <div className="bg-slate-800/50 rounded-lg p-4">
+          {/* Delay Offset */}
+          <div className="bg-slate-800/50 rounded-lg p-6">
             <div className="flex justify-between mb-2">
-              <label className="text-sm font-medium text-white">Delay Offset</label>
-              <span className="text-xs text-white/60">{delayOffset}ms</span>
+              <label className="text-lg font-semibold text-white">Delay Offset</label>
+              <span className="text-sm text-white/70">{delayOffset}ms</span>
             </div>
             <ControlSlider value={delayOffset} min={0} max={500} step={10} onChange={setDelayOffset} />
           </div>
 
-          {/* Loop control */}
-          <div className="bg-slate-800/50 rounded-lg p-4">
+          {/* Loop Playback */}
+          <div className="bg-slate-800/50 rounded-lg p-6">
             <div className="flex items-center justify-between">
-              <label className="text-sm font-medium text-white">Loop Playback</label>
+              <label className="text-lg font-semibold text-white">Loop Playback</label>
               <button
                 onClick={() => {
                   const newState = !persistedLoopEnabled;
                   setPersistedLoopEnabled(newState);
                   saveSettings(persistedGhostEnabled, newState);
                 }}
-                className={`px-3 py-1 rounded text-xs font-medium ${
+                className={`px-4 py-2 rounded text-sm font-semibold ${
                   persistedLoopEnabled ? 'bg-primary text-primary-foreground' : 'bg-slate-600 text-white'
                 }`}
               >
@@ -317,20 +312,6 @@ export default function Home() {
               </button>
             </div>
           </div>
-
-          {/* Ghost panel */}
-          <AnimatePresence>
-            {ghostEnabled && (
-              <motion.div key="ghost-panel" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
-                <div className="space-y-3 pt-1">
-                  <GhostSliderRow label="Delay" valueLabel={ghostDelay === 0 ? 'off' : `${ghostDelay}s`} value={ghostDelay} min={0} max={10} step={1} onChange={setGhostDelay} />
-                  <GhostSliderRow label="Interval" valueLabel={`${ghostInterval}f`} value={ghostInterval} min={1} max={30} step={1} onChange={setGhostInterval} />
-                  <GhostSliderRow label="Layers" valueLabel={`${ghostCount}`} value={ghostCount} min={2} max={10} step={1} onChange={setGhostCount} />
-                  <GhostSliderRow label="Opacity" valueLabel={`${Math.round(ghostOpacity * 100)}%`} value={ghostOpacity} min={0.05} max={1} step={0.05} onChange={setGhostOpacity} />
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
         </div>
       </div>
     </div>
