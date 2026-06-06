@@ -1,6 +1,6 @@
 import React from 'react';
 import useCamera from '@/components/video/useCamera';
-import { Lock } from 'lucide-react';
+import { Lock, Circle } from 'lucide-react';
 import MobileHeader from '@/components/MobileHeader';
 
 export default function Home() {
@@ -21,10 +21,8 @@ export default function Home() {
       <div className="flex-1 flex flex-col items-center justify-center px-6 space-y-8">
         {/* App Icon and Title */}
         <div className="flex flex-col items-center space-y-4">
-          <div className="w-24 h-24 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center">
-            <div className="w-16 h-16 bg-blue-600 rounded-xl flex items-center justify-center">
-              <span className="text-3xl">◉◉</span>
-            </div>
+          <div className="w-24 h-24 bg-gradient-to-br from-blue-500 to-blue-600 rounded-3xl flex items-center justify-center shadow-lg">
+            <Circle size={48} className="text-white" />
           </div>
           <h1 className="text-4xl font-bold text-white">vid-loop</h1>
         </div>
