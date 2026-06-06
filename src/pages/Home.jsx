@@ -1,15 +1,14 @@
-import React, { useRef } from 'react';
+import React from 'react';
 import useCamera from '@/components/video/useCamera';
 import { Lock } from 'lucide-react';
 import MobileHeader from '@/components/MobileHeader';
 
 export default function Home() {
-  const videoRef = useRef(null);
-  const { cameraActive, cameraError, startCamera } = useCamera(videoRef);
+  const { isActive, error, start } = useCamera();
 
   const handleEnableCamera = async () => {
     try {
-      await startCamera();
+      await start();
     } catch (error) {
       console.error('Camera error:', error);
     }
@@ -38,7 +37,7 @@ export default function Home() {
         {/* Enable Camera Button */}
         <button
           onClick={handleEnableCamera}
-          disabled={cameraActive}
+          disabled={isActive}
           className="w-full max-w-xs bg-yellow-400 hover:bg-yellow-500 disabled:bg-yellow-300 text-slate-900 font-bold py-4 px-6 rounded-full flex items-center justify-center gap-3 transition text-lg"
         >
           <Lock size={20} />
@@ -50,8 +49,8 @@ export default function Home() {
           Works in browser – opens front or rear camera. On iPhone, use Safari for full access.
         </p>
 
-        {cameraError && (
-          <p className="text-center text-sm text-red-400">{cameraError}</p>
+        {error && (
+          <p className="text-center text-sm text-red-400">{error}</p>
         )}
       </div>
     </div>
