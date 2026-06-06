@@ -655,9 +655,8 @@ export default function Home() {
               </div>
               </div>)
               }
-              </div>
-              );
-              }
+
+              export default Home;
 
               function GhostSliderRow({ label, valueLabel, value, min, max, step, onChange }) {
   return (
