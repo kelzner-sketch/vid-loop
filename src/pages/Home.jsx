@@ -656,10 +656,10 @@ export default function Home() {
                  );
                  }
 
-              export default Home;
+                 export default Home;
 
-              function GhostSliderRow({ label, valueLabel, value, min, max, step, onChange }) {
-  return (
+                 function GhostSliderRow({ label, valueLabel, value, min, max, step, onChange }) {
+                 return (
     <div className="flex items-center gap-3">
       <span className="text-[10px] font-mono uppercase tracking-widest text-white/40 w-14 shrink-0">{label}</span>
       <div className="flex-1">
