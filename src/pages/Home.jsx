@@ -325,10 +325,6 @@ export default function Home() {
                <Camera className="w-8 h-8" />
                Enable Camera
               </Button>
-              <div className="flex gap-2 text-xs">
-                <button onClick={() => { switchTab('/gallery'); navigate('/gallery'); }} className="flex-1 px-4 py-2 rounded-xl border border-border bg-card text-center text-foreground hover:bg-muted transition-colors">Gallery</button>
-                <button onClick={() => { switchTab('/settings'); navigate('/settings'); }} className="flex-1 px-4 py-2 rounded-xl border border-border bg-card text-center text-foreground hover:bg-muted transition-colors">About</button>
-              </div>
             </div>
 
             <p className="text-xs text-muted-foreground/60 text-center max-w-xs">

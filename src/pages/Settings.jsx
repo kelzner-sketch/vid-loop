@@ -110,8 +110,21 @@ export default function Settings() {
           <ControlSetting label="Speed" sublabel="Playback speed multiplier" value={loopSpeed} min={0.25} max={4} step={0.25} onChange={setLoopSpeed} formatValue={(v) => `${v}x`} />
         </div>
 
+        {/* Auth Links */}
+        {!user && (
+          <>
+            <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground px-1 pt-4">Get Started</p>
+            <div className="flex gap-2 text-xs">
+              <a href="/login" className="flex-1 px-4 py-2 rounded-xl border border-border bg-card text-center text-foreground hover:bg-muted transition-colors">Sign In</a>
+              <a href="/register" className="flex-1 px-4 py-2 rounded-xl border border-primary/30 bg-primary/10 text-center text-primary hover:bg-primary/20 transition-colors">Sign Up</a>
+            </div>
+          </>
+        )}
+
         {/* Delete Account */}
-         <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground px-1 pt-4">Account</p>
+         {user && (
+          <>
+            <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground px-1 pt-4">Account</p>
         <AlertDialog>
           <AlertDialogTrigger asChild>
             <button className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl bg-card border border-destructive/30 text-destructive hover:bg-destructive/10 transition-colors">
@@ -138,6 +151,8 @@ export default function Settings() {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+          </>
+        )}
       </div>
     </div>
   );
