@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Film, Camera, Layers, Repeat2, Info, Trash2 } from 'lucide-react';
+import { Film, Camera, Layers, Repeat2, Trash2 } from 'lucide-react';
+import MobileHeader from '@/components/MobileHeader';
 import { base44 } from '@/api/base44Client';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel,
@@ -25,11 +26,7 @@ export default function Settings() {
 
   return (
     <div className="fixed inset-0 bg-background flex flex-col overflow-hidden">
-      {/* Header */}
-      <div className="flex items-center gap-3 px-5 pb-4 border-b border-border" style={{ paddingTop: 'calc(3rem + env(safe-area-inset-top))' }}>
-        <Info className="w-5 h-5 text-primary" />
-        <h1 className="text-lg font-bold font-heading">About</h1>
-      </div>
+      <MobileHeader title="About" />
 
       <div className="flex-1 overflow-y-auto px-5 py-6 space-y-4" style={{ paddingBottom: 'calc(1rem + env(safe-area-inset-bottom) + 56px)' }}>
         <div className="rounded-2xl bg-card border border-border px-5 py-4 space-y-1">

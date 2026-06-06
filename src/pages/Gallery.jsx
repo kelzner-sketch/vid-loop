@@ -1,10 +1,12 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
-import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Camera, Trash2, Download, Film, Pencil, Check, X, CheckSquare, RefreshCw, Share2, Loader2 } from 'lucide-react';
+import MobileHeader from '@/components/MobileHeader';
+import { useTabNav } from '@/components/TabNavigator';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Gallery() {
+  const { switchTab } = useTabNav();
   const [clips, setClips] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState(null);
@@ -112,43 +114,29 @@ export default function Gallery() {
 
   return (
     <div className="fixed inset-0 bg-background flex flex-col overflow-hidden">
-      {/* Header */}
-      <div className="flex items-center justify-between px-5 pb-4 border-b border-border" style={{ paddingTop: 'calc(3rem + env(safe-area-inset-top))' }}>
-        <div className="flex items-center gap-3">
-          <Film className="w-5 h-5 text-primary" />
-          <h1 className="text-lg font-bold font-heading">Saved Clips</h1>
-        </div>
-        <div className="flex items-center gap-2">
-          {selectMode ? (
-            <>
+      <MobileHeader
+        title="Saved Clips"
+        right={
+          selectMode ? (
+            <div className="flex items-center gap-1.5">
               <button onClick={exitSelectMode}
-                className="px-3 py-1.5 rounded-full bg-muted border border-border text-muted-foreground text-xs font-mono">
+                className="px-2 py-1 rounded-full bg-muted border border-border text-muted-foreground text-xs font-mono">
                 Cancel
               </button>
               <button onClick={deleteSelected} disabled={selected.size === 0}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-destructive/20 border border-destructive/40 text-destructive text-xs font-mono disabled:opacity-40">
-                <Trash2 className="w-3.5 h-3.5" />
-                Delete ({selected.size})
+                className="flex items-center gap-1 px-2 py-1 rounded-full bg-destructive/20 border border-destructive/40 text-destructive text-xs font-mono disabled:opacity-40">
+                <Trash2 className="w-3 h-3" />({selected.size})
               </button>
-            </>
-          ) : (
-            <>
-              {clips.length > 0 && (
-                <button onClick={() => setSelectMode(true)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-muted border border-border text-muted-foreground text-xs font-mono hover:bg-muted/80 transition-colors">
-                  <CheckSquare className="w-3.5 h-3.5" />
-                  Select
-                </button>
-              )}
-              <Link to="/"
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-mono hover:bg-primary/20 transition-colors">
-                <Camera className="w-3.5 h-3.5" />
-                Camera
-              </Link>
-            </>
-          )}
-        </div>
-      </div>
+            </div>
+          ) : clips.length > 0 ? (
+            <button onClick={() => setSelectMode(true)}
+              className="flex items-center gap-1 px-2 py-1 rounded-full bg-muted border border-border text-muted-foreground text-xs font-mono">
+              <CheckSquare className="w-3 h-3" />
+              Select
+            </button>
+          ) : null
+        }
+      />
 
       {/* Pull-to-refresh indicator */}
       <AnimatePresence>
@@ -188,9 +176,9 @@ export default function Gallery() {
               <p className="text-sm font-medium text-foreground">No clips yet</p>
               <p className="text-xs text-muted-foreground mt-1">Record something in the camera and save it here.</p>
             </div>
-            <Link to="/" className="mt-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground text-sm font-medium">
+            <button onClick={() => switchTab('/')} className="mt-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground text-sm font-medium">
               Open Camera
-            </Link>
+            </button>
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-3">

@@ -1,25 +1,15 @@
 import React from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Camera, Film, Settings } from 'lucide-react';
+import { useTabNav } from '@/components/TabNavigator';
 
 const tabs = [
   { path: '/', icon: Camera, label: 'Camera' },
   { path: '/gallery', icon: Film, label: 'Gallery' },
-  { path: '/settings', icon: Settings, label: 'Settings' },
+  { path: '/settings', icon: Settings, label: 'About' },
 ];
 
 export default function BottomTabBar() {
-  const { pathname } = useLocation();
-  const navigate = useNavigate();
-
-  const handleTabPress = (path) => {
-    if (pathname === path) {
-      // Already on this tab — scroll to top / reset view
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    } else {
-      navigate(path);
-    }
-  };
+  const { activeTab, switchTab } = useTabNav();
 
   return (
     <div
@@ -27,11 +17,11 @@ export default function BottomTabBar() {
       style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
       {tabs.map(({ path, icon: Icon, label }) => {
-        const active = pathname === path;
+        const active = activeTab === path;
         return (
           <button
             key={path}
-            onClick={() => handleTabPress(path)}
+            onClick={() => switchTab(path)}
             className="flex flex-col items-center gap-1 py-2 px-6 select-none"
             style={{ WebkitTapHighlightColor: 'transparent', background: 'none', border: 'none' }}
           >

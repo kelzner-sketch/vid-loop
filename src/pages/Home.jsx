@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Camera, CameraOff, Layers, Clock, Eye, Play, Circle, Square, Download, SwitchCamera, Repeat2, Film } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import { useTabNav } from '@/components/TabNavigator';
 import { base44 } from '@/api/base44Client';
 import useCamera from '@/components/video/useCamera';
 import useFrameBuffer from '@/components/video/useFrameBuffer';
@@ -12,6 +12,7 @@ import ControlSlider from '@/components/video/ControlSlider';
 import ScrubBar from '@/components/video/ScrubBar';
 
 export default function Home() {
+  const { switchTab } = useTabNav();
   const { videoRef, isActive, error, start, stop } = useCamera();
   const { pushFrame, getFrame, getBufferLength, clearBuffer, maxBufferSize } = useFrameBuffer();
 
@@ -327,7 +328,7 @@ export default function Home() {
             
                 <Film className="w-4 h-4 text-primary" />
                 Clip saved!
-                <Link to="/gallery" className="text-primary underline text-xs">View Gallery</Link>
+                <button onClick={() => switchTab('/gallery')} className="text-primary underline text-xs">View Gallery</button>
               </motion.div>
           }
           </AnimatePresence>
@@ -343,10 +344,10 @@ export default function Home() {
                 <span className="text-xs font-mono text-white/80 uppercase tracking-widest">
                   {loopEnabled ? 'LOOP' : isDelayed ? 'DELAYED' : 'LIVE'}
                 </span>
-                <Link to="/gallery"
+                <button onClick={() => switchTab('/gallery')}
               className="ml-1 flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/10 border border-white/20 text-white/70 text-[10px] font-mono hover:bg-white/20 transition-colors">
                   <Film className="w-2.5 h-2.5" />GALLERY
-                </Link>
+                </button>
               </div>
               {isDelayed &&
             <motion.div
