@@ -56,24 +56,27 @@ export default function RenderCanvas({ videoRef, getFrame, delayOffset, ghostEna
     };
 
     if (ghostEnabled) {
-      const count = ghostCount ?? 4;
-      const alpha = ghostOpacity ?? 0.5;
-      const interval = ghostInterval ?? 8;
+      const count = ghostCount ?? 6;
+      const maxAlpha = ghostOpacity ?? 0.8;
+      const interval = ghostInterval ?? 4;
 
-      // Draw ghost layers oldest→newest using 'screen' blend so they ADD light
-      // Each ghost is a past frame — moving subjects leave bright trails behind them
+      // Draw ghost layers oldest→newest with source-over compositing.
+      // Oldest ghost is most transparent; newest ghost (closest to current) is most opaque.
+      // This creates the classic long-exposure "motion trail" smear.
       for (let i = count; i >= 1; i--) {
         const offset = delayOffset + i * interval;
         const frame = getFrame(offset);
-        if (frame) drawCover(frame, alpha, 'screen');
+        if (!frame) continue;
+        // Layer alpha: oldest = low, newest = high, evenly spaced
+        const layerAlpha = maxAlpha * (1 - (i - 1) / count);
+        drawCover(frame, layerAlpha, 'source-over');
       }
 
-      // Current frame drawn normally on top at full opacity
-      const currentOffset = delayOffset;
-      if (currentOffset === 0 && video) {
+      // Current (or delayed) frame on top at full opacity — sharp and clear
+      if (delayOffset === 0 && video) {
         drawCover(video, 1, 'source-over');
       } else {
-        const frame = getFrame(currentOffset);
+        const frame = getFrame(delayOffset);
         if (frame) drawCover(frame, 1, 'source-over');
         else if (video) drawCover(video, 1, 'source-over');
       }
