@@ -76,7 +76,47 @@ export default function Settings() {
 
       <div className="flex-1 overflow-y-auto px-5 py-6 space-y-4" style={{ paddingBottom: 'calc(1rem + env(safe-area-inset-bottom) + 56px)' }}>
         {user && <UserProfile />}
-        
+
+        {/* Auth Section */}
+        {!user && (
+          <>
+            <div className="flex gap-2 text-xs">
+              <a href="/login" className="flex-1 px-4 py-2 rounded-xl border border-border bg-card text-center text-foreground hover:bg-muted transition-colors">Sign In</a>
+              <a href="/register" className="flex-1 px-4 py-2 rounded-xl border border-primary/30 bg-primary/10 text-center text-primary hover:bg-primary/20 transition-colors">Sign Up</a>
+            </div>
+          </>
+        )}
+
+        {user && (
+          <>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <button className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl bg-card border border-destructive/30 text-destructive hover:bg-destructive/10 transition-colors">
+                  <Trash2 className="w-4 h-4 shrink-0" />
+                  <span className="text-sm font-medium">Sign Out</span>
+                </button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Sign out?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    You'll need to sign back in to save your clips and settings.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={() => base44.auth.logout('/')}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
+                    Yes, sign out
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </>
+        )}
+
         <div className="rounded-2xl bg-card border border-border px-5 py-4 space-y-1">
           <h2 className="text-2xl font-light font-heading lowercase tracking-tight text-foreground">vid-loop</h2>
           <p className="text-xs text-muted-foreground leading-relaxed">
@@ -110,47 +150,36 @@ export default function Settings() {
           <ControlSetting label="Speed" sublabel="Playback speed multiplier" value={loopSpeed} min={0.25} max={4} step={0.25} onChange={setLoopSpeed} formatValue={(v) => `${v}x`} />
         </div>
 
-        {/* Auth Links */}
-        {!user && (
-          <>
-            <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground px-1 pt-4">Get Started</p>
-            <div className="flex gap-2 text-xs">
-              <a href="/login" className="flex-1 px-4 py-2 rounded-xl border border-border bg-card text-center text-foreground hover:bg-muted transition-colors">Sign In</a>
-              <a href="/register" className="flex-1 px-4 py-2 rounded-xl border border-primary/30 bg-primary/10 text-center text-primary hover:bg-primary/20 transition-colors">Sign Up</a>
-            </div>
-          </>
-        )}
-
         {/* Delete Account */}
-         {user && (
+        {user && (
           <>
-            <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground px-1 pt-4">Account</p>
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <button className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl bg-card border border-destructive/30 text-destructive hover:bg-destructive/10 transition-colors">
-              <Trash2 className="w-4 h-4 shrink-0" />
-              <span className="text-sm font-medium">Delete Account</span>
-            </button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Delete your account?</AlertDialogTitle>
-              <AlertDialogDescription>
-                This permanently deletes your account and all saved clips. This action cannot be undone.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={handleDeleteAccount}
-                disabled={deleting}
-                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              >
-                {deleting ? 'Deleting…' : 'Yes, delete'}
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+            <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground px-1 pt-4">Danger Zone</p>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <button className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl bg-card border border-destructive/30 text-destructive hover:bg-destructive/10 transition-colors">
+                  <Trash2 className="w-4 h-4 shrink-0" />
+                  <span className="text-sm font-medium">Delete Account</span>
+                </button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete your account?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This permanently deletes your account and all saved clips. This action cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleDeleteAccount}
+                    disabled={deleting}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
+                    {deleting ? 'Deleting…' : 'Yes, delete'}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </>
         )}
       </div>
