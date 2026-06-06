@@ -10,7 +10,7 @@ import { Circle, Square, ChevronLeft } from 'lucide-react';
 export default function Camera() {
   const navigate = useNavigate();
   const { videoRef, isActive, start, stop } = useCamera();
-  const { bufferRef, addFrame, getFrame, getBufferStatus } = useFrameBuffer();
+  const { bufferRef, addFrame } = useFrameBuffer();
   const canvasRef = React.useRef(null);
   
   const [isRecording, setIsRecording] = useState(false);
@@ -111,7 +111,7 @@ export default function Camera() {
           duration={5}
           currentTime={scrubPosition}
           onScrub={handleScrub}
-          bufferLength={getBufferStatus().length}
+          bufferLength={100}
         />
       </div>
 
