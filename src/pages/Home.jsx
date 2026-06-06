@@ -467,52 +467,90 @@ export default function Home() {
 
           {/* ── CONTROLS PANEL — adapts portrait/landscape ── */}
           {isLandscape ? (
-        /* ── LANDSCAPE: compact right-side strip ── */
-        <div className="absolute right-0 top-0 bottom-0 z-10 flex flex-col justify-end"
-        style={{ background: 'linear-gradient(to left, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.3) 70%, transparent 100%)', width: '200px' }}>
-              <div className="px-3 pb-8 pt-4 space-y-3" style={{ marginBottom: '30px' }}>
+          /* ── LANDSCAPE: left-side controls + top-right record ── */
+          <div className="absolute left-0 top-0 bottom-0 z-10 flex flex-col"
+          style={{ background: 'linear-gradient(to right, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.3) 70%, transparent 100%)', width: '180px' }}>
+              {/* Floating record/camera controls at top-right */}
+              <div className="absolute top-4 right-4 flex flex-col gap-2 z-30 pointer-events-auto">
+                {/* Smaller record button */}
+                <button
+                  onClick={isRecording ? stopRecording : startRecording}
+                  className={`flex items-center justify-center gap-1 px-2.5 py-1.5 rounded-lg backdrop-blur-md border font-mono text-[9px] transition-all active:scale-95 pointer-events-auto ${
+                    isRecording ?
+                      'bg-red-500/80 border-red-400/60 text-white' :
+                      'bg-white/10 border-white/20 text-white/80'
+                  }`}
+                  title={isRecording ? 'Stop recording' : 'Start recording'}
+                >
+                  {isRecording ? (
+                    <>
+                      <Square className="w-2.5 h-2.5 fill-white" />
+                      <span className="tabular-nums">
+                        {String(Math.floor(recordingTime / 60)).padStart(2, '0')}:{String(recordingTime % 60).padStart(2, '0')}
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <Circle className="w-2.5 h-2.5 fill-red-400" />
+                    </>
+                  )}
+                </button>
+
+                {/* Camera switch */}
+                <button
+                  onClick={handleSwitchCamera}
+                  className="flex items-center gap-0 rounded-lg bg-white/10 backdrop-blur-md border border-white/20 text-[9px] font-mono overflow-hidden active:scale-95 transition-all pointer-events-auto"
+                >
+                  <span className={`px-2 py-1 transition-colors ${facingMode === 'environment' ? 'bg-white text-black' : 'text-white/50'}`}>R</span>
+                  <span className={`px-2 py-1 transition-colors ${facingMode === 'user' ? 'bg-white text-black' : 'text-white/50'}`}>F</span>
+                </button>
+              </div>
+
+              {/* Left panel sliders */}
+              <div className="px-3 pt-6 pb-4 space-y-3 overflow-y-auto overscroll-contain" style={{ marginTop: '80px' }}>
                 {/* Scrub */}
                 <div className="space-y-1">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[9px] font-mono uppercase tracking-widest text-white/40">Scrub</span>
-                    <div className="flex items-center gap-1.5">
+                  <div className="flex flex-col gap-1">
+                    <span className="text-[8px] font-mono uppercase tracking-widest text-white/40">Scrub</span>
+                    <div className="flex items-center gap-1">
                       {isDelayed &&
-                  <button onClick={() => setDelayOffset(0)}
-                  className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-accent/20 border border-accent/30 text-accent text-[9px] font-mono">
-                          <Play className="w-2 h-2" />LIVE
+                        <button onClick={() => setDelayOffset(0)}
+                          className="flex items-center gap-0.5 px-1 py-0.5 rounded bg-accent/20 border border-accent/30 text-accent text-[8px] font-mono">
+                          <Play className="w-1.5 h-1.5" />L
                         </button>
-                  }
-                      <span className="text-xs font-mono text-white tabular-nums">{isDelayed ? `−${delaySeconds}s` : 'live'}</span>
+                      }
+                      <span className="text-[8px] font-mono text-white tabular-nums">{isDelayed ? `−${delaySeconds}s` : 'live'}</span>
                     </div>
                   </div>
                   <ScrubBar value={delayOffset} max={Math.max(1, bufferFill - 1)} onChange={setDelayOffset} bufferFill={bufferFill} maxBufferSize={maxBufferSize} />
                 </div>
-                {/* Loop toggle + sliders — compact */}
-                 <button onClick={toggleLoop}
-            className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl border text-xs font-mono transition-all ${loopEnabled ? 'bg-accent/30 border-accent/50 text-white' : 'bg-white/5 border-white/10 text-white/40'}`}>
-                   <Repeat2 className="w-3 h-3" />
-                   Loop
-                 </button>
-                 {loopEnabled &&
-            <div className="space-y-2">
-                     <GhostSliderRow label="Dpth" valueLabel={`${(loopDepth / 30).toFixed(1)}s`} value={loopDepth} min={5} max={Math.max(5, bufferFill - 1)} step={1} onChange={setLoopDepth} />
-                     <GhostSliderRow label="Spd" valueLabel={`${loopSpeed}x`} value={loopSpeed} min={0.25} max={4} step={0.25} onChange={setLoopSpeed} />
-                   </div>
-            }
-                 {/* Ghost toggle */}
-                 <button onClick={toggleGhost}
-            className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl border text-xs font-mono transition-all ${ghostEnabled ? 'bg-primary/30 border-primary/50 text-white' : 'bg-white/5 border-white/10 text-white/40'}`}>
-                   <Layers className="w-3 h-3" />
-                   {ghostCountdown !== null ? `Ghost ${ghostCountdown}s…` : 'Ghost Blend'}
-                 </button>
-                 {/* Ghost sliders — compact */}
-                 {ghostEnabled &&
-            <div className="space-y-2">
-                     <GhostSliderRow label="Intv" valueLabel={`${ghostInterval}f`} value={ghostInterval} min={1} max={30} step={1} onChange={setGhostInterval} />
-                     <GhostSliderRow label="Lyrs" valueLabel={`${ghostCount}`} value={ghostCount} min={2} max={10} step={1} onChange={setGhostCount} />
-                     <GhostSliderRow label="Fade" valueLabel={`${Math.round(ghostOpacity * 100)}%`} value={ghostOpacity} min={0.05} max={1} step={0.05} onChange={setGhostOpacity} />
-                   </div>
-            }
+
+                {/* Loop toggle + sliders */}
+                <button onClick={toggleLoop}
+                  className={`w-full flex items-center gap-1.5 px-2 py-1 rounded-lg border text-[8px] font-mono transition-all ${loopEnabled ? 'bg-accent/30 border-accent/50 text-white' : 'bg-white/5 border-white/10 text-white/40'}`}>
+                  <Repeat2 className="w-2.5 h-2.5" />
+                  Loop
+                </button>
+                {loopEnabled &&
+                  <div className="space-y-1.5">
+                    <CompactSlider label="D" valueLabel={`${(loopDepth / 30).toFixed(1)}s`} value={loopDepth} min={5} max={Math.max(5, bufferFill - 1)} step={1} onChange={setLoopDepth} />
+                    <CompactSlider label="S" valueLabel={`${loopSpeed}x`} value={loopSpeed} min={0.25} max={4} step={0.25} onChange={setLoopSpeed} />
+                  </div>
+                }
+
+                {/* Ghost toggle */}
+                <button onClick={toggleGhost}
+                  className={`w-full flex items-center gap-1.5 px-2 py-1 rounded-lg border text-[8px] font-mono transition-all ${ghostEnabled ? 'bg-primary/30 border-primary/50 text-white' : 'bg-white/5 border-white/10 text-white/40'}`}>
+                  <Layers className="w-2.5 h-2.5" />
+                  Ghost
+                </button>
+                {ghostEnabled &&
+                  <div className="space-y-1.5">
+                    <CompactSlider label="I" valueLabel={`${ghostInterval}f`} value={ghostInterval} min={1} max={30} step={1} onChange={setGhostInterval} />
+                    <CompactSlider label="L" valueLabel={`${ghostCount}`} value={ghostCount} min={2} max={10} step={1} onChange={setGhostCount} />
+                    <CompactSlider label="O" valueLabel={`${Math.round(ghostOpacity * 100)}%`} value={ghostOpacity} min={0.05} max={1} step={0.05} onChange={setGhostOpacity} />
+                  </div>
+                }
               </div>
             </div>) : (
 
@@ -609,4 +647,16 @@ function GhostSliderRow({ label, valueLabel, value, min, max, step, onChange }) 
       <span className="text-xs font-mono text-white/60 w-10 text-right shrink-0 tabular-nums">{valueLabel}</span>
     </div>);
 
+}
+
+function CompactSlider({ label, valueLabel, value, min, max, step, onChange }) {
+  return (
+    <div className="flex items-center gap-2">
+      <span className="text-[8px] font-mono uppercase tracking-widest text-white/40 w-6 shrink-0">{label}</span>
+      <div className="flex-1">
+        <ControlSlider value={value} min={min} max={max} step={step} onChange={onChange} />
+      </div>
+      <span className="text-[8px] font-mono text-white/60 w-8 text-right shrink-0 tabular-nums">{valueLabel}</span>
+    </div>
+  );
 }
