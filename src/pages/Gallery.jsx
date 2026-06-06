@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { Camera, Trash2, Download, Film, Pencil, Check, X, CheckSquare } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { Camera, Trash2, Download, Film, Pencil, Check, X, CheckSquare, RefreshCw } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Gallery() {
   const [clips, setClips] = useState([]);
@@ -11,6 +11,38 @@ export default function Gallery() {
   const [editingTitle, setEditingTitle] = useState('');
   const [selectMode, setSelectMode] = useState(false);
   const [selected, setSelected] = useState(new Set());
+
+  // Pull-to-refresh state
+  const [pullY, setPullY] = useState(0);
+  const [refreshing, setRefreshing] = useState(false);
+  const touchStartY = useRef(0);
+  const scrollRef = useRef(null);
+  const PULL_THRESHOLD = 64;
+
+  const handleTouchStart = useCallback((e) => {
+    if (scrollRef.current?.scrollTop === 0) {
+      touchStartY.current = e.touches[0].clientY;
+    } else {
+      touchStartY.current = 0;
+    }
+  }, []);
+
+  const handleTouchMove = useCallback((e) => {
+    if (!touchStartY.current) return;
+    const dy = e.touches[0].clientY - touchStartY.current;
+    if (dy > 0) setPullY(Math.min(dy * 0.45, PULL_THRESHOLD + 16));
+  }, []);
+
+  const handleTouchEnd = useCallback(async () => {
+    if (pullY >= PULL_THRESHOLD && !refreshing) {
+      setRefreshing(true);
+      setPullY(PULL_THRESHOLD);
+      await loadClips();
+      setRefreshing(false);
+    }
+    setPullY(0);
+    touchStartY.current = 0;
+  }, [pullY, refreshing]);
 
   const toggleSelect = (id) => setSelected(prev => {
     const next = new Set(prev);
@@ -50,7 +82,7 @@ export default function Gallery() {
   return (
     <div className="fixed inset-0 bg-background flex flex-col overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-5 pt-12 pb-4 border-b border-border">
+      <div className="flex items-center justify-between px-5 pb-4 border-b border-border" style={{ paddingTop: 'calc(3rem + env(safe-area-inset-top))' }}>
         <div className="flex items-center gap-3">
           <Film className="w-5 h-5 text-primary" />
           <h1 className="text-lg font-bold font-heading">Saved Clips</h1>
@@ -87,8 +119,31 @@ export default function Gallery() {
         </div>
       </div>
 
+      {/* Pull-to-refresh indicator */}
+      <AnimatePresence>
+        {pullY > 8 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="flex items-center justify-center py-2"
+            style={{ height: pullY }}
+          >
+            <RefreshCw className={`w-5 h-5 text-primary transition-transform ${refreshing ? 'animate-spin' : ''}`}
+              style={{ transform: !refreshing ? `rotate(${(pullY / PULL_THRESHOLD) * 180}deg)` : undefined }} />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Content */}
-      <div className="flex-1 overflow-y-auto px-5 py-4">
+      <div
+        ref={scrollRef}
+        className="flex-1 overflow-y-auto px-5 py-4"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        style={{ paddingBottom: 'calc(1rem + env(safe-area-inset-bottom) + 56px)' }}
+      >
         {loading ? (
           <div className="flex items-center justify-center h-40">
             <div className="w-6 h-6 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
