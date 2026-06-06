@@ -50,17 +50,17 @@ export default function Gallery() {
     touchStartY.current = 0;
   }, [pullY, refreshing]);
 
-  const toggleSelect = (id) => setSelected(prev => {
+  const toggleSelect = (id) => setSelected((prev) => {
     const next = new Set(prev);
     next.has(id) ? next.delete(id) : next.add(id);
     return next;
   });
 
-  const exitSelectMode = () => { setSelectMode(false); setSelected(new Set()); };
+  const exitSelectMode = () => {setSelectMode(false);setSelected(new Set());};
 
   const exportSelected = async () => {
     setExporting(true);
-    const selectedClips = clips.filter(c => selected.has(c.id));
+    const selectedClips = clips.filter((c) => selected.has(c.id));
     for (const clip of selectedClips) {
       const title = clip.title || `vidloop-${clip.id}`;
       const res = await fetch(clip.file_url);
@@ -73,7 +73,7 @@ export default function Gallery() {
       a.click();
       URL.revokeObjectURL(url);
       // Small delay between downloads so browser doesn't block them
-      await new Promise(r => setTimeout(r, 400));
+      await new Promise((r) => setTimeout(r, 400));
     }
     setExporting(false);
     exitSelectMode();
@@ -81,16 +81,16 @@ export default function Gallery() {
 
   const deleteSelected = () => {
     const ids = new Set(selected);
-    setClips(prev => prev.filter(c => !ids.has(c.id)));
+    setClips((prev) => prev.filter((c) => !ids.has(c.id)));
     exitSelectMode();
-    Promise.all([...ids].map(id => base44.entities.Clip.delete(id)));
+    Promise.all([...ids].map((id) => base44.entities.Clip.delete(id)));
   };
 
-  const startEdit = (clip) => { setEditingId(clip.id); setEditingTitle(clip.title || ''); };
-  const cancelEdit = () => { setEditingId(null); setEditingTitle(''); };
+  const startEdit = (clip) => {setEditingId(clip.id);setEditingTitle(clip.title || '');};
+  const cancelEdit = () => {setEditingId(null);setEditingTitle('');};
   const saveEdit = async (id) => {
     await base44.entities.Clip.update(id, { title: editingTitle });
-    setClips(prev => prev.map(c => c.id === id ? { ...c, title: editingTitle } : c));
+    setClips((prev) => prev.map((c) => c.id === id ? { ...c, title: editingTitle } : c));
     cancelEdit();
   };
 
@@ -100,10 +100,10 @@ export default function Gallery() {
     setLoading(false);
   };
 
-  useEffect(() => { loadClips(); }, []);
+  useEffect(() => {loadClips();}, []);
 
   const deleteClip = (id) => {
-    setClips(prev => prev.filter(c => c.id !== id));
+    setClips((prev) => prev.filter((c) => c.id !== id));
     base44.entities.Clip.delete(id);
   };
 
@@ -141,59 +141,59 @@ export default function Gallery() {
       <MobileHeader
         title="Saved Clips"
         right={
-          selectMode ? (
-            <div className="flex items-center gap-1.5">
+        selectMode ?
+        <div className="flex items-center gap-1.5">
               <button onClick={exitSelectMode}
-                className="px-2 py-1 rounded-full bg-muted border border-border text-muted-foreground text-xs font-mono">
+          className="px-2 py-1 rounded-full bg-muted border border-border text-muted-foreground text-xs font-mono">
                 Cancel
               </button>
               <button onClick={exportSelected} disabled={selected.size === 0 || exporting}
-                className="flex items-center gap-1 px-2 py-1 rounded-full bg-primary/20 border border-primary/40 text-primary text-xs font-mono disabled:opacity-40">
+          className="flex items-center gap-1 px-2 py-1 rounded-full bg-primary/20 border border-primary/40 text-primary text-xs font-mono disabled:opacity-40">
                 {exporting ? <Loader2 className="w-3 h-3 animate-spin" /> : <Download className="w-3 h-3" />}
                 ({selected.size})
               </button>
               <button onClick={deleteSelected} disabled={selected.size === 0}
-                className="flex items-center gap-1 px-2 py-1 rounded-full bg-destructive/20 border border-destructive/40 text-destructive text-xs font-mono disabled:opacity-40">
+          className="flex items-center gap-1 px-2 py-1 rounded-full bg-destructive/20 border border-destructive/40 text-destructive text-xs font-mono disabled:opacity-40">
                 <Trash2 className="w-3 h-3" />({selected.size})
               </button>
-            </div>
-          ) : clips.length > 0 ? (
-            <button onClick={() => setSelectMode(true)}
-              className="flex items-center gap-1 px-2 py-1 rounded-full bg-muted border border-border text-muted-foreground text-xs font-mono">
+            </div> :
+        clips.length > 0 ?
+        <button onClick={() => setSelectMode(true)}
+        className="flex items-center gap-1 px-2 py-1 rounded-full bg-muted border border-border text-muted-foreground text-xs font-mono">
               <CheckSquare className="w-3 h-3" />
               Select
-            </button>
-          ) : null
-        }
-      />
+            </button> :
+        null
+        } />
+      
 
       {/* Pull-to-refresh indicator */}
       <AnimatePresence>
-        {pullY > 8 && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="flex items-center justify-center py-2"
-            style={{ height: pullY }}
-          >
+        {pullY > 8 &&
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="flex items-center justify-center py-2"
+          style={{ height: pullY }}>
+          
             <RefreshCw className={`w-5 h-5 text-primary transition-transform ${refreshing ? 'animate-spin' : ''}`}
-              style={{ transform: !refreshing ? `rotate(${(pullY / PULL_THRESHOLD) * 180}deg)` : undefined }} />
+          style={{ transform: !refreshing ? `rotate(${pullY / PULL_THRESHOLD * 180}deg)` : undefined }} />
           </motion.div>
-        )}
+        }
       </AnimatePresence>
 
       {/* Trim modal */}
-      {trimmingClip && (
-        <TrimModal
-          clip={trimmingClip}
-          onClose={() => setTrimmingClip(null)}
-          onSaved={(updated) => {
-            setClips(prev => prev.map(c => c.id === updated.id ? updated : c));
-            setTrimmingClip(null);
-          }}
-        />
-      )}
+      {trimmingClip &&
+      <TrimModal
+        clip={trimmingClip}
+        onClose={() => setTrimmingClip(null)}
+        onSaved={(updated) => {
+          setClips((prev) => prev.map((c) => c.id === updated.id ? updated : c));
+          setTrimmingClip(null);
+        }} />
+
+      }
 
       {/* Content */}
       <div
@@ -202,112 +202,112 @@ export default function Gallery() {
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
-        style={{ paddingBottom: 'calc(1rem + env(safe-area-inset-bottom) + 56px)' }}
-      >
-        {loading ? (
-          <div className="flex items-center justify-center h-40">
+        style={{ paddingBottom: 'calc(1rem + env(safe-area-inset-bottom) + 56px)' }}>
+        
+        {loading ?
+        <div className="flex items-center justify-center h-40">
             <div className="w-6 h-6 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
-          </div>
-        ) : clips.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-60 gap-4 text-center">
+          </div> :
+        clips.length === 0 ?
+        <div className="flex flex-col items-center justify-center h-60 gap-4 text-center">
             <div className="w-16 h-16 rounded-2xl bg-muted flex items-center justify-center">
-              <Film className="w-7 h-7 text-muted-foreground" />
+              <Film className="w-7 h-7 text-[hsl(var(--foreground))]" />
             </div>
             <div>
               <p className="text-sm font-medium text-foreground">No clips yet</p>
-              <p className="text-xs text-muted-foreground mt-1">Record something in the camera and save it here.</p>
+              <p className="text-xs mt-1 text-[hsl(var(--popover-foreground))]">Record something in the camera and save it here.</p>
             </div>
             <button onClick={() => switchTab('/')} className="mt-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground text-sm font-medium">
               Open Camera
             </button>
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 gap-3">
-            {clips.map((clip, i) => (
-              <motion.div
-                key={clip.id}
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.05 }}
-                onClick={selectMode ? () => toggleSelect(clip.id) : undefined}
-                className={`bg-card rounded-2xl border overflow-hidden transition-all ${selectMode ? 'cursor-pointer' : ''} ${selected.has(clip.id) ? 'border-destructive ring-2 ring-destructive/40' : 'border-border'}`}
-              >
+          </div> :
+
+        <div className="grid grid-cols-2 gap-3">
+            {clips.map((clip, i) =>
+          <motion.div
+            key={clip.id}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.05 }}
+            onClick={selectMode ? () => toggleSelect(clip.id) : undefined}
+            className={`bg-card rounded-2xl border overflow-hidden transition-all ${selectMode ? 'cursor-pointer' : ''} ${selected.has(clip.id) ? 'border-destructive ring-2 ring-destructive/40' : 'border-border'}`}>
+            
                 {/* Video preview */}
                 <div className="aspect-[9/16] bg-black relative">
-                  {selectMode && (
-                    <div className={`absolute top-2 left-2 z-10 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${selected.has(clip.id) ? 'bg-destructive border-destructive' : 'bg-black/50 border-white/60'}`}>
+                  {selectMode &&
+              <div className={`absolute top-2 left-2 z-10 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${selected.has(clip.id) ? 'bg-destructive border-destructive' : 'bg-black/50 border-white/60'}`}>
                       {selected.has(clip.id) && <Check className="w-3 h-3 text-white" />}
                     </div>
-                  )}
+              }
                   <video
-                    src={clip.file_url}
-                    className="w-full h-full object-cover"
-                    muted
-                    playsInline
-                    onMouseEnter={e => { const v = e.currentTarget; v.play().catch(() => {}); }}
-                    onMouseLeave={e => { const v = e.currentTarget; v.pause(); v.currentTime = 0; }}
-                  />
-                  {clip.duration && (
-                    <span className="absolute bottom-2 right-2 text-[10px] font-mono bg-black/60 text-white px-1.5 py-0.5 rounded">
+                src={clip.file_url}
+                className="w-full h-full object-cover"
+                muted
+                playsInline
+                onMouseEnter={(e) => {const v = e.currentTarget;v.play().catch(() => {});}}
+                onMouseLeave={(e) => {const v = e.currentTarget;v.pause();v.currentTime = 0;}} />
+              
+                  {clip.duration &&
+              <span className="absolute bottom-2 right-2 text-[10px] font-mono bg-black/60 text-white px-1.5 py-0.5 rounded">
                       {clip.duration}s
                     </span>
-                  )}
+              }
                 </div>
                 {/* Footer */}
                 <div className="px-3 py-2 flex items-center justify-between gap-1">
-                  {editingId === clip.id ? (
-                    <>
+                  {editingId === clip.id ?
+              <>
                       <input
-                        autoFocus
-                        value={editingTitle}
-                        onChange={e => setEditingTitle(e.target.value)}
-                        onKeyDown={e => { if (e.key === 'Enter') saveEdit(clip.id); if (e.key === 'Escape') cancelEdit(); }}
-                        className="flex-1 text-xs font-mono bg-muted border border-border rounded px-2 py-1 text-foreground outline-none"
-                      />
+                  autoFocus
+                  value={editingTitle}
+                  onChange={(e) => setEditingTitle(e.target.value)}
+                  onKeyDown={(e) => {if (e.key === 'Enter') saveEdit(clip.id);if (e.key === 'Escape') cancelEdit();}}
+                  className="flex-1 text-xs font-mono bg-muted border border-border rounded px-2 py-1 text-foreground outline-none" />
+                
                       <button onClick={() => saveEdit(clip.id)} className="w-6 h-6 rounded bg-primary/20 flex items-center justify-center">
                         <Check className="w-3 h-3 text-primary" />
                       </button>
                       <button onClick={cancelEdit} className="w-6 h-6 rounded bg-muted flex items-center justify-center">
                         <X className="w-3 h-3 text-muted-foreground" />
                       </button>
-                    </>
-                  ) : (
-                    <>
+                    </> :
+
+              <>
                       <p className="text-xs text-muted-foreground font-mono truncate flex-1">
                         {clip.title || new Date(clip.created_date).toLocaleDateString()}
                       </p>
                       <div className="flex items-center gap-1.5 ml-2">
                         <button onClick={() => startEdit(clip)}
-                          className="w-7 h-7 rounded-lg bg-muted flex items-center justify-center hover:bg-primary/20 transition-colors">
+                  className="w-7 h-7 rounded-lg bg-muted flex items-center justify-center hover:bg-primary/20 transition-colors">
                           <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
                         </button>
                         <button onClick={() => setTrimmingClip(clip)}
-                          className="w-7 h-7 rounded-lg bg-muted flex items-center justify-center hover:bg-primary/20 transition-colors">
+                  className="w-7 h-7 rounded-lg bg-muted flex items-center justify-center hover:bg-primary/20 transition-colors">
                           <Scissors className="w-3.5 h-3.5 text-muted-foreground" />
                         </button>
                         <button onClick={() => shareClip(clip)} disabled={sharingId === clip.id}
-                          className="w-7 h-7 rounded-lg bg-muted flex items-center justify-center hover:bg-primary/20 transition-colors disabled:opacity-60">
-                          {sharingId === clip.id
-                            ? <Loader2 className="w-3.5 h-3.5 text-primary animate-spin" />
-                            : <Share2 className="w-3.5 h-3.5 text-muted-foreground" />}
+                  className="w-7 h-7 rounded-lg bg-muted flex items-center justify-center hover:bg-primary/20 transition-colors disabled:opacity-60">
+                          {sharingId === clip.id ?
+                    <Loader2 className="w-3.5 h-3.5 text-primary animate-spin" /> :
+                    <Share2 className="w-3.5 h-3.5 text-muted-foreground" />}
                         </button>
                         <a href={clip.file_url} download
-                          className="w-7 h-7 rounded-lg bg-muted flex items-center justify-center hover:bg-primary/20 transition-colors">
+                  className="w-7 h-7 rounded-lg bg-muted flex items-center justify-center hover:bg-primary/20 transition-colors">
                           <Download className="w-3.5 h-3.5 text-muted-foreground" />
                         </a>
                         <button onClick={() => deleteClip(clip.id)}
-                          className="w-7 h-7 rounded-lg bg-muted flex items-center justify-center hover:bg-destructive/20 transition-colors">
+                  className="w-7 h-7 rounded-lg bg-muted flex items-center justify-center hover:bg-destructive/20 transition-colors">
                           <Trash2 className="w-3.5 h-3.5 text-muted-foreground" />
                         </button>
                       </div>
                     </>
-                  )}
+              }
                 </div>
               </motion.div>
-            ))}
+          )}
           </div>
-        )}
+        }
       </div>
-    </div>
-  );
+    </div>);
+
 }
