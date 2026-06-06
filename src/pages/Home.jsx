@@ -203,12 +203,12 @@ export default function Home() {
       const localUrl = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = localUrl;
-      a.download = `framedelay-${Date.now()}.${isMP4 ? 'mp4' : 'webm'}`;
+      a.download = `vid-loop-${Date.now()}.${isMP4 ? 'mp4' : 'webm'}`;
       a.click();
 
       // Upload to storage and save to gallery
       try {
-        const file = new File([blob], `framedelay-${Date.now()}.${isMP4 ? 'mp4' : 'webm'}`, { type: mimeType });
+        const file = new File([blob], `vid-loop-${Date.now()}.${isMP4 ? 'mp4' : 'webm'}`, { type: mimeType });
         const { file_url } = await base44.integrations.Core.UploadFile({ file });
         await base44.entities.Clip.create({
           file_url,
