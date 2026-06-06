@@ -28,7 +28,7 @@ export default function Home() {
   const ghostCountdownRef = useRef(null);
 
   // Ping-pong loop mode
-  const [loopEnabled, setLoopEnabled] = useState(false);
+  const [loopEnabled, setLoopEnabled] = useState(true);
   const [loopDepth, setLoopDepth] = useState(30); // frames to ping-pong through
   const [loopSpeed, setLoopSpeed] = useState(1); // frames advanced per render tick
   const loopStateRef = useRef({ dir: 1, pos: 0 }); // internal mutable state, no re-render
