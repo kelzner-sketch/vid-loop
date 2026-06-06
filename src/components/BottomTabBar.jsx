@@ -1,6 +1,7 @@
 import React from 'react';
 import { Camera, Film, Settings } from 'lucide-react';
 import { useTabNav } from '@/components/TabNavigator';
+import { useNavigate } from 'react-router-dom';
 
 const tabs = [
   { path: '/', icon: Camera, label: 'Camera' },
@@ -10,6 +11,7 @@ const tabs = [
 
 export default function BottomTabBar() {
   const { activeTab, switchTab } = useTabNav();
+  const navigate = useNavigate();
 
   return (
     <div
@@ -21,7 +23,7 @@ export default function BottomTabBar() {
         return (
           <button
             key={path}
-            onClick={() => switchTab(path)}
+            onClick={() => { switchTab(path); navigate(path); }}
             className="flex flex-col items-center gap-1 py-2 px-6 select-none pointer-events-auto"
             style={{ WebkitTapHighlightColor: 'transparent', background: 'none', border: 'none', cursor: 'pointer' }}
           >
