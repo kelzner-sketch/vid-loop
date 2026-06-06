@@ -22,6 +22,7 @@ export default function Gallery() {
   const [sharingId, setSharingId] = useState(null);
   const [trimmingClip, setTrimmingClip] = useState(null);
   const [exporting, setExporting] = useState(false);
+  const [fullscreenClip, setFullscreenClip] = useState(null);
 
   // Pull-to-refresh state
   const [pullY, setPullY] = useState(0);
@@ -203,6 +204,32 @@ export default function Gallery() {
         }
       </AnimatePresence>
 
+      {/* Fullscreen video modal */}
+      <AnimatePresence>
+        {fullscreenClip &&
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={() => setFullscreenClip(null)}
+          className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center"
+        >
+          <button
+            onClick={() => setFullscreenClip(null)}
+            className="absolute top-4 right-4 z-10 text-white/60 hover:text-white"
+          >
+            <X className="w-6 h-6" />
+          </button>
+          <video
+            src={fullscreenClip.file_url}
+            controls
+            autoPlay
+            className="w-full h-full max-w-4xl max-h-[90vh] object-contain"
+          />
+        </motion.div>
+        }
+      </AnimatePresence>
+
       {/* Trim modal */}
       {trimmingClip &&
       <TrimModal
@@ -251,8 +278,8 @@ export default function Gallery() {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.05 }}
-            onClick={selectMode ? () => toggleSelect(clip.id) : undefined}
-            className={`bg-card rounded-2xl border overflow-hidden transition-all ${selectMode ? 'cursor-pointer' : ''} ${selected.has(clip.id) ? 'border-destructive ring-2 ring-destructive/40' : 'border-border'}`}>
+            onClick={selectMode ? () => toggleSelect(clip.id) : () => setFullscreenClip(clip)}
+            className={`bg-card rounded-2xl border overflow-hidden transition-all ${selectMode ? 'cursor-pointer' : 'cursor-pointer hover:ring-1 hover:ring-primary'} ${selected.has(clip.id) ? 'border-destructive ring-2 ring-destructive/40' : 'border-border'}`}>
             
                 {/* Video preview */}
                 <div className="aspect-[9/16] bg-black relative">
