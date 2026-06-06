@@ -52,29 +52,27 @@ const AuthenticatedApp = () => {
   return (
     <>
       <Routes>
-        {/* Auth routes - accessible without authentication */}
+        {/* Auth routes */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         
-        {/* Protected app routes */}
-        <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
-          <Route path="/*" element={
-            <div className="fixed inset-0">
-              {Object.entries(TAB_PAGES).map(([tab, PageComponent]) => (
-                <div
-                  key={tab}
-                  className="absolute inset-0"
-                  style={{ display: activeTab === tab ? 'block' : 'none' }}
-                >
-                  <PageComponent />
-                </div>
-              ))}
-              <BottomTabBar />
-            </div>
-          } />
-        </Route>
+        {/* App routes - publicly accessible */}
+        <Route path="/*" element={
+          <div className="fixed inset-0">
+            {Object.entries(TAB_PAGES).map(([tab, PageComponent]) => (
+              <div
+                key={tab}
+                className="absolute inset-0"
+                style={{ display: activeTab === tab ? 'block' : 'none' }}
+              >
+                <PageComponent />
+              </div>
+            ))}
+            <BottomTabBar />
+          </div>
+        } />
       </Routes>
     </>
   );
