@@ -5,25 +5,36 @@ export default function RenderCanvas({ videoRef, getFrame, delayOffset, ghostEna
   const rafRef = useRef(null);
   const containerRef = useRef(null);
 
+  // Keep a stable ref for all render-loop props so the RAF loop never needs
+  // to be torn down and restarted when they change — avoids any gap in the
+  // canvas stream that would break an in-progress recording.
+  const propsRef = useRef({});
+  propsRef.current = { videoRef, getFrame, delayOffset, ghostEnabled, ghostInterval, ghostCount, ghostOpacity, isActive };
+
+  // Stable render loop — reads latest props from propsRef each frame.
+  // Never recreated, so canvas.captureStream() is never broken by prop changes
+  // or orientation-triggered re-renders.
   const render = useCallback(() => {
+    const { videoRef: vRef, getFrame, delayOffset, ghostEnabled, ghostInterval, ghostCount, ghostOpacity, isActive } = propsRef.current;
     const canvas = canvasRef.current;
-    const video = videoRef?.current;
-    if (!canvas || !isActive) return;
+    const video = vRef?.current;
+
+    if (!canvas || !isActive) {
+      rafRef.current = requestAnimationFrame(render);
+      return;
+    }
 
     const ctx = canvas.getContext('2d');
 
-    // Always size canvas to its CSS display size — survives orientation changes
+    // Resize canvas to match its CSS container — survives orientation changes
     const container = containerRef.current;
     if (container) {
       const dpr = window.devicePixelRatio || 1;
-      const w = container.clientWidth;
-      const h = container.clientHeight;
-      const targetW = Math.round(w * dpr);
-      const targetH = Math.round(h * dpr);
+      const targetW = Math.round(container.clientWidth * dpr);
+      const targetH = Math.round(container.clientHeight * dpr);
       if (canvas.width !== targetW || canvas.height !== targetH) {
         canvas.width = targetW;
         canvas.height = targetH;
-        // Re-apply scale after resize
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       }
     }
@@ -31,78 +42,56 @@ export default function RenderCanvas({ videoRef, getFrame, delayOffset, ghostEna
     const cw = canvas.width / (window.devicePixelRatio || 1);
     const ch = canvas.height / (window.devicePixelRatio || 1);
 
-    // Fill black background first (needed for multiply blend)
     ctx.globalCompositeOperation = 'source-over';
     ctx.globalAlpha = 1;
     ctx.fillStyle = '#000000';
     ctx.fillRect(0, 0, cw, ch);
 
-    // Helper: draw a source cover-fit into the canvas
-    const drawCover = (source, alpha = 1, composite = 'source-over') => {
+    const drawCover = (source, alpha = 1) => {
       if (!source) return;
       const srcW = source.videoWidth || source.width;
       const srcH = source.videoHeight || source.height;
       if (!srcW || !srcH) return;
-
       const scale = Math.max(cw / srcW, ch / srcH);
       const drawW = srcW * scale;
       const drawH = srcH * scale;
-      const dx = (cw - drawW) / 2;
-      const dy = (ch - drawH) / 2;
-
-      ctx.globalCompositeOperation = composite;
+      ctx.globalCompositeOperation = 'source-over';
       ctx.globalAlpha = alpha;
-      ctx.drawImage(source, dx, dy, drawW, drawH);
+      ctx.drawImage(source, (cw - drawW) / 2, (ch - drawH) / 2, drawW, drawH);
     };
+
+    const currentFrame = delayOffset === 0 ? video : (getFrame(delayOffset) || video);
 
     if (ghostEnabled) {
       const count = ghostCount ?? 6;
       const maxAlpha = ghostOpacity ?? 0.8;
       const interval = ghostInterval ?? 4;
 
-      // Step 1: Draw the current (or delayed) frame as the base at full opacity
-      if (delayOffset === 0 && video) {
-        drawCover(video, 1, 'source-over');
-      } else {
-        const frame = getFrame(delayOffset);
-        if (frame) drawCover(frame, 1, 'source-over');
-        else if (video) drawCover(video, 1, 'source-over');
-      }
+      // Base: current frame at full opacity
+      drawCover(currentFrame, 1);
 
-      // Step 2: Overlay ghost frames from newest→oldest on top.
-      // Each ghost is a past frame blended with source-over at decreasing opacity.
-      // Newest ghost (i=1) is most opaque, oldest (i=count) is most transparent.
-      // This creates the "after image / motion trail smear" from the reference videos.
+      // Ghost layers: newest (i=1) most opaque → oldest (i=count) most transparent
       for (let i = 1; i <= count; i++) {
-        const offset = delayOffset + i * interval;
-        const frame = getFrame(offset);
+        const frame = getFrame(delayOffset + i * interval);
         if (!frame) continue;
-        const layerAlpha = maxAlpha * (1 - (i - 1) / count);
-        drawCover(frame, layerAlpha, 'source-over');
+        drawCover(frame, maxAlpha * (1 - (i - 1) / count));
       }
     } else {
-      if (delayOffset === 0 && video) {
-        drawCover(video, 1);
-      } else {
-        const frame = getFrame(delayOffset);
-        if (frame) drawCover(frame, 1);
-        else if (video) drawCover(video, 1);
-      }
+      drawCover(currentFrame, 1);
     }
 
     ctx.globalAlpha = 1;
     ctx.globalCompositeOperation = 'source-over';
     rafRef.current = requestAnimationFrame(render);
-  }, [videoRef, getFrame, delayOffset, ghostEnabled, ghostInterval, ghostCount, ghostOpacity, isActive]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // intentionally empty — loop is perpetual, reads from propsRef
 
   useEffect(() => {
-    if (isActive) {
-      rafRef.current = requestAnimationFrame(render);
-    }
+    rafRef.current = requestAnimationFrame(render);
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
-  }, [render, isActive]);
+  }, [render]);
 
   return (
     <div ref={containerRef} className="absolute inset-0">
