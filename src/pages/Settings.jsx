@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Film, Camera, Layers, Repeat2, Trash2 } from 'lucide-react';
 import MobileHeader from '@/components/MobileHeader';
 import { useAuth } from '@/lib/AuthContext';
@@ -46,16 +46,21 @@ export default function Settings() {
     }
   }, [user]);
 
-  // Persist prefs to localStorage and database whenever they change
+  // Persist prefs to localStorage and database with debounce
+  const debounceRef = useRef(null);
   useEffect(() => {
+    clearTimeout(debounceRef.current);
     const updatedPrefs = {
       ...prefs,
       ghostDelay, ghostInterval, ghostCount, ghostOpacity, loopDepth, loopSpeed,
     };
     localStorage.setItem('vidloop_prefs', JSON.stringify(updatedPrefs));
     if (user) {
-      base44.auth.updateMe({ preferences: updatedPrefs });
+      debounceRef.current = setTimeout(() => {
+        base44.auth.updateMe({ preferences: updatedPrefs });
+      }, 500);
     }
+    return () => clearTimeout(debounceRef.current);
   }, [ghostDelay, ghostInterval, ghostCount, ghostOpacity, loopDepth, loopSpeed, user]);
 
   const handleDeleteAccount = async () => {

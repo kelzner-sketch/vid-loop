@@ -72,16 +72,21 @@ export default function Home() {
     }
   }, [user]);
 
-  // Persist preferences to localStorage and database whenever they change
+  // Persist preferences to localStorage and database with debounce
+  const debounceRef = useRef(null);
   useEffect(() => {
+    clearTimeout(debounceRef.current);
     const prefs = {
       facingMode, loopEnabled, loopDepth, loopSpeed,
       ghostDelay, ghostInterval, ghostCount, ghostOpacity
     };
     localStorage.setItem('vidloop_prefs', JSON.stringify(prefs));
     if (user) {
-      base44.auth.updateMe({ preferences: prefs });
+      debounceRef.current = setTimeout(() => {
+        base44.auth.updateMe({ preferences: prefs });
+      }, 500);
     }
+    return () => clearTimeout(debounceRef.current);
   }, [facingMode, loopEnabled, loopDepth, loopSpeed, ghostDelay, ghostInterval, ghostCount, ghostOpacity, user]);
 
   // Keep refs in sync so the RAF loop always reads latest values
