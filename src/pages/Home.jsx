@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
-import { Camera, CameraOff, Layers, Clock, Eye, Play, Circle, Square, Download, SwitchCamera, Repeat2 } from 'lucide-react';
+import { Camera, CameraOff, Layers, Clock, Eye, Play, Circle, Square, Download, SwitchCamera, Repeat2, Film } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Link } from 'react-router-dom';
+import { base44 } from '@/api/base44Client';
 import useCamera from '@/components/video/useCamera';
 import useFrameBuffer from '@/components/video/useFrameBuffer';
 import RenderCanvas from '@/components/video/RenderCanvas';
@@ -36,6 +38,7 @@ export default function Home() {
   const [isLandscape, setIsLandscape] = useState(() => window.innerWidth > window.innerHeight);
   const [isRecording, setIsRecording] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
+  const [savedClip, setSavedClip] = useState(null); // {url, duration} shown after save
   const captureRef = useRef(null);
   const mediaRecorderRef = useRef(null);
   const recordingChunksRef = useRef([]);
@@ -190,21 +193,45 @@ export default function Home() {
     const recorder = new MediaRecorder(stream, { mimeType });
     recordingChunksRef.current = [];
     recorder.ondataavailable = (e) => {if (e.data.size > 0) recordingChunksRef.current.push(e.data);};
-    recorder.onstop = () => {
+    recorder.onstop = async () => {
       const isMP4 = mimeType.startsWith('video/mp4');
       const blob = new Blob(recordingChunksRef.current, { type: mimeType });
-      const url = URL.createObjectURL(blob);
+      const duration = recordingTimerRef._lastTime || 0;
+
+      // Trigger browser download
+      const localUrl = URL.createObjectURL(blob);
       const a = document.createElement('a');
-      a.href = url;
+      a.href = localUrl;
       a.download = `framedelay-${Date.now()}.${isMP4 ? 'mp4' : 'webm'}`;
       a.click();
-      URL.revokeObjectURL(url);
+
+      // Upload to storage and save to gallery
+      try {
+        const file = new File([blob], `framedelay-${Date.now()}.${isMP4 ? 'mp4' : 'webm'}`, { type: mimeType });
+        const { file_url } = await base44.integrations.Core.UploadFile({ file });
+        await base44.entities.Clip.create({
+          file_url,
+          duration: recordingTimerRef._lastTime || null,
+          title: `Clip ${new Date().toLocaleTimeString()}`
+        });
+        setSavedClip({ url: file_url });
+        setTimeout(() => setSavedClip(null), 5000);
+      } catch (e) {
+        // upload failed silently — local download already triggered
+      }
+      URL.revokeObjectURL(localUrl);
     };
     recorder.start();
     mediaRecorderRef.current = recorder;
     setIsRecording(true);
     setRecordingTime(0);
-    recordingTimerRef.current = setInterval(() => setRecordingTime((t) => t + 1), 1000);
+    recordingTimerRef._lastTime = 0;
+    recordingTimerRef.current = setInterval(() => {
+      setRecordingTime((t) => {
+        recordingTimerRef._lastTime = t + 1;
+        return t + 1;
+      });
+    }, 1000);
   }, []);
 
   const stopRecording = useCallback(() => {
@@ -288,17 +315,38 @@ export default function Home() {
           
           </div>
 
+          {/* ── SAVED CLIP TOAST ── */}
+          <AnimatePresence>
+            {savedClip && (
+              <motion.div
+                key="saved-toast"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 20 }}
+                className="absolute bottom-32 left-1/2 -translate-x-1/2 z-30 flex items-center gap-3 px-4 py-3 rounded-2xl bg-black/80 backdrop-blur-md border border-white/20 text-white text-sm font-mono whitespace-nowrap"
+              >
+                <Film className="w-4 h-4 text-primary" />
+                Clip saved!
+                <Link to="/gallery" className="text-primary underline text-xs">View Gallery</Link>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           {/* ── TOP HUD ── */}
           <div className="absolute top-0 left-0 right-0 z-10 flex items-start justify-between px-5 pt-12 pb-6"
         style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, transparent 100%)' }}>
 
-            {/* Left: status */}
+            {/* Left: status + gallery */}
             <div className="flex flex-col gap-1.5">
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-accent animate-pulse" />
                 <span className="text-xs font-mono text-white/80 uppercase tracking-widest">
                   {loopEnabled ? 'LOOP' : isDelayed ? 'DELAYED' : 'LIVE'}
                 </span>
+                <Link to="/gallery"
+                  className="ml-1 flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/10 border border-white/20 text-white/70 text-[10px] font-mono hover:bg-white/20 transition-colors">
+                  <Film className="w-2.5 h-2.5" />GALLERY
+                </Link>
               </div>
               {isDelayed &&
             <motion.div

@@ -1,0 +1,25 @@
+{
+  "name": "Clip",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Name of the clip"
+    },
+    "file_url": {
+      "type": "string",
+      "description": "URL of the saved video file"
+    },
+    "duration": {
+      "type": "number",
+      "description": "Duration of the clip in seconds"
+    },
+    "thumbnail_url": {
+      "type": "string",
+      "description": "Thumbnail image URL"
+    }
+  },
+  "required": [
+    "file_url"
+  ]
+}

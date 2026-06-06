@@ -7,6 +7,7 @@ import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ScrollToTop from './components/ScrollToTop';
 import Home from './pages/Home';
+import Gallery from './pages/Gallery';
 // Add page imports here
 
 const AuthenticatedApp = () => {
@@ -36,6 +37,7 @@ const AuthenticatedApp = () => {
   return (
     <Routes>
       <Route path="/" element={<Home />} />
+      <Route path="/gallery" element={<Gallery />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
