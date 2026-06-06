@@ -1,17 +1,13 @@
 import React from 'react';
-import useCamera from '@/components/video/useCamera';
 import { Lock, Circle } from 'lucide-react';
 import MobileHeader from '@/components/MobileHeader';
+import { useTabNav } from '@/components/TabNavigator';
 
 export default function Home() {
-  const { isActive, error, start } = useCamera();
+  const { push } = useTabNav();
 
-  const handleEnableCamera = async () => {
-    try {
-      await start();
-    } catch (error) {
-      console.error('Camera error:', error);
-    }
+  const handleEnableCamera = () => {
+    push('/camera');
   };
 
   return (
@@ -35,8 +31,7 @@ export default function Home() {
         {/* Enable Camera Button */}
         <button
           onClick={handleEnableCamera}
-          disabled={isActive}
-          className="w-full max-w-xs bg-yellow-400 hover:bg-yellow-500 disabled:bg-yellow-300 text-slate-900 font-bold py-4 px-6 rounded-full flex items-center justify-center gap-3 transition text-lg"
+          className="w-full max-w-xs bg-yellow-400 hover:bg-yellow-500 text-slate-900 font-bold py-4 px-6 rounded-full flex items-center justify-center gap-3 transition text-lg"
         >
           <Lock size={20} />
           enable camera
@@ -46,10 +41,6 @@ export default function Home() {
         <p className="text-center text-xs text-white/50 max-w-xs">
           Works in browser – opens front or rear camera. On iPhone, use Safari for full access.
         </p>
-
-        {error && (
-          <p className="text-center text-sm text-red-400">{error}</p>
-        )}
       </div>
     </div>
   );
