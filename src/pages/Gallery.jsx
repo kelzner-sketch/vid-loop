@@ -62,6 +62,8 @@ export default function Gallery() {
     return next;
   });
 
+  const selectAll = () => setSelected(new Set(clips.map((c) => c.id)));
+
   const exitSelectMode = () => {setSelectMode(false);setSelected(new Set());};
 
   const exportSelected = async () => {
@@ -169,6 +171,10 @@ export default function Gallery() {
         right={
         selectMode ?
         <div className="flex items-center gap-1.5">
+              <button onClick={selectAll}
+          className="px-2 py-1 rounded-full bg-muted border border-border text-muted-foreground text-xs font-mono hover:bg-muted/80">
+                All
+              </button>
               <button onClick={exitSelectMode}
           className="px-2 py-1 rounded-full bg-muted border border-border text-muted-foreground text-xs font-mono">
                 Cancel
