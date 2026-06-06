@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
-import { Camera, CameraOff, Layers, Clock, Eye, Play, Circle, Square, Download, SwitchCamera } from 'lucide-react';
+import { Camera, CameraOff, Layers, Clock, Eye, Play, Circle, Square, Download, SwitchCamera, Repeat2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import useCamera from '@/components/video/useCamera';
 import useFrameBuffer from '@/components/video/useFrameBuffer';
@@ -23,6 +23,15 @@ export default function Home() {
   const [ghostCount, setGhostCount] = useState(6);
   const [ghostOpacity, setGhostOpacity] = useState(0.8);
   const ghostCountdownRef = useRef(null);
+
+  // Ping-pong loop mode
+  const [loopEnabled, setLoopEnabled] = useState(false);
+  const [loopDepth, setLoopDepth] = useState(30); // frames to ping-pong through
+  const [loopSpeed, setLoopSpeed] = useState(1);  // frames advanced per render tick
+  const loopStateRef = useRef({ dir: 1, pos: 0 }); // internal mutable state, no re-render
+  const loopRafRef = useRef(null);
+  const loopEnabledRef = useRef(false);
+
   const [bufferFill, setBufferFill] = useState(0);
   const [isLandscape, setIsLandscape] = useState(() => window.innerWidth > window.innerHeight);
   const [isRecording, setIsRecording] = useState(false);
@@ -32,6 +41,46 @@ export default function Home() {
   const recordingChunksRef = useRef([]);
   const recordingTimerRef = useRef(null);
   const canvasRef = useRef(null); // forwarded from RenderCanvas
+
+  // Keep refs in sync so the RAF loop always reads latest values
+  loopEnabledRef.current = loopEnabled;
+
+  // Ping-pong loop — drives delayOffset automatically
+  useEffect(() => {
+    if (!loopEnabled) {
+      if (loopRafRef.current) cancelAnimationFrame(loopRafRef.current);
+      return;
+    }
+    const tick = () => {
+      if (!loopEnabledRef.current) return;
+      const state = loopStateRef.current;
+      state.pos += state.dir * loopSpeed;
+      if (state.pos >= loopDepth) {
+        state.pos = loopDepth;
+        state.dir = -1;
+      } else if (state.pos <= 0) {
+        state.pos = 0;
+        state.dir = 1;
+      }
+      setDelayOffset(Math.round(state.pos));
+      loopRafRef.current = requestAnimationFrame(tick);
+    };
+    loopStateRef.current = { dir: 1, pos: 0 };
+    loopRafRef.current = requestAnimationFrame(tick);
+    return () => {
+      if (loopRafRef.current) cancelAnimationFrame(loopRafRef.current);
+    };
+  }, [loopEnabled, loopDepth, loopSpeed]);
+
+  const toggleLoop = () => {
+    setLoopEnabled(prev => {
+      if (prev) {
+        // turning off — snap back to live
+        setDelayOffset(0);
+      }
+      return !prev;
+    });
+  };
 
   // Track orientation changes without restarting camera (debounced)
   useEffect(() => {
@@ -122,6 +171,7 @@ export default function Home() {
     setGhostEnabled(false);
     setGhostActive(false);
     setGhostCountdown(null);
+    setLoopEnabled(false);
     stop();
     clearBuffer();
     setBufferFill(0);
@@ -242,7 +292,7 @@ export default function Home() {
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-accent animate-pulse" />
                 <span className="text-xs font-mono text-white/80 uppercase tracking-widest">
-                  {isDelayed ? 'DELAYED' : 'LIVE'}
+                  {loopEnabled ? 'LOOP' : isDelayed ? 'DELAYED' : 'LIVE'}
                 </span>
               </div>
               {isDelayed &&
@@ -356,6 +406,18 @@ export default function Home() {
                     <GhostSliderRow label="Fade" valueLabel={`${Math.round(ghostOpacity * 100)}%`} value={ghostOpacity} min={0.05} max={1} step={0.05} onChange={setGhostOpacity} />
                   </div>
                 )}
+                {/* Loop toggle + sliders — compact */}
+                <button onClick={toggleLoop}
+                  className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl border text-xs font-mono transition-all ${loopEnabled ? 'bg-accent/30 border-accent/50 text-white' : 'bg-white/5 border-white/10 text-white/40'}`}>
+                  <Repeat2 className="w-3 h-3" />
+                  Loop
+                </button>
+                {loopEnabled && (
+                  <div className="space-y-2">
+                    <GhostSliderRow label="Dpth" valueLabel={`${(loopDepth / 30).toFixed(1)}s`} value={loopDepth} min={5} max={Math.max(5, bufferFill - 1)} step={1} onChange={setLoopDepth} />
+                    <GhostSliderRow label="Spd" valueLabel={`${loopSpeed}x`} value={loopSpeed} min={0.25} max={4} step={0.25} onChange={setLoopSpeed} />
+                  </div>
+                )}
               </div>
             </div>
           ) : (
@@ -407,6 +469,25 @@ export default function Home() {
                           <GhostSliderRow label="Interval" valueLabel={`${ghostInterval}f`} value={ghostInterval} min={1} max={30} step={1} onChange={setGhostInterval} />
                           <GhostSliderRow label="Layers" valueLabel={`${ghostCount}`} value={ghostCount} min={2} max={10} step={1} onChange={setGhostCount} />
                           <GhostSliderRow label="Opacity" valueLabel={`${Math.round(ghostOpacity * 100)}%`} value={ghostOpacity} min={0.05} max={1} step={0.05} onChange={setGhostOpacity} />
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+
+                {/* Loop (ping-pong) controls */}
+                <div className="space-y-3">
+                  <button onClick={toggleLoop}
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-mono transition-all ${loopEnabled ? 'bg-accent/30 border-accent/50 text-white' : 'bg-white/5 border-white/10 text-white/40'}`}>
+                    <Repeat2 className="w-3.5 h-3.5" />
+                    Loop
+                  </button>
+                  <AnimatePresence>
+                    {loopEnabled && (
+                      <motion.div key="loop-panel" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
+                        <div className="space-y-3 pt-1">
+                          <GhostSliderRow label="Depth" valueLabel={`${(loopDepth / 30).toFixed(1)}s`} value={loopDepth} min={5} max={Math.max(5, bufferFill - 1)} step={1} onChange={setLoopDepth} />
+                          <GhostSliderRow label="Speed" valueLabel={`${loopSpeed}x`} value={loopSpeed} min={0.25} max={4} step={0.25} onChange={setLoopSpeed} />
                         </div>
                       </motion.div>
                     )}
