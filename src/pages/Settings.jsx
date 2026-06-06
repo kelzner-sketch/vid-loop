@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Film, Camera, Layers, Repeat2, Trash2 } from 'lucide-react';
 import MobileHeader from '@/components/MobileHeader';
 import { base44 } from '@/api/base44Client';
+import ControlSlider from '@/components/video/ControlSlider';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel,
   AlertDialogContent, AlertDialogDescription, AlertDialogFooter,
@@ -17,6 +18,27 @@ const tips = [
 
 export default function Settings() {
   const [deleting, setDeleting] = useState(false);
+  
+  // Load persisted control prefs
+  const loadPrefs = () => {
+    try { return JSON.parse(localStorage.getItem('vidloop_prefs') || '{}'); } catch { return {}; }
+  };
+  const prefs = loadPrefs();
+
+  const [ghostDelay, setGhostDelay] = useState(prefs.ghostDelay ?? 0);
+  const [ghostInterval, setGhostInterval] = useState(prefs.ghostInterval ?? 4);
+  const [ghostCount, setGhostCount] = useState(prefs.ghostCount ?? 6);
+  const [ghostOpacity, setGhostOpacity] = useState(prefs.ghostOpacity ?? 0.8);
+  const [loopDepth, setLoopDepth] = useState(prefs.loopDepth ?? 30);
+  const [loopSpeed, setLoopSpeed] = useState(prefs.loopSpeed ?? 1);
+
+  // Persist prefs whenever they change
+  useEffect(() => {
+    localStorage.setItem('vidloop_prefs', JSON.stringify({
+      ...prefs,
+      ghostDelay, ghostInterval, ghostCount, ghostOpacity, loopDepth, loopSpeed,
+    }));
+  }, [ghostDelay, ghostInterval, ghostCount, ghostOpacity, loopDepth, loopSpeed]);
 
   const handleDeleteAccount = async () => {
     setDeleting(true);
@@ -38,17 +60,32 @@ export default function Settings() {
 
         <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground px-1">How it works</p>
 
-        {tips.map(({ icon: Icon, title, desc }) => (
+        {tips.map(({ icon: IconComponent, title, desc }) => (
           <div key={title} className="flex items-start gap-3 px-4 py-3.5 rounded-2xl bg-card border border-border">
-            <Icon className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+            <IconComponent className="w-4 h-4 text-primary shrink-0 mt-0.5" />
             <div>
               <p className="text-sm font-medium text-foreground">{title}</p>
               <p className="text-xs text-muted-foreground mt-0.5">{desc}</p>
             </div>
           </div>
         ))}
+        {/* Ghost & Loop Settings */}
+        <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground px-1 pt-4">Ghost Blend Controls</p>
+        <div className="rounded-2xl bg-card border border-border px-5 py-4 space-y-4">
+          <ControlSetting label="Delay" sublabel="Seconds before ghost activates" value={ghostDelay} min={0} max={10} step={1} onChange={setGhostDelay} formatValue={(v) => v === 0 ? 'off' : `${v}s`} />
+          <ControlSetting label="Interval" sublabel="Frames between layers" value={ghostInterval} min={1} max={30} step={1} onChange={setGhostInterval} formatValue={(v) => `${v}f`} />
+          <ControlSetting label="Layers" sublabel="Number of ghost trails" value={ghostCount} min={2} max={10} step={1} onChange={setGhostCount} formatValue={(v) => `${v}`} />
+          <ControlSetting label="Opacity" sublabel="Fade intensity" value={ghostOpacity} min={0.05} max={1} step={0.05} onChange={setGhostOpacity} formatValue={(v) => `${Math.round(v * 100)}%`} />
+        </div>
+
+        <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground px-1 pt-4">Loop Controls</p>
+        <div className="rounded-2xl bg-card border border-border px-5 py-4 space-y-4">
+          <ControlSetting label="Depth" sublabel="Duration of ping-pong loop" value={loopDepth} min={5} max={180} step={1} onChange={setLoopDepth} formatValue={(v) => `${(v / 30).toFixed(1)}s`} />
+          <ControlSetting label="Speed" sublabel="Playback speed multiplier" value={loopSpeed} min={0.25} max={4} step={0.25} onChange={setLoopSpeed} formatValue={(v) => `${v}x`} />
+        </div>
+
         {/* Delete Account */}
-        <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground px-1 pt-2">Account</p>
+         <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground px-1 pt-4">Account</p>
         <AlertDialog>
           <AlertDialogTrigger asChild>
             <button className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl bg-card border border-destructive/30 text-destructive hover:bg-destructive/10 transition-colors">
@@ -76,6 +113,21 @@ export default function Settings() {
           </AlertDialogContent>
         </AlertDialog>
       </div>
+    </div>
+  );
+}
+
+function ControlSetting({ label, sublabel, value, min, max, step, onChange, formatValue }) {
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-sm font-medium text-foreground">{label}</p>
+          <p className="text-xs text-muted-foreground">{sublabel}</p>
+        </div>
+        <span className="text-xs font-mono text-primary">{formatValue(value)}</span>
+      </div>
+      <ControlSlider value={value} min={min} max={max} step={step} onChange={onChange} />
     </div>
   );
 }

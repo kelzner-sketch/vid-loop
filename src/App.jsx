@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
-import { BrowserRouter as Router } from 'react-router-dom';
+import { BrowserRouter as Router, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import Home from './pages/Home';
@@ -20,7 +20,16 @@ const TAB_PAGES = {
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
-  const { activeTab } = useTabNav();
+  const { activeTab, switchTab } = useTabNav();
+  const location = useLocation();
+
+  // Sync route path to active tab
+  useEffect(() => {
+    const path = location.pathname;
+    if (path === '/gallery' && activeTab !== '/gallery') switchTab('/gallery');
+    else if (path === '/settings' && activeTab !== '/settings') switchTab('/settings');
+    else if ((path === '/' || path === '') && activeTab !== '/') switchTab('/');
+  }, [location.pathname, activeTab, switchTab]);
 
   if (isLoadingPublicSettings || isLoadingAuth) {
     return (
