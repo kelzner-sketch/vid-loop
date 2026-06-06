@@ -2,12 +2,17 @@ import React, { useEffect } from 'react';
 import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
-import { BrowserRouter as Router, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
+import ProtectedRoute from '@/components/ProtectedRoute';
 import Home from './pages/Home';
 import Gallery from './pages/Gallery';
 import Settings from './pages/Settings';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 import BottomTabBar from './components/BottomTabBar';
 import { TabNavigatorProvider, useTabNav } from './components/TabNavigator';
 // Add page imports here
@@ -41,24 +46,37 @@ const AuthenticatedApp = () => {
 
   if (authError) {
     if (authError.type === 'user_not_registered') return <UserNotRegisteredError />;
-    if (authError.type === 'auth_required') { navigateToLogin(); return null; }
+    if (authError.type === 'auth_required') return <Routes><Route path="*" element={<Navigate to="/login" replace />} /></Routes>;
   }
 
   return (
     <>
-      {/* Render all tabs simultaneously; only the active one is visible */}
-      <div className="fixed inset-0">
-        {Object.entries(TAB_PAGES).map(([tab, PageComponent]) => (
-          <div
-            key={tab}
-            className="absolute inset-0"
-            style={{ display: activeTab === tab ? 'block' : 'none' }}
-          >
-            <PageComponent />
-          </div>
-        ))}
-      </div>
-      <BottomTabBar />
+      <Routes>
+        {/* Auth routes */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        
+        {/* Protected app routes */}
+        <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
+          {/* Render all tabs simultaneously; only the active one is visible */}
+          <Route path="*" element={
+            <div className="fixed inset-0">
+              {Object.entries(TAB_PAGES).map(([tab, PageComponent]) => (
+                <div
+                  key={tab}
+                  className="absolute inset-0"
+                  style={{ display: activeTab === tab ? 'block' : 'none' }}
+                >
+                  <PageComponent />
+                </div>
+              ))}
+              <BottomTabBar />
+            </div>
+          } />
+        </Route>
+      </Routes>
     </>
   );
 };

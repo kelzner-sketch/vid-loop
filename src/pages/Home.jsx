@@ -296,6 +296,10 @@ export default function Home() {
                <Camera className="w-8 h-8" />
                Enable Camera
               </Button>
+              <div className="flex gap-2 text-xs">
+                <a href="/login" className="flex-1 px-4 py-2 rounded-xl border border-border bg-card text-center text-foreground hover:bg-muted transition-colors">Sign In</a>
+                <a href="/register" className="flex-1 px-4 py-2 rounded-xl border border-primary/30 bg-primary/10 text-center text-primary hover:bg-primary/20 transition-colors">Sign Up</a>
+              </div>
             </div>
 
             <p className="text-xs text-muted-foreground/60 text-center max-w-xs">
