@@ -229,9 +229,9 @@ export default function Home() {
 
 
 
+
         // upload failed silently — local download already triggered
-      }URL.revokeObjectURL(localUrl);};recorder.start();mediaRecorderRef.current = recorder;setIsRecording(true);setRecordingTime(0);recordingTimerRef._lastTime = 0;recordingTimerRef.current = setInterval(() => {setRecordingTime((t) => {recordingTimerRef._lastTime = t + 1;return t + 1;});
-      }, 1000);
+      }URL.revokeObjectURL(localUrl);};recorder.start();mediaRecorderRef.current = recorder;setIsRecording(true);setRecordingTime(0);recordingTimerRef._lastTime = 0;recordingTimerRef.current = setInterval(() => {setRecordingTime((t) => {recordingTimerRef._lastTime = t + 1;return t + 1;});}, 1000);
   }, []);
 
   const stopRecording = useCallback(() => {
@@ -261,7 +261,7 @@ export default function Home() {
             {/* Logo mark */}
             <div className="relative">
               <div className="w-24 h-24 rounded-3xl border border-primary/20 flex items-center justify-center opacity-100" style={{ background: 'linear-gradient(to bottom, #0a1a4a, #184291)' }}>
-                <Camera className="w-20 h-20 text-primary" />
+                <Camera className="w-20 h-20 text-[hsl(var(--primary))]" />
               </div>
               <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full animate-pulse bg-[#ff0000]" />
             </div>
@@ -279,7 +279,7 @@ export default function Home() {
                   {error}
                 </p>
             }
-              <Button onClick={handleStart} size="lg" className="w-full gap-2 h-14 rounded-2xl lowercase text-center text-xl">
+              <Button onClick={handleStart} size="lg" className="w-full gap-2 h-14 rounded-2xl lowercase text-center text-xl bg-[hsl(var(--primary))]">
                 <Camera className="w-5 h-5" />
                 Enable Camera
               </Button>
