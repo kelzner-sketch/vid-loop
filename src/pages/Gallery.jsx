@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { Camera, Trash2, Download, Film, Pencil, Check, X } from 'lucide-react';
+import { Camera, Trash2, Download, Film, Pencil, Check, X, CheckSquare } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function Gallery() {
@@ -9,6 +9,22 @@ export default function Gallery() {
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState(null);
   const [editingTitle, setEditingTitle] = useState('');
+  const [selectMode, setSelectMode] = useState(false);
+  const [selected, setSelected] = useState(new Set());
+
+  const toggleSelect = (id) => setSelected(prev => {
+    const next = new Set(prev);
+    next.has(id) ? next.delete(id) : next.add(id);
+    return next;
+  });
+
+  const exitSelectMode = () => { setSelectMode(false); setSelected(new Set()); };
+
+  const deleteSelected = async () => {
+    await Promise.all([...selected].map(id => base44.entities.Clip.delete(id)));
+    setClips(prev => prev.filter(c => !selected.has(c.id)));
+    exitSelectMode();
+  };
 
   const startEdit = (clip) => { setEditingId(clip.id); setEditingTitle(clip.title || ''); };
   const cancelEdit = () => { setEditingId(null); setEditingTitle(''); };
@@ -39,11 +55,36 @@ export default function Gallery() {
           <Film className="w-5 h-5 text-primary" />
           <h1 className="text-lg font-bold font-heading">Saved Clips</h1>
         </div>
-        <Link to="/"
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-mono hover:bg-primary/20 transition-colors">
-          <Camera className="w-3.5 h-3.5" />
-          Camera
-        </Link>
+        <div className="flex items-center gap-2">
+          {selectMode ? (
+            <>
+              <button onClick={exitSelectMode}
+                className="px-3 py-1.5 rounded-full bg-muted border border-border text-muted-foreground text-xs font-mono">
+                Cancel
+              </button>
+              <button onClick={deleteSelected} disabled={selected.size === 0}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-destructive/20 border border-destructive/40 text-destructive text-xs font-mono disabled:opacity-40">
+                <Trash2 className="w-3.5 h-3.5" />
+                Delete ({selected.size})
+              </button>
+            </>
+          ) : (
+            <>
+              {clips.length > 0 && (
+                <button onClick={() => setSelectMode(true)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-muted border border-border text-muted-foreground text-xs font-mono hover:bg-muted/80 transition-colors">
+                  <CheckSquare className="w-3.5 h-3.5" />
+                  Select
+                </button>
+              )}
+              <Link to="/"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-mono hover:bg-primary/20 transition-colors">
+                <Camera className="w-3.5 h-3.5" />
+                Camera
+              </Link>
+            </>
+          )}
+        </div>
       </div>
 
       {/* Content */}
@@ -73,10 +114,16 @@ export default function Gallery() {
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.05 }}
-                className="bg-card rounded-2xl border border-border overflow-hidden"
+                onClick={selectMode ? () => toggleSelect(clip.id) : undefined}
+                className={`bg-card rounded-2xl border overflow-hidden transition-all ${selectMode ? 'cursor-pointer' : ''} ${selected.has(clip.id) ? 'border-destructive ring-2 ring-destructive/40' : 'border-border'}`}
               >
                 {/* Video preview */}
                 <div className="aspect-[9/16] bg-black relative">
+                  {selectMode && (
+                    <div className={`absolute top-2 left-2 z-10 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${selected.has(clip.id) ? 'bg-destructive border-destructive' : 'bg-black/50 border-white/60'}`}>
+                      {selected.has(clip.id) && <Check className="w-3 h-3 text-white" />}
+                    </div>
+                  )}
                   <video
                     src={clip.file_url}
                     className="w-full h-full object-cover"
