@@ -261,9 +261,7 @@ export default function Home() {
           
             {/* Logo mark */}
             <div className="relative">
-              <div className="w-24 h-24 rounded-3xl border border-primary/20 flex items-center justify-center opacity-100" style={{ background: 'linear-gradient(to bottom, #0a1a4a, #184291)' }}>
-                <Camera className="w-20 h-20 text-[hsl(var(--primary))]" />
-              </div>
+              <img src="https://media.base44.com/images/public/6a2067de3230ec7bd237c422/26d8fea39_vid-loop-icon.png" alt="VidLoop" className="w-24 h-24 rounded-3xl" />
               <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full animate-pulse bg-[#ff0000]" />
             </div>
 
