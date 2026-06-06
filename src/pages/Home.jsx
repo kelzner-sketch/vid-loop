@@ -268,6 +268,11 @@ export default function Home() {
       {/* ── LIVE VIEW ── */}
       {isActive &&
       <>
+          {/* Recording border pulse */}
+          {isRecording && (
+            <div className="absolute inset-0 z-20 pointer-events-none rounded-none border-4 border-red-500 animate-pulse" />
+          )}
+
           {/* Full-screen canvas */}
           <div className="absolute inset-0">
             <RenderCanvas
