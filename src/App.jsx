@@ -10,6 +10,7 @@ import ProtectedRoute from '@/components/ProtectedRoute';
 import Home from './pages/Home';
 import Gallery from './pages/Gallery';
 import Settings from './pages/Settings';
+import Camera from './pages/Camera';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
@@ -23,6 +24,7 @@ const TAB_PAGES = {
   '/': Home,
   '/gallery': Gallery,
   '/settings': Settings,
+  '/camera': Camera,
 };
 
 const AuthenticatedApp = () => {
