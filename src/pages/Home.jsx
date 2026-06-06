@@ -79,7 +79,7 @@ export default function Home() {
     if (startCamera) {
       startCamera();
     }
-  }, []);
+  }, [startCamera]);
 
   // Setup recording canvas stream
   useEffect(() => {
