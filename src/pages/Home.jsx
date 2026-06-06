@@ -1,13 +1,13 @@
 import React from 'react';
 import { Lock, Circle } from 'lucide-react';
 import MobileHeader from '@/components/MobileHeader';
-import { useTabNav } from '@/components/TabNavigator';
+import { useNavigate } from 'react-router-dom';
 
 export default function Home() {
-  const { push } = useTabNav();
+  const navigate = useNavigate();
 
   const handleEnableCamera = () => {
-    push('/camera');
+    navigate('/camera');
   };
 
   return (

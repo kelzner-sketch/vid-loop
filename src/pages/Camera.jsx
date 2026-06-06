@@ -1,15 +1,14 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { useTabNav } from '@/components/TabNavigator';
+import { useNavigate } from 'react-router-dom';
 import useCamera from '@/components/video/useCamera';
 import RenderCanvas from '@/components/video/RenderCanvas';
 import useFrameBuffer from '@/components/video/useFrameBuffer';
 import ScrubBar from '@/components/video/ScrubBar';
 import ControlSlider from '@/components/video/ControlSlider';
 import { Circle, Square, ChevronLeft } from 'lucide-react';
-import MobileHeader from '@/components/MobileHeader';
 
 export default function Camera() {
-  const { pop } = useTabNav();
+  const navigate = useNavigate();
   const { videoRef, isActive, start, stop } = useCamera();
   const { bufferRef, addFrame, getFrame, getBufferStatus } = useFrameBuffer();
   const canvasRef = React.useRef(null);
@@ -62,7 +61,7 @@ export default function Camera() {
       {/* Header */}
       <div className="flex items-center justify-between px-4 border-b border-slate-800" style={{ paddingTop: 'calc(1rem + env(safe-area-inset-top))' }}>
         <button
-          onClick={pop}
+          onClick={() => navigate('/')}
           className="flex items-center gap-0.5 text-yellow-400 active:opacity-60"
         >
           <ChevronLeft className="w-5 h-5" />

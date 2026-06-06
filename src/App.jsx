@@ -24,7 +24,6 @@ const TAB_PAGES = {
   '/': Home,
   '/gallery': Gallery,
   '/settings': Settings,
-  '/camera': Camera,
 };
 
 const AuthenticatedApp = () => {
@@ -62,6 +61,9 @@ const AuthenticatedApp = () => {
         <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
+        
+        {/* Camera route */}
+        <Route path="/camera" element={<Camera />} />
         
         {/* App routes - publicly accessible */}
         <Route path="/*" element={
