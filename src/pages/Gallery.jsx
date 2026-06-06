@@ -72,8 +72,8 @@ export default function Gallery() {
                     className="w-full h-full object-cover"
                     muted
                     playsInline
-                    onMouseEnter={e => e.target.play()}
-                    onMouseLeave={e => { e.target.pause(); e.target.currentTime = 0; }}
+                    onMouseEnter={e => { const v = e.currentTarget; v.play().catch(() => {}); }}
+                    onMouseLeave={e => { const v = e.currentTarget; v.pause(); v.currentTime = 0; }}
                   />
                   {clip.duration && (
                     <span className="absolute bottom-2 right-2 text-[10px] font-mono bg-black/60 text-white px-1.5 py-0.5 rounded">
