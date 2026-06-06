@@ -444,32 +444,32 @@ export default function Home() {
                   </div>
                   <ScrubBar value={delayOffset} max={Math.max(1, bufferFill - 1)} onChange={setDelayOffset} bufferFill={bufferFill} maxBufferSize={maxBufferSize} />
                 </div>
-                {/* Ghost toggle */}
-                <button onClick={toggleGhost}
-            className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl border text-xs font-mono transition-all ${ghostEnabled ? 'bg-primary/30 border-primary/50 text-white' : 'bg-white/5 border-white/10 text-white/40'}`}>
-                  <Layers className="w-3 h-3" />
-                  {ghostCountdown !== null ? `Ghost ${ghostCountdown}s…` : 'Ghost Blend'}
-                </button>
-                {/* Ghost sliders — compact */}
-                {ghostEnabled &&
-            <div className="space-y-2">
-                    <GhostSliderRow label="Intv" valueLabel={`${ghostInterval}f`} value={ghostInterval} min={1} max={30} step={1} onChange={setGhostInterval} />
-                    <GhostSliderRow label="Lyrs" valueLabel={`${ghostCount}`} value={ghostCount} min={2} max={10} step={1} onChange={setGhostCount} />
-                    <GhostSliderRow label="Fade" valueLabel={`${Math.round(ghostOpacity * 100)}%`} value={ghostOpacity} min={0.05} max={1} step={0.05} onChange={setGhostOpacity} />
-                  </div>
-            }
                 {/* Loop toggle + sliders — compact */}
-                <button onClick={toggleLoop}
-            className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl border text-xs font-mono transition-all ${loopEnabled ? 'bg-accent/30 border-accent/50 text-white' : 'bg-white/5 border-white/10 text-white/40'}`}>
-                  <Repeat2 className="w-3 h-3" />
-                  Loop
-                </button>
-                {loopEnabled &&
-            <div className="space-y-2">
-                    <GhostSliderRow label="Dpth" valueLabel={`${(loopDepth / 30).toFixed(1)}s`} value={loopDepth} min={5} max={Math.max(5, bufferFill - 1)} step={1} onChange={setLoopDepth} />
-                    <GhostSliderRow label="Spd" valueLabel={`${loopSpeed}x`} value={loopSpeed} min={0.25} max={4} step={0.25} onChange={setLoopSpeed} />
-                  </div>
-            }
+                 <button onClick={toggleLoop}
+                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl border text-xs font-mono transition-all ${loopEnabled ? 'bg-accent/30 border-accent/50 text-white' : 'bg-white/5 border-white/10 text-white/40'}`}>
+                   <Repeat2 className="w-3 h-3" />
+                   Loop
+                 </button>
+                 {loopEnabled &&
+                <div className="space-y-2">
+                     <GhostSliderRow label="Dpth" valueLabel={`${(loopDepth / 30).toFixed(1)}s`} value={loopDepth} min={5} max={Math.max(5, bufferFill - 1)} step={1} onChange={setLoopDepth} />
+                     <GhostSliderRow label="Spd" valueLabel={`${loopSpeed}x`} value={loopSpeed} min={0.25} max={4} step={0.25} onChange={setLoopSpeed} />
+                   </div>
+                }
+                 {/* Ghost toggle */}
+                 <button onClick={toggleGhost}
+                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl border text-xs font-mono transition-all ${ghostEnabled ? 'bg-primary/30 border-primary/50 text-white' : 'bg-white/5 border-white/10 text-white/40'}`}>
+                   <Layers className="w-3 h-3" />
+                   {ghostCountdown !== null ? `Ghost ${ghostCountdown}s…` : 'Ghost Blend'}
+                 </button>
+                 {/* Ghost sliders — compact */}
+                 {ghostEnabled &&
+                <div className="space-y-2">
+                     <GhostSliderRow label="Intv" valueLabel={`${ghostInterval}f`} value={ghostInterval} min={1} max={30} step={1} onChange={setGhostInterval} />
+                     <GhostSliderRow label="Lyrs" valueLabel={`${ghostCount}`} value={ghostCount} min={2} max={10} step={1} onChange={setGhostCount} />
+                     <GhostSliderRow label="Fade" valueLabel={`${Math.round(ghostOpacity * 100)}%`} value={ghostOpacity} min={0.05} max={1} step={0.05} onChange={setGhostOpacity} />
+                   </div>
+                }
               </div>
             </div>) : (
 
@@ -499,51 +499,51 @@ export default function Home() {
                     <span>now</span>
                   </div>
                 </div>
-                {/* Ghost controls */}
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <button onClick={toggleGhost}
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-mono transition-all ${ghostEnabled ? 'bg-primary/30 border-primary/50 text-white' : 'bg-white/5 border-white/10 text-white/40'}`}>
-                      <Layers className="w-3.5 h-3.5" />
-                      {ghostCountdown !== null ? `Ghost in ${ghostCountdown}s…` : 'Ghost Blend'}
-                    </button>
-                    <button onClick={handleStop}
-                className="w-9 h-9 rounded-full bg-white/10 border border-white/15 flex items-center justify-center active:scale-95 transition-transform">
-                      <CameraOff className="w-4 h-4 text-white/70" />
-                    </button>
-                  </div>
-                  <AnimatePresence>
-                    {ghostEnabled &&
-                <motion.div key="ghost-panel" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
-                        <div className="space-y-3 pt-1">
-                          <GhostSliderRow label="Delay" valueLabel={ghostDelay === 0 ? 'off' : `${ghostDelay}s`} value={ghostDelay} min={0} max={10} step={1} onChange={setGhostDelay} />
-                          <GhostSliderRow label="Interval" valueLabel={`${ghostInterval}f`} value={ghostInterval} min={1} max={30} step={1} onChange={setGhostInterval} />
-                          <GhostSliderRow label="Layers" valueLabel={`${ghostCount}`} value={ghostCount} min={2} max={10} step={1} onChange={setGhostCount} />
-                          <GhostSliderRow label="Opacity" valueLabel={`${Math.round(ghostOpacity * 100)}%`} value={ghostOpacity} min={0.05} max={1} step={0.05} onChange={setGhostOpacity} />
-                        </div>
-                      </motion.div>
-                }
-                  </AnimatePresence>
-                </div>
-
                 {/* Loop (ping-pong) controls */}
-                <div className="space-y-3">
-                  <button onClick={toggleLoop}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-mono transition-all ${loopEnabled ? 'bg-accent/30 border-accent/50 text-white' : 'bg-white/5 border-white/10 text-white/40'}`}>
-                    <Repeat2 className="w-3.5 h-3.5" />
-                    Loop
-                  </button>
-                  <AnimatePresence>
-                    {loopEnabled &&
-                <motion.div key="loop-panel" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
-                        <div className="space-y-3 pt-1">
-                          <GhostSliderRow label="Depth" valueLabel={`${(loopDepth / 30).toFixed(1)}s`} value={loopDepth} min={5} max={Math.max(5, bufferFill - 1)} step={1} onChange={setLoopDepth} />
-                          <GhostSliderRow label="Speed" valueLabel={`${loopSpeed}x`} value={loopSpeed} min={0.25} max={4} step={0.25} onChange={setLoopSpeed} />
-                        </div>
-                      </motion.div>
-                }
-                  </AnimatePresence>
-                </div>
+                 <div className="space-y-3">
+                   <button onClick={toggleLoop}
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-mono transition-all ${loopEnabled ? 'bg-accent/30 border-accent/50 text-white' : 'bg-white/5 border-white/10 text-white/40'}`}>
+                     <Repeat2 className="w-3.5 h-3.5" />
+                     Loop
+                   </button>
+                   <AnimatePresence>
+                     {loopEnabled &&
+                 <motion.div key="loop-panel" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
+                         <div className="space-y-3 pt-1">
+                           <GhostSliderRow label="Depth" valueLabel={`${(loopDepth / 30).toFixed(1)}s`} value={loopDepth} min={5} max={Math.max(5, bufferFill - 1)} step={1} onChange={setLoopDepth} />
+                           <GhostSliderRow label="Speed" valueLabel={`${loopSpeed}x`} value={loopSpeed} min={0.25} max={4} step={0.25} onChange={setLoopSpeed} />
+                         </div>
+                       </motion.div>
+                 }
+                   </AnimatePresence>
+                 </div>
+
+                 {/* Ghost controls */}
+                 <div className="space-y-3">
+                   <div className="flex items-center justify-between">
+                     <button onClick={toggleGhost}
+                 className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-mono transition-all ${ghostEnabled ? 'bg-primary/30 border-primary/50 text-white' : 'bg-white/5 border-white/10 text-white/40'}`}>
+                       <Layers className="w-3.5 h-3.5" />
+                       {ghostCountdown !== null ? `Ghost in ${ghostCountdown}s…` : 'Ghost Blend'}
+                     </button>
+                     <button onClick={handleStop}
+                 className="w-9 h-9 rounded-full bg-white/10 border border-white/15 flex items-center justify-center active:scale-95 transition-transform">
+                       <CameraOff className="w-4 h-4 text-white/70" />
+                     </button>
+                   </div>
+                   <AnimatePresence>
+                     {ghostEnabled &&
+                 <motion.div key="ghost-panel" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
+                         <div className="space-y-3 pt-1">
+                           <GhostSliderRow label="Delay" valueLabel={ghostDelay === 0 ? 'off' : `${ghostDelay}s`} value={ghostDelay} min={0} max={10} step={1} onChange={setGhostDelay} />
+                           <GhostSliderRow label="Interval" valueLabel={`${ghostInterval}f`} value={ghostInterval} min={1} max={30} step={1} onChange={setGhostInterval} />
+                           <GhostSliderRow label="Layers" valueLabel={`${ghostCount}`} value={ghostCount} min={2} max={10} step={1} onChange={setGhostCount} />
+                           <GhostSliderRow label="Opacity" valueLabel={`${Math.round(ghostOpacity * 100)}%`} value={ghostOpacity} min={0.05} max={1} step={0.05} onChange={setGhostOpacity} />
+                         </div>
+                       </motion.div>
+                 }
+                   </AnimatePresence>
+                 </div>
               </div>
             </div>)
         }
