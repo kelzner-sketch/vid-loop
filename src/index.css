@@ -24,8 +24,8 @@
     --destructive-foreground: 0 0% 98%;
     --border: 230 12% 20%;
     --input: 230 12% 20%;
-    --ring: 250 80% 65%;
-    --chart-1: 250 80% 65%;
+    --ring: 213 80% 65%;
+    --chart-1: 202 80% 65%;
     --chart-2: 170 70% 50%;
     --chart-3: 35 90% 60%;
     --chart-4: 330 70% 60%;
@@ -37,12 +37,12 @@
     --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
     --sidebar-background: 230 15% 8%;
     --sidebar-foreground: 220 20% 85%;
-    --sidebar-primary: 250 80% 65%;
+    --sidebar-primary: 213 80% 65%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 230 15% 16%;
     --sidebar-accent-foreground: 220 20% 85%;
     --sidebar-border: 230 12% 20%;
-    --sidebar-ring: 250 80% 65%;
+    --sidebar-ring: 213 80% 65%;
   }
 
   .dark {
