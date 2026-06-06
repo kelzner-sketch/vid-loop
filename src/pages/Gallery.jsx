@@ -69,6 +69,27 @@ export default function Gallery() {
   const exportSelected = async () => {
     setExporting(true);
     const selectedClips = clips.filter((c) => selected.has(c.id));
+    
+    // Try native share first if available (works on mobile for camera roll, messaging apps, etc.)
+    if (navigator.share && selectedClips.length === 1) {
+      try {
+        const clip = selectedClips[0];
+        const res = await fetch(clip.file_url);
+        const blob = await res.blob();
+        const ext = blob.type.includes('mp4') ? 'mp4' : 'webm';
+        const file = new File([blob], `${clip.title || 'vidloop'}.${ext}`, { type: blob.type });
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({ files: [file], title: clip.title });
+          setExporting(false);
+          exitSelectMode();
+          return;
+        }
+      } catch (e) {
+        if (e.name !== 'AbortError') console.error(e);
+      }
+    }
+    
+    // Fall back to downloading all selected files
     for (const clip of selectedClips) {
       const title = clip.title || `vidloop-${clip.id}`;
       const res = await fetch(clip.file_url);
