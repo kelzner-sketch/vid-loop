@@ -3,13 +3,16 @@ import { base44 } from '@/api/base44Client';
 import { Trash2, Download, Film, Pencil, Check, X, CheckSquare, RefreshCw, Share2, Loader2, Scissors } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import MobileHeader from '@/components/MobileHeader';
+import UserProfile from '@/components/UserProfile';
 import { useTabNav } from '@/components/TabNavigator';
+import { useAuth } from '@/lib/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import TrimModal from '@/components/TrimModal';
 
 export default function Gallery() {
   const navigate = useNavigate();
   const { switchTab } = useTabNav();
+  const { user } = useAuth();
   const [clips, setClips] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState(null);
@@ -200,12 +203,14 @@ export default function Gallery() {
       {/* Content */}
       <div
         ref={scrollRef}
-        className="flex-1 overflow-y-auto px-5 py-4"
+        className="flex-1 overflow-y-auto px-5 py-4 space-y-4"
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
         style={{ paddingBottom: 'calc(1rem + env(safe-area-inset-bottom) + 56px)' }}>
         
+        {user && <UserProfile />}
+
         {loading ?
         <div className="flex items-center justify-center h-40">
             <div className="w-6 h-6 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />

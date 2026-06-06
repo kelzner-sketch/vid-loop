@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Film, Camera, Layers, Repeat2, Trash2 } from 'lucide-react';
 import MobileHeader from '@/components/MobileHeader';
+import UserProfile from '@/components/UserProfile';
 import { useAuth } from '@/lib/AuthContext';
 import { base44 } from '@/api/base44Client';
 import ControlSlider from '@/components/video/ControlSlider';
@@ -74,6 +75,8 @@ export default function Settings() {
       <MobileHeader title="About" />
 
       <div className="flex-1 overflow-y-auto px-5 py-6 space-y-4" style={{ paddingBottom: 'calc(1rem + env(safe-area-inset-bottom) + 56px)' }}>
+        {user && <UserProfile />}
+        
         <div className="rounded-2xl bg-card border border-border px-5 py-4 space-y-1">
           <h2 className="text-2xl font-light font-heading lowercase tracking-tight text-foreground">vid-loop</h2>
           <p className="text-xs text-muted-foreground leading-relaxed">
