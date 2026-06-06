@@ -76,8 +76,10 @@ export default function Home() {
 
   // Request camera access on mount
   useEffect(() => {
-    startCamera();
-  }, [startCamera]);
+    if (startCamera) {
+      startCamera();
+    }
+  }, []);
 
   // Setup recording canvas stream
   useEffect(() => {
