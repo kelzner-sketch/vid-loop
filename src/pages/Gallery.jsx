@@ -271,7 +271,7 @@ export default function Gallery() {
             </button>
           </div> :
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-3 gap-2">
             {clips.map((clip, i) =>
           <motion.div
             key={clip.id}
