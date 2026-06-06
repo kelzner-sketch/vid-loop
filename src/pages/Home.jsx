@@ -1,57 +1,18 @@
-import React, { useState } from 'react';
+import React from 'react';
 import useCamera from '@/components/video/useCamera';
-import { Lock, Circle, Square } from 'lucide-react';
+import { Lock, Circle } from 'lucide-react';
 import MobileHeader from '@/components/MobileHeader';
 
 export default function Home() {
-  const [cameraOpen, setCameraOpen] = useState(false);
-  const { videoRef, isActive, error, start, stop } = useCamera();
+  const { isActive, error, start } = useCamera();
 
   const handleEnableCamera = async () => {
-    setCameraOpen(true);
-    await start();
+    try {
+      await start();
+    } catch (error) {
+      console.error('Camera error:', error);
+    }
   };
-
-  const handleCloseCamera = () => {
-    stop();
-    setCameraOpen(false);
-  };
-
-  if (cameraOpen) {
-    return (
-      <div className="fixed inset-0 flex flex-col bg-black">
-        <MobileHeader />
-        <div className="flex-1 flex items-center justify-center relative overflow-hidden">
-          {error ? (
-            <div className="text-center text-red-400 px-6">
-              <p className="text-lg font-semibold">{error}</p>
-              <button
-                onClick={handleCloseCamera}
-                className="mt-6 bg-yellow-400 hover:bg-yellow-500 text-slate-900 font-bold py-3 px-6 rounded-full"
-              >
-                Go Back
-              </button>
-            </div>
-          ) : (
-            <>
-              <video
-                ref={videoRef}
-                className="w-full h-full object-cover"
-                playsInline
-                autoPlay
-              />
-              <button
-                onClick={handleCloseCamera}
-                className="absolute bottom-8 left-1/2 transform -translate-x-1/2 bg-red-600 hover:bg-red-700 text-white p-4 rounded-full"
-              >
-                <Square size={24} fill="currentColor" />
-              </button>
-            </>
-          )}
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="fixed inset-0 flex flex-col bg-gradient-to-b from-slate-900 to-slate-950">
@@ -74,7 +35,8 @@ export default function Home() {
         {/* Enable Camera Button */}
         <button
           onClick={handleEnableCamera}
-          className="w-full max-w-xs bg-yellow-400 hover:bg-yellow-500 text-slate-900 font-bold py-4 px-6 rounded-full flex items-center justify-center gap-3 transition text-lg"
+          disabled={isActive}
+          className="w-full max-w-xs bg-yellow-400 hover:bg-yellow-500 disabled:bg-yellow-300 text-slate-900 font-bold py-4 px-6 rounded-full flex items-center justify-center gap-3 transition text-lg"
         >
           <Lock size={20} />
           enable camera
@@ -84,6 +46,10 @@ export default function Home() {
         <p className="text-center text-xs text-white/50 max-w-xs">
           Works in browser – opens front or rear camera. On iPhone, use Safari for full access.
         </p>
+
+        {error && (
+          <p className="text-center text-sm text-red-400">{error}</p>
+        )}
       </div>
     </div>
   );
