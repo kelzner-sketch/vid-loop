@@ -10,7 +10,7 @@ import { Circle, Square, ChevronLeft } from 'lucide-react';
 export default function Camera() {
   const navigate = useNavigate();
   const { videoRef, isActive, start, stop } = useCamera();
-  const { bufferRef, addFrame } = useFrameBuffer();
+  const { pushFrame } = useFrameBuffer();
   const canvasRef = React.useRef(null);
   
   const [isRecording, setIsRecording] = useState(false);
@@ -30,12 +30,12 @@ export default function Camera() {
     
     const interval = setInterval(() => {
       if (videoRef.current) {
-        addFrame(videoRef.current);
+        pushFrame(videoRef.current);
       }
     }, 50);
 
     return () => clearInterval(interval);
-  }, [isActive, addFrame]);
+  }, [isActive, pushFrame]);
 
   const handleRecord = () => {
     setIsRecording(!isRecording);
