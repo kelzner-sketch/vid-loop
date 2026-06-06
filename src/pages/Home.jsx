@@ -655,14 +655,11 @@ export default function Home() {
               </div>
               </div>)
               }
-
-              {/* Hidden video element */}
-              <video ref={videoRef} playsInline muted className="hidden" />
               </div>
               );
               }
 
-function GhostSliderRow({ label, valueLabel, value, min, max, step, onChange }) {
+              function GhostSliderRow({ label, valueLabel, value, min, max, step, onChange }) {
   return (
     <div className="flex items-center gap-3">
       <span className="text-[10px] font-mono uppercase tracking-widest text-white/40 w-14 shrink-0">{label}</span>
