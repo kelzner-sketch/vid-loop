@@ -6,7 +6,7 @@
 
 @layer base {
   :root {
-    --background: 220 59% 41% / 50%;
+    --background: 205 72% 13% / 70%;
     --foreground: 220 20% 95%;
     --card: 230 6% 2%;
     --card-foreground: 220 20% 95%;
@@ -88,12 +88,5 @@
 
   body {
     @apply bg-background text-foreground font-body;
-    overscroll-behavior: none;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  button, a {
-    -webkit-user-select: none;
-    user-select: none;
   }
 }
