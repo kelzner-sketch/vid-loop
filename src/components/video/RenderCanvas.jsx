@@ -60,25 +60,25 @@ export default function RenderCanvas({ videoRef, getFrame, delayOffset, ghostEna
       const maxAlpha = ghostOpacity ?? 0.8;
       const interval = ghostInterval ?? 4;
 
-      // Draw ghost layers oldest→newest with source-over compositing.
-      // Oldest ghost is most transparent; newest ghost (closest to current) is most opaque.
-      // This creates the classic long-exposure "motion trail" smear.
-      for (let i = count; i >= 1; i--) {
-        const offset = delayOffset + i * interval;
-        const frame = getFrame(offset);
-        if (!frame) continue;
-        // Layer alpha: oldest = low, newest = high, evenly spaced
-        const layerAlpha = maxAlpha * (1 - (i - 1) / count);
-        drawCover(frame, layerAlpha, 'source-over');
-      }
-
-      // Current (or delayed) frame on top at full opacity — sharp and clear
+      // Step 1: Draw the current (or delayed) frame as the base at full opacity
       if (delayOffset === 0 && video) {
         drawCover(video, 1, 'source-over');
       } else {
         const frame = getFrame(delayOffset);
         if (frame) drawCover(frame, 1, 'source-over');
         else if (video) drawCover(video, 1, 'source-over');
+      }
+
+      // Step 2: Overlay ghost frames from newest→oldest on top.
+      // Each ghost is a past frame blended with source-over at decreasing opacity.
+      // Newest ghost (i=1) is most opaque, oldest (i=count) is most transparent.
+      // This creates the "after image / motion trail smear" from the reference videos.
+      for (let i = 1; i <= count; i++) {
+        const offset = delayOffset + i * interval;
+        const frame = getFrame(offset);
+        if (!frame) continue;
+        const layerAlpha = maxAlpha * (1 - (i - 1) / count);
+        drawCover(frame, layerAlpha, 'source-over');
       }
     } else {
       if (delayOffset === 0 && video) {
