@@ -345,12 +345,12 @@ export default function Home() {
               }
               </button>
 
-              {/* Switch camera */}
+              {/* Switch camera toggle */}
               <button
               onClick={handleSwitchCamera}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/15 backdrop-blur-md border border-white/30 text-white text-xs font-mono active:scale-95 transition-all hover:bg-white/25">
-                <SwitchCamera className="w-3.5 h-3.5" />
-                {facingMode === 'user' ? 'FRONT' : 'REAR'}
+              className="flex items-center gap-0 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-xs font-mono overflow-hidden active:scale-95 transition-all">
+                <span className={`px-3 py-1.5 transition-colors ${facingMode === 'environment' ? 'bg-white text-black' : 'text-white/50'}`}>REAR</span>
+                <span className={`px-3 py-1.5 transition-colors ${facingMode === 'user' ? 'bg-white text-black' : 'text-white/50'}`}>FRONT</span>
               </button>
 
               <button
