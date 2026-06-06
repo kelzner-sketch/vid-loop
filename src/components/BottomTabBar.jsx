@@ -13,7 +13,7 @@ export default function BottomTabBar() {
 
   return (
     <div
-      className="fixed bottom-0 left-0 right-0 z-50 flex items-center justify-around bg-black/80 backdrop-blur-xl border-t border-white/10"
+      className="fixed bottom-0 left-0 right-0 z-50 flex items-center justify-around bg-black/80 backdrop-blur-xl border-t border-white/10 pointer-events-auto"
       style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
       {tabs.map(({ path, icon: Icon, label }) => {
@@ -22,8 +22,8 @@ export default function BottomTabBar() {
           <button
             key={path}
             onClick={() => switchTab(path)}
-            className="flex flex-col items-center gap-1 py-2 px-6 select-none"
-            style={{ WebkitTapHighlightColor: 'transparent', background: 'none', border: 'none' }}
+            className="flex flex-col items-center gap-1 py-2 px-6 select-none pointer-events-auto"
+            style={{ WebkitTapHighlightColor: 'transparent', background: 'none', border: 'none', cursor: 'pointer' }}
           >
             <Icon className={`w-5 h-5 transition-colors ${active ? 'text-primary' : 'text-white/40'}`} />
             <span className={`text-[10px] font-mono transition-colors ${active ? 'text-primary' : 'text-white/40'}`}>
