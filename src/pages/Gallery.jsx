@@ -105,7 +105,22 @@ export default function Gallery() {
     setLoading(false);
   };
 
-  useEffect(() => {loadClips();}, []);
+  useEffect(() => {
+    loadClips();
+    
+    // Subscribe to clip changes for real-time updates
+    const unsubscribe = base44.entities.Clip.subscribe((event) => {
+      if (event.type === 'create') {
+        setClips((prev) => [event.data, ...prev]);
+      } else if (event.type === 'update') {
+        setClips((prev) => prev.map((c) => c.id === event.id ? event.data : c));
+      } else if (event.type === 'delete') {
+        setClips((prev) => prev.filter((c) => c.id !== event.id));
+      }
+    });
+    
+    return unsubscribe;
+  }, []);
 
   const deleteClip = (id) => {
     setClips((prev) => prev.filter((c) => c.id !== id));
