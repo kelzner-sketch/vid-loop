@@ -52,7 +52,7 @@ export default function Settings() {
 
       <div className="flex-1 overflow-y-auto px-5 py-6 space-y-4" style={{ paddingBottom: 'calc(1rem + env(safe-area-inset-bottom) + 56px)' }}>
         <div className="rounded-2xl bg-card border border-border px-5 py-4 space-y-1">
-          <h2 className="text-2xl font-light font-heading lowercase tracking-tight text-foreground">VidLoop</h2>
+          <h2 className="text-2xl font-light font-heading lowercase tracking-tight text-foreground">vid-loop</h2>
           <p className="text-xs text-muted-foreground leading-relaxed">
             Live camera with ring-buffer scrubbing, ghost layering, and ping-pong looping. No account needed — everything runs in your browser.
           </p>
