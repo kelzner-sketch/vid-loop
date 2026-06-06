@@ -544,39 +544,39 @@ export default function Home() {
 
               {/* Right-side panel: Loop and Ghost controls */}
               <motion.div 
-              className="absolute right-0 top-0 bottom-0 z-10 flex flex-col pointer-events-none"
-              style={{ background: 'linear-gradient(to left, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.3) 70%, transparent 100%)', width: '130px' }}
-              animate={{ x: isRecording ? 130 : 0 }}
-              transition={{ duration: 0.3 }}
+                className="absolute right-0 top-0 bottom-0 z-10 flex flex-col pointer-events-none"
+                style={{ background: 'linear-gradient(to left, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.3) 70%, transparent 100%)', width: '130px' }}
+                animate={{ x: isRecording ? 130 : 0 }}
+                transition={{ duration: 0.3 }}
               >
-              <div className="px-2 pt-4 pb-4 space-y-2 overflow-y-auto overscroll-contain pointer-events-auto text-[7px]">
-                {/* Loop toggle + sliders */}
-                <button onClick={toggleLoop}
-                  className={`w-full flex items-center gap-1 px-1 py-0.5 rounded border text-[6px] font-mono transition-all ${loopEnabled ? 'bg-accent/30 border-accent/50 text-white' : 'bg-white/5 border-white/10 text-white/40'}`}>
-                  <Repeat2 className="w-2 h-2" />
-                  LOOP
-                </button>
-                {loopEnabled &&
-                  <div className="space-y-1">
-                    <CompactSlider label="D" valueLabel={`${(loopDepth / 30).toFixed(1)}s`} value={loopDepth} min={5} max={Math.max(5, bufferFill - 1)} step={1} onChange={setLoopDepth} compact />
-                    <CompactSlider label="S" valueLabel={`${loopSpeed}x`} value={loopSpeed} min={0.25} max={4} step={0.25} onChange={setLoopSpeed} compact />
-                  </div>
-                }
+                <div className="px-2 pt-4 pb-4 space-y-2 overflow-y-auto overscroll-contain pointer-events-auto text-[7px]">
+                  {/* Loop toggle + sliders */}
+                  <button onClick={toggleLoop}
+                    className={`w-full flex items-center gap-1 px-1 py-0.5 rounded border text-[6px] font-mono transition-all ${loopEnabled ? 'bg-accent/30 border-accent/50 text-white' : 'bg-white/5 border-white/10 text-white/40'}`}>
+                    <Repeat2 className="w-2 h-2" />
+                    LOOP
+                  </button>
+                  {loopEnabled &&
+                    <div className="space-y-1">
+                      <CompactSlider label="D" valueLabel={`${(loopDepth / 30).toFixed(1)}s`} value={loopDepth} min={5} max={Math.max(5, bufferFill - 1)} step={1} onChange={setLoopDepth} compact />
+                      <CompactSlider label="S" valueLabel={`${loopSpeed}x`} value={loopSpeed} min={0.25} max={4} step={0.25} onChange={setLoopSpeed} compact />
+                    </div>
+                  }
 
-                {/* Ghost toggle */}
-                <button onClick={toggleGhost}
-                  className={`w-full flex items-center gap-1 px-1 py-0.5 rounded border text-[6px] font-mono transition-all ${ghostEnabled ? 'bg-primary/30 border-primary/50 text-white' : 'bg-white/5 border-white/10 text-white/40'}`}>
-                  <Layers className="w-2 h-2" />
-                  GHOST
-                </button>
-                {ghostEnabled &&
-                  <div className="space-y-1">
-                    <CompactSlider label="I" valueLabel={`${ghostInterval}f`} value={ghostInterval} min={1} max={30} step={1} onChange={setGhostInterval} compact />
-                    <CompactSlider label="L" valueLabel={`${ghostCount}`} value={ghostCount} min={2} max={10} step={1} onChange={setGhostCount} compact />
-                    <CompactSlider label="O" valueLabel={`${Math.round(ghostOpacity * 100)}%`} value={ghostOpacity} min={0.05} max={1} step={0.05} onChange={setGhostOpacity} compact />
-                  </div>
-                }
-              </div>
+                  {/* Ghost toggle */}
+                  <button onClick={toggleGhost}
+                    className={`w-full flex items-center gap-1 px-1 py-0.5 rounded border text-[6px] font-mono transition-all ${ghostEnabled ? 'bg-primary/30 border-primary/50 text-white' : 'bg-white/5 border-white/10 text-white/40'}`}>
+                    <Layers className="w-2 h-2" />
+                    GHOST
+                  </button>
+                  {ghostEnabled &&
+                    <div className="space-y-1">
+                      <CompactSlider label="I" valueLabel={`${ghostInterval}f`} value={ghostInterval} min={1} max={30} step={1} onChange={setGhostInterval} compact />
+                      <CompactSlider label="L" valueLabel={`${ghostCount}`} value={ghostCount} min={2} max={10} step={1} onChange={setGhostCount} compact />
+                      <CompactSlider label="O" valueLabel={`${Math.round(ghostOpacity * 100)}%`} value={ghostOpacity} min={0.05} max={1} step={0.05} onChange={setGhostOpacity} compact />
+                    </div>
+                  }
+                </div>
               </motion.div>
               ) : (
 
@@ -652,10 +652,8 @@ export default function Home() {
                    </AnimatePresence>
                  </div>
               </div>
-            </div>)
-        }
-        </>
-      }
+              </div>)
+              }
 
       {/* Hidden video element */}
       <video ref={videoRef} playsInline muted className="hidden" />
