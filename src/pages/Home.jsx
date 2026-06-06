@@ -13,15 +13,15 @@ export default function Home() {
   const { videoRef, isActive, error, start, stop } = useCamera();
   const { pushFrame, getFrame, getBufferLength, clearBuffer, maxBufferSize } = useFrameBuffer();
 
-  const [facingMode, setFacingMode] = useState('user');
-  const [delayOffset, setDelayOffset] = useState(0);
+  const [facingMode, setFacingMode] = useState('environment');
+  const [delayOffset, setDelayOffset] = useState(15);
   const [ghostEnabled, setGhostEnabled] = useState(false);
   const [ghostActive, setGhostActive] = useState(false);
-  const [ghostDelay, setGhostDelay] = useState(3);
+  const [ghostDelay, setGhostDelay] = useState(0);
   const [ghostCountdown, setGhostCountdown] = useState(null);
-  const [ghostInterval, setGhostInterval] = useState(10);
+  const [ghostInterval, setGhostInterval] = useState(8);
   const [ghostCount, setGhostCount] = useState(4);
-  const [ghostOpacity, setGhostOpacity] = useState(0.75);
+  const [ghostOpacity, setGhostOpacity] = useState(0.5);
   const ghostCountdownRef = useRef(null);
   const [bufferFill, setBufferFill] = useState(0);
   const [isRecording, setIsRecording] = useState(false);
@@ -36,7 +36,10 @@ export default function Home() {
   const captureLoop = useCallback(() => {
     if (videoRef.current && videoRef.current.readyState >= 2) {
       pushFrame(videoRef.current);
-      setBufferFill(getBufferLength());
+      const len = getBufferLength();
+      setBufferFill(len);
+      // Once buffer has enough frames, lock the default delay in place
+      setDelayOffset(prev => (prev > 0 && prev >= len ? Math.max(0, len - 1) : prev));
     }
     captureRef.current = requestAnimationFrame(captureLoop);
   }, [pushFrame, getBufferLength, videoRef]);
