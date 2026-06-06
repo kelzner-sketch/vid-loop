@@ -221,9 +221,9 @@ export default function Home() {
 
 
 
+
         // upload failed silently — local download already triggered
-      }URL.revokeObjectURL(localUrl);};recorder.start();mediaRecorderRef.current = recorder;
-    setIsRecording(true);
+      }URL.revokeObjectURL(localUrl);};recorder.start();mediaRecorderRef.current = recorder;setIsRecording(true);
     setRecordingTime(0);
     recordingTimerRef._lastTime = 0;
     recordingTimerRef.current = setInterval(() => {
@@ -267,7 +267,7 @@ export default function Home() {
             </div>
 
             <div className="text-center space-y-2">
-              <h1 className="text-3xl font-bold font-heading tracking-tight text-foreground">StudderCam</h1>
+              <h1 className="text-3xl font-bold font-heading tracking-tight text-foreground">VidLoop</h1>
               <p className="text-sm text-muted-foreground leading-relaxed max-w-xs">
                 Live camera feed with ring-buffer scrubbing and multi-frame ghost layering.
               </p>
