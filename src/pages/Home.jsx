@@ -348,9 +348,9 @@ export default function Home() {
               {/* Switch camera */}
               <button
               onClick={handleSwitchCamera}
-              className="w-9 h-9 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center active:scale-95 transition-transform">
-              
-                <SwitchCamera className="w-4 h-4 text-white" />
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/15 backdrop-blur-md border border-white/30 text-white text-xs font-mono active:scale-95 transition-all hover:bg-white/25">
+                <SwitchCamera className="w-3.5 h-3.5" />
+                {facingMode === 'user' ? 'FRONT' : 'REAR'}
               </button>
 
               <button
