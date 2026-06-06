@@ -468,10 +468,10 @@ export default function Home() {
           {/* ── CONTROLS PANEL — adapts portrait/landscape ── */}
           {isLandscape ? (
           /* ── LANDSCAPE: left-side controls + top-right record ── */
-          <div className="absolute left-0 top-0 bottom-0 z-10 flex flex-col"
+          <div className="absolute left-0 top-0 bottom-0 z-10 flex flex-col pointer-events-none"
           style={{ background: 'linear-gradient(to right, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.3) 70%, transparent 100%)', width: '180px' }}>
-              {/* Floating record/camera controls at top-right */}
-              <div className="absolute top-4 right-4 flex flex-col gap-2 z-30 pointer-events-auto">
+               {/* Floating record/camera controls at top-right */}
+               <div className="absolute top-4 right-4 flex flex-col gap-2 z-40 pointer-events-auto">
                 {/* Smaller record button */}
                 <button
                   onClick={isRecording ? stopRecording : startRecording}
@@ -507,7 +507,7 @@ export default function Home() {
               </div>
 
               {/* Left panel sliders */}
-              <div className="px-3 pt-6 pb-4 space-y-3 overflow-y-auto overscroll-contain" style={{ marginTop: '80px' }}>
+              <div className="px-3 pt-6 pb-4 space-y-3 overflow-y-auto overscroll-contain pointer-events-auto" style={{ marginTop: '80px' }}>
                 {/* Scrub */}
                 <div className="space-y-1">
                   <div className="flex flex-col gap-1">
