@@ -477,7 +477,8 @@ export default function Home() {
 
           {/* ── CONTROLS PANEL — adapts portrait/landscape ── */}
           {isLandscape ? (
-          /* ── LANDSCAPE: left-side controls ── */
+          <>
+          {/* ── LANDSCAPE: left-side controls ── */}
           <motion.div 
            className="absolute left-0 top-0 bottom-0 z-10 flex flex-col pointer-events-none"
            style={{ background: 'linear-gradient(to right, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.3) 70%, transparent 100%)', width: '130px' }}
@@ -578,6 +579,7 @@ export default function Home() {
                   }
                 </div>
               </motion.div>
+              </>
               ) : (
 
         /* ── PORTRAIT: bottom panel ── */
