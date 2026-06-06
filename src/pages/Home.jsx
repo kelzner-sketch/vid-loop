@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Camera, CameraOff, Layers, Clock, Eye, Play, Circle, Square, Download, SwitchCamera } from 'lucide-react';
@@ -24,6 +24,7 @@ export default function Home() {
   const [ghostOpacity, setGhostOpacity] = useState(0.5);
   const ghostCountdownRef = useRef(null);
   const [bufferFill, setBufferFill] = useState(0);
+  const [isLandscape, setIsLandscape] = useState(() => window.innerWidth > window.innerHeight);
   const [isRecording, setIsRecording] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
   const captureRef = useRef(null);
@@ -31,6 +32,17 @@ export default function Home() {
   const recordingChunksRef = useRef([]);
   const recordingTimerRef = useRef(null);
   const canvasRef = useRef(null);
+
+  // Track orientation changes without restarting camera
+  useEffect(() => {
+    const update = () => setIsLandscape(window.innerWidth > window.innerHeight);
+    window.addEventListener('resize', update);
+    window.addEventListener('orientationchange', update);
+    return () => {
+      window.removeEventListener('resize', update);
+      window.removeEventListener('orientationchange', update);
+    };
+  }, []);
 
   // Capture frames into the ring buffer at ~30fps
   const captureLoop = useCallback(() => {
@@ -303,122 +315,101 @@ export default function Home() {
           
           </div>
 
-          {/* ── BOTTOM CONTROLS PANEL ── */}
-          <div className="absolute bottom-0 left-0 right-0 z-10"
-        style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 70%, transparent 100%)' }}>
-          
-            <div className="px-5 pb-16 pt-8 space-y-5">
-
-              {/* ── SCRUB BAR ── */}
-              <div className="space-y-2">
-                {/* Labels */}
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1.5">
-                    <Clock className="w-3 h-3 text-white/40" />
-                    <span className="text-[10px] font-mono uppercase tracking-widest text-white/40">Scrub</span>
+          {/* ── CONTROLS PANEL — adapts portrait/landscape ── */}
+          {isLandscape ? (
+            /* ── LANDSCAPE: compact right-side strip ── */
+            <div className="absolute right-0 top-0 bottom-0 z-10 flex flex-col justify-end"
+              style={{ background: 'linear-gradient(to left, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.3) 70%, transparent 100%)', width: '200px' }}>
+              <div className="px-3 pb-8 pt-4 space-y-3">
+                {/* Scrub */}
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[9px] font-mono uppercase tracking-widest text-white/40">Scrub</span>
+                    <div className="flex items-center gap-1.5">
+                      {isDelayed && (
+                        <button onClick={() => setDelayOffset(0)}
+                          className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-accent/20 border border-accent/30 text-accent text-[9px] font-mono">
+                          <Play className="w-2 h-2" />LIVE
+                        </button>
+                      )}
+                      <span className="text-xs font-mono text-white tabular-nums">{isDelayed ? `−${delaySeconds}s` : 'live'}</span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    {isDelayed &&
-                  <button
-                    onClick={() => setDelayOffset(0)}
-                    className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-accent/20 border border-accent/30 text-accent text-[10px] font-mono">
-                    
-                        <Play className="w-2.5 h-2.5" />
-                        LIVE
-                      </button>
-                  }
-                    <span className="text-sm font-mono text-white tabular-nums">
-                      {isDelayed ? `−${delaySeconds}s` : 'live'}
-                    </span>
+                  <ScrubBar value={delayOffset} max={Math.max(1, bufferFill - 1)} onChange={setDelayOffset} bufferFill={bufferFill} maxBufferSize={maxBufferSize} />
+                </div>
+                {/* Ghost toggle */}
+                <button onClick={toggleGhost}
+                  className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl border text-xs font-mono transition-all ${ghostEnabled ? 'bg-primary/30 border-primary/50 text-white' : 'bg-white/5 border-white/10 text-white/40'}`}>
+                  <Layers className="w-3 h-3" />
+                  {ghostCountdown !== null ? `Ghost ${ghostCountdown}s…` : 'Ghost Blend'}
+                </button>
+                {/* Ghost sliders — compact */}
+                {ghostEnabled && (
+                  <div className="space-y-2">
+                    <GhostSliderRow label="Intv" valueLabel={`${ghostInterval}f`} value={ghostInterval} min={1} max={30} step={1} onChange={setGhostInterval} />
+                    <GhostSliderRow label="Lyrs" valueLabel={`${ghostCount}`} value={ghostCount} min={2} max={10} step={1} onChange={setGhostCount} />
+                    <GhostSliderRow label="Fade" valueLabel={`${Math.round(ghostOpacity * 100)}%`} value={ghostOpacity} min={0.05} max={1} step={0.05} onChange={setGhostOpacity} />
                   </div>
-                </div>
-
-                {/* Custom scrub track */}
-                <ScrubBar
-                value={delayOffset}
-                max={Math.max(1, bufferFill - 1)}
-                onChange={setDelayOffset}
-                bufferFill={bufferFill}
-                maxBufferSize={maxBufferSize} />
-              
-
-                {/* Time markers */}
-                <div className="flex justify-between text-[9px] font-mono text-white/25 px-0.5">
-                  <span>−{(Math.max(1, bufferFill - 1) / 30).toFixed(1)}s</span>
-                  <span>now</span>
-                </div>
-              </div>
-
-              {/* ── GHOST CONTROLS ── */}
-              <div className="space-y-3">
-                {/* Ghost toggle header */}
-                <div className="flex items-center justify-between">
-                  <button
-                  onClick={toggleGhost}
-                  className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-mono transition-all ${
-                  ghostEnabled ?
-                  'bg-primary/30 border-primary/50 text-white' :
-                  'bg-white/5 border-white/10 text-white/40'}`
-                  }>
-                  
-                    <Layers className="w-3.5 h-3.5" />
-                    {ghostCountdown !== null ? `Ghost in ${ghostCountdown}s…` : 'Ghost Blend'}
-                  </button>
-                  {/* Stop button */}
-                  <button
-                  onClick={handleStop}
-                  className="w-9 h-9 rounded-full bg-white/10 border border-white/15 flex items-center justify-center active:scale-95 transition-transform">
-                  
-                    <CameraOff className="w-4 h-4 text-white/70" />
-                  </button>
-                </div>
-
-                {/* Ghost sub-controls */}
-                <AnimatePresence>
-                  {ghostEnabled &&
-                <motion.div
-                  key="ghost-panel"
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="overflow-hidden">
-                  
-                      <div className="space-y-3 pt-1">
-                        {/* Delay */}
-                        <GhostSliderRow
-                      label="Delay"
-                      valueLabel={ghostDelay === 0 ? 'off' : `${ghostDelay}s`}
-                      value={ghostDelay} min={0} max={10} step={1}
-                      onChange={setGhostDelay} />
-                    
-                        {/* Interval */}
-                        <GhostSliderRow
-                      label="Interval"
-                      valueLabel={`${ghostInterval}f`}
-                      value={ghostInterval} min={1} max={30} step={1}
-                      onChange={setGhostInterval} />
-                    
-                        {/* Count */}
-                        <GhostSliderRow
-                      label="Layers"
-                      valueLabel={`${ghostCount}`}
-                      value={ghostCount} min={2} max={10} step={1}
-                      onChange={setGhostCount} />
-                    
-                        {/* Opacity */}
-                        <GhostSliderRow
-                      label="Opacity"
-                      valueLabel={`${Math.round(ghostOpacity * 100)}%`}
-                      value={ghostOpacity} min={0.05} max={1} step={0.05}
-                      onChange={setGhostOpacity} />
-                    
-                      </div>
-                    </motion.div>
-                }
-                </AnimatePresence>
+                )}
               </div>
             </div>
-          </div>
+          ) : (
+            /* ── PORTRAIT: bottom panel ── */
+            <div className="absolute bottom-0 left-0 right-0 z-10"
+              style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 70%, transparent 100%)' }}>
+              <div className="px-5 pb-10 pt-8 space-y-5">
+                {/* Scrub */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1.5">
+                      <Clock className="w-3 h-3 text-white/40" />
+                      <span className="text-[10px] font-mono uppercase tracking-widest text-white/40">Scrub</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {isDelayed && (
+                        <button onClick={() => setDelayOffset(0)}
+                          className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-accent/20 border border-accent/30 text-accent text-[10px] font-mono">
+                          <Play className="w-2.5 h-2.5" />LIVE
+                        </button>
+                      )}
+                      <span className="text-sm font-mono text-white tabular-nums">{isDelayed ? `−${delaySeconds}s` : 'live'}</span>
+                    </div>
+                  </div>
+                  <ScrubBar value={delayOffset} max={Math.max(1, bufferFill - 1)} onChange={setDelayOffset} bufferFill={bufferFill} maxBufferSize={maxBufferSize} />
+                  <div className="flex justify-between text-[9px] font-mono text-white/25 px-0.5">
+                    <span>−{(Math.max(1, bufferFill - 1) / 30).toFixed(1)}s</span>
+                    <span>now</span>
+                  </div>
+                </div>
+                {/* Ghost controls */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <button onClick={toggleGhost}
+                      className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-mono transition-all ${ghostEnabled ? 'bg-primary/30 border-primary/50 text-white' : 'bg-white/5 border-white/10 text-white/40'}`}>
+                      <Layers className="w-3.5 h-3.5" />
+                      {ghostCountdown !== null ? `Ghost in ${ghostCountdown}s…` : 'Ghost Blend'}
+                    </button>
+                    <button onClick={handleStop}
+                      className="w-9 h-9 rounded-full bg-white/10 border border-white/15 flex items-center justify-center active:scale-95 transition-transform">
+                      <CameraOff className="w-4 h-4 text-white/70" />
+                    </button>
+                  </div>
+                  <AnimatePresence>
+                    {ghostEnabled && (
+                      <motion.div key="ghost-panel" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
+                        <div className="space-y-3 pt-1">
+                          <GhostSliderRow label="Delay" valueLabel={ghostDelay === 0 ? 'off' : `${ghostDelay}s`} value={ghostDelay} min={0} max={10} step={1} onChange={setGhostDelay} />
+                          <GhostSliderRow label="Interval" valueLabel={`${ghostInterval}f`} value={ghostInterval} min={1} max={30} step={1} onChange={setGhostInterval} />
+                          <GhostSliderRow label="Layers" valueLabel={`${ghostCount}`} value={ghostCount} min={2} max={10} step={1} onChange={setGhostCount} />
+                          <GhostSliderRow label="Opacity" valueLabel={`${Math.round(ghostOpacity * 100)}%`} value={ghostOpacity} min={0.05} max={1} step={0.05} onChange={setGhostOpacity} />
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </div>
+            </div>
+          )}
         </>
       }
 
