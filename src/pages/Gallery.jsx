@@ -1,12 +1,14 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Trash2, Download, Film, Pencil, Check, X, CheckSquare, RefreshCw, Share2, Loader2, Scissors } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import MobileHeader from '@/components/MobileHeader';
 import { useTabNav } from '@/components/TabNavigator';
 import { motion, AnimatePresence } from 'framer-motion';
 import TrimModal from '@/components/TrimModal';
 
 export default function Gallery() {
+  const navigate = useNavigate();
   const { switchTab } = useTabNav();
   const [clips, setClips] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -217,7 +219,7 @@ export default function Gallery() {
               <p className="text-sm font-medium text-foreground">No clips yet</p>
               <p className="text-xs mt-1 text-[hsl(var(--popover-foreground))]">Record something in the camera and save it here.</p>
             </div>
-            <button onClick={() => switchTab('/')} className="mt-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground text-sm font-medium">
+            <button onClick={() => { switchTab('/'); navigate('/'); }} className="mt-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground text-sm font-medium">
               Open Camera
             </button>
           </div> :
