@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { Camera, Trash2, Download, Film, Pencil, Check, X, CheckSquare, RefreshCw, Share2 } from 'lucide-react';
+import { Camera, Trash2, Download, Film, Pencil, Check, X, CheckSquare, RefreshCw, Share2, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Gallery() {
@@ -11,6 +11,7 @@ export default function Gallery() {
   const [editingTitle, setEditingTitle] = useState('');
   const [selectMode, setSelectMode] = useState(false);
   const [selected, setSelected] = useState(new Set());
+  const [sharingId, setSharingId] = useState(null);
 
   // Pull-to-refresh state
   const [pullY, setPullY] = useState(0);
@@ -80,31 +81,31 @@ export default function Gallery() {
   };
 
   const shareClip = async (clip) => {
+    setSharingId(clip.id);
     const title = clip.title || 'VidLoop clip';
     // Try native share with file (works on iOS/Android)
-    if (navigator.share) {
-      try {
-        // Fetch the video as a blob so we can share the actual file
+    try {
+      if (navigator.share) {
         const res = await fetch(clip.file_url);
         const blob = await res.blob();
         const ext = blob.type.includes('mp4') ? 'mp4' : 'webm';
         const file = new File([blob], `${title}.${ext}`, { type: blob.type });
         if (navigator.canShare && navigator.canShare({ files: [file] })) {
           await navigator.share({ files: [file], title });
-          return;
+        } else {
+          await navigator.share({ title, url: clip.file_url });
         }
-        // Fallback: share URL only
-        await navigator.share({ title, url: clip.file_url });
-      } catch (e) {
-        if (e.name !== 'AbortError') {
-          // Copy URL to clipboard as last resort
-          await navigator.clipboard.writeText(clip.file_url);
-          alert('Link copied to clipboard!');
-        }
+      } else {
+        await navigator.clipboard.writeText(clip.file_url);
+        alert('Link copied to clipboard!');
       }
-    } else {
-      await navigator.clipboard.writeText(clip.file_url);
-      alert('Link copied to clipboard!');
+    } catch (e) {
+      if (e.name !== 'AbortError') {
+        await navigator.clipboard.writeText(clip.file_url);
+        alert('Link copied to clipboard!');
+      }
+    } finally {
+      setSharingId(null);
     }
   };
 
@@ -250,9 +251,11 @@ export default function Gallery() {
                           className="w-7 h-7 rounded-lg bg-muted flex items-center justify-center hover:bg-primary/20 transition-colors">
                           <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
                         </button>
-                        <button onClick={() => shareClip(clip)}
-                          className="w-7 h-7 rounded-lg bg-muted flex items-center justify-center hover:bg-primary/20 transition-colors">
-                          <Share2 className="w-3.5 h-3.5 text-muted-foreground" />
+                        <button onClick={() => shareClip(clip)} disabled={sharingId === clip.id}
+                          className="w-7 h-7 rounded-lg bg-muted flex items-center justify-center hover:bg-primary/20 transition-colors disabled:opacity-60">
+                          {sharingId === clip.id
+                            ? <Loader2 className="w-3.5 h-3.5 text-primary animate-spin" />
+                            : <Share2 className="w-3.5 h-3.5 text-muted-foreground" />}
                         </button>
                         <a href={clip.file_url} download
                           className="w-7 h-7 rounded-lg bg-muted flex items-center justify-center hover:bg-primary/20 transition-colors">
