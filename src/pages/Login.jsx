@@ -22,13 +22,10 @@ export default function Login() {
     setLoading(true);
     try {
       await base44.auth.loginViaEmailPassword(email, password);
-      // Wait briefly for token to be persisted, then reload
-      setTimeout(() => {
-        window.location.href = "/";
-      }, 100);
+      // Hard reload to ensure new auth state is picked up by AuthContext
+      window.location.href = "/";
     } catch (err) {
       setError(err.message || "Invalid email or password");
-    } finally {
       setLoading(false);
     }
   };
