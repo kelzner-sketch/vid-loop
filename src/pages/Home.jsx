@@ -74,6 +74,11 @@ export default function Home() {
 
   const { cameraActive, cameraError, startCamera, stopCamera } = useCamera(videoRef);
 
+  // Request camera access on mount
+  useEffect(() => {
+    startCamera();
+  }, [startCamera]);
+
   // Setup recording canvas stream
   useEffect(() => {
     if (!recordingCanvasRef.current || !isRecording) return;
