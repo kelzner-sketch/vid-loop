@@ -16,6 +16,7 @@ export default function Gallery() {
   const [selected, setSelected] = useState(new Set());
   const [sharingId, setSharingId] = useState(null);
   const [trimmingClip, setTrimmingClip] = useState(null);
+  const [exporting, setExporting] = useState(false);
 
   // Pull-to-refresh state
   const [pullY, setPullY] = useState(0);
@@ -56,6 +57,27 @@ export default function Gallery() {
   });
 
   const exitSelectMode = () => { setSelectMode(false); setSelected(new Set()); };
+
+  const exportSelected = async () => {
+    setExporting(true);
+    const selectedClips = clips.filter(c => selected.has(c.id));
+    for (const clip of selectedClips) {
+      const title = clip.title || `vidloop-${clip.id}`;
+      const res = await fetch(clip.file_url);
+      const blob = await res.blob();
+      const ext = blob.type.includes('mp4') ? 'mp4' : 'webm';
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${title}.${ext}`;
+      a.click();
+      URL.revokeObjectURL(url);
+      // Small delay between downloads so browser doesn't block them
+      await new Promise(r => setTimeout(r, 400));
+    }
+    setExporting(false);
+    exitSelectMode();
+  };
 
   const deleteSelected = () => {
     const ids = new Set(selected);
@@ -124,6 +146,11 @@ export default function Gallery() {
               <button onClick={exitSelectMode}
                 className="px-2 py-1 rounded-full bg-muted border border-border text-muted-foreground text-xs font-mono">
                 Cancel
+              </button>
+              <button onClick={exportSelected} disabled={selected.size === 0 || exporting}
+                className="flex items-center gap-1 px-2 py-1 rounded-full bg-primary/20 border border-primary/40 text-primary text-xs font-mono disabled:opacity-40">
+                {exporting ? <Loader2 className="w-3 h-3 animate-spin" /> : <Download className="w-3 h-3" />}
+                ({selected.size})
               </button>
               <button onClick={deleteSelected} disabled={selected.size === 0}
                 className="flex items-center gap-1 px-2 py-1 rounded-full bg-destructive/20 border border-destructive/40 text-destructive text-xs font-mono disabled:opacity-40">
