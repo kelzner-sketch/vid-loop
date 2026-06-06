@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useTabNav } from '@/components/TabNavigator';
 import { useAuth } from '@/lib/AuthContext';
+import { useRecording } from '@/lib/RecordingContext';
 import { base44 } from '@/api/base44Client';
 import useCamera from '@/components/video/useCamera';
 import useFrameBuffer from '@/components/video/useFrameBuffer';
@@ -16,6 +17,7 @@ import ScrubBar from '@/components/video/ScrubBar';
 export default function Home() {
   const navigate = useNavigate();
   const { switchTab } = useTabNav();
+  const { setIsRecording: setRecordingContext } = useRecording();
   const { videoRef, isActive, error, start, stop } = useCamera();
   const { pushFrame, getFrame, getBufferLength, clearBuffer, maxBufferSize } = useFrameBuffer();
 
@@ -279,11 +281,12 @@ export default function Home() {
 
 
         // upload failed silently — local download already triggered
-      }URL.revokeObjectURL(localUrl);};recorder.start();mediaRecorderRef.current = recorder;setIsRecording(true);setRecordingTime(0);recordingTimerRef._lastTime = 0;recordingTimerRef.current = setInterval(() => {setRecordingTime((t) => {recordingTimerRef._lastTime = t + 1;return t + 1;});}, 1000);}, []);const stopRecording = useCallback(() => {mediaRecorderRef.current?.stop();
+      }URL.revokeObjectURL(localUrl);};recorder.start();mediaRecorderRef.current = recorder;setIsRecording(true);setRecordingContext(true);setRecordingTime(0);recordingTimerRef._lastTime = 0;recordingTimerRef.current = setInterval(() => {setRecordingTime((t) => {recordingTimerRef._lastTime = t + 1;return t + 1;});}, 1000);}, [setRecordingContext]);const stopRecording = useCallback(() => {mediaRecorderRef.current?.stop();
       clearInterval(recordingTimerRef.current);
       setIsRecording(false);
+      setRecordingContext(false);
       setRecordingTime(0);
-    }, []);
+    }, [setRecordingContext]);
 
   const delaySeconds = (delayOffset / 30).toFixed(2);
   const fillPercent = Math.round(bufferFill / maxBufferSize * 100);

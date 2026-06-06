@@ -1,7 +1,9 @@
 import React from 'react';
 import { Camera, Film, Settings } from 'lucide-react';
 import { useTabNav } from '@/components/TabNavigator';
+import { useRecording } from '@/lib/RecordingContext';
 import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 
 const tabs = [
   { path: '/', icon: Camera, label: 'Camera' },
@@ -11,11 +13,15 @@ const tabs = [
 
 export default function BottomTabBar() {
   const { activeTab, switchTab } = useTabNav();
+  const { isRecording } = useRecording();
   const navigate = useNavigate();
 
   return (
-    <div
+    <motion.div
       className="fixed bottom-0 left-0 right-0 z-50 flex items-center justify-around bg-black/80 backdrop-blur-xl border-t border-white/10 pointer-events-auto"
+      initial={{ y: 0 }}
+      animate={{ y: isRecording ? '100%' : 0 }}
+      transition={{ duration: 0.3 }}
       style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
       {tabs.map(({ path, icon: Icon, label }) => {
@@ -34,6 +40,6 @@ export default function BottomTabBar() {
           </button>
         );
       })}
-    </div>
+    </motion.div>
   );
 }
