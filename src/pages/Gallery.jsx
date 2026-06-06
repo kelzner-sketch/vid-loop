@@ -1,9 +1,10 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Camera, Trash2, Download, Film, Pencil, Check, X, CheckSquare, RefreshCw, Share2, Loader2 } from 'lucide-react';
+import { Trash2, Download, Film, Pencil, Check, X, CheckSquare, RefreshCw, Share2, Loader2, Scissors } from 'lucide-react';
 import MobileHeader from '@/components/MobileHeader';
 import { useTabNav } from '@/components/TabNavigator';
 import { motion, AnimatePresence } from 'framer-motion';
+import TrimModal from '@/components/TrimModal';
 
 export default function Gallery() {
   const { switchTab } = useTabNav();
@@ -14,6 +15,7 @@ export default function Gallery() {
   const [selectMode, setSelectMode] = useState(false);
   const [selected, setSelected] = useState(new Set());
   const [sharingId, setSharingId] = useState(null);
+  const [trimmingClip, setTrimmingClip] = useState(null);
 
   // Pull-to-refresh state
   const [pullY, setPullY] = useState(0);
@@ -154,6 +156,18 @@ export default function Gallery() {
         )}
       </AnimatePresence>
 
+      {/* Trim modal */}
+      {trimmingClip && (
+        <TrimModal
+          clip={trimmingClip}
+          onClose={() => setTrimmingClip(null)}
+          onSaved={(updated) => {
+            setClips(prev => prev.map(c => c.id === updated.id ? updated : c));
+            setTrimmingClip(null);
+          }}
+        />
+      )}
+
       {/* Content */}
       <div
         ref={scrollRef}
@@ -239,6 +253,10 @@ export default function Gallery() {
                         <button onClick={() => startEdit(clip)}
                           className="w-7 h-7 rounded-lg bg-muted flex items-center justify-center hover:bg-primary/20 transition-colors">
                           <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
+                        </button>
+                        <button onClick={() => setTrimmingClip(clip)}
+                          className="w-7 h-7 rounded-lg bg-muted flex items-center justify-center hover:bg-primary/20 transition-colors">
+                          <Scissors className="w-3.5 h-3.5 text-muted-foreground" />
                         </button>
                         <button onClick={() => shareClip(clip)} disabled={sharingId === clip.id}
                           className="w-7 h-7 rounded-lg bg-muted flex items-center justify-center hover:bg-primary/20 transition-colors disabled:opacity-60">
