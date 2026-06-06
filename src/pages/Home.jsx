@@ -16,21 +16,27 @@ export default function Home() {
   const { videoRef, isActive, error, start, stop } = useCamera();
   const { pushFrame, getFrame, getBufferLength, clearBuffer, maxBufferSize } = useFrameBuffer();
 
-  const [facingMode, setFacingMode] = useState('environment');
+  // Load persisted prefs from localStorage
+  const loadPrefs = () => {
+    try { return JSON.parse(localStorage.getItem('vidloop_prefs') || '{}'); } catch { return {}; }
+  };
+  const prefs = loadPrefs();
+
+  const [facingMode, setFacingMode] = useState(prefs.facingMode ?? 'environment');
   const [delayOffset, setDelayOffset] = useState(15);
   const [ghostEnabled, setGhostEnabled] = useState(false);
   const [ghostActive, setGhostActive] = useState(false);
-  const [ghostDelay, setGhostDelay] = useState(0);
+  const [ghostDelay, setGhostDelay] = useState(prefs.ghostDelay ?? 0);
   const [ghostCountdown, setGhostCountdown] = useState(null);
-  const [ghostInterval, setGhostInterval] = useState(4);
-  const [ghostCount, setGhostCount] = useState(6);
-  const [ghostOpacity, setGhostOpacity] = useState(0.8);
+  const [ghostInterval, setGhostInterval] = useState(prefs.ghostInterval ?? 4);
+  const [ghostCount, setGhostCount] = useState(prefs.ghostCount ?? 6);
+  const [ghostOpacity, setGhostOpacity] = useState(prefs.ghostOpacity ?? 0.8);
   const ghostCountdownRef = useRef(null);
 
   // Ping-pong loop mode
-  const [loopEnabled, setLoopEnabled] = useState(true);
-  const [loopDepth, setLoopDepth] = useState(30); // frames to ping-pong through
-  const [loopSpeed, setLoopSpeed] = useState(1); // frames advanced per render tick
+  const [loopEnabled, setLoopEnabled] = useState(prefs.loopEnabled ?? true);
+  const [loopDepth, setLoopDepth] = useState(prefs.loopDepth ?? 30); // frames to ping-pong through
+  const [loopSpeed, setLoopSpeed] = useState(prefs.loopSpeed ?? 1); // frames advanced per render tick
   const loopStateRef = useRef({ dir: 1, pos: 0 }); // internal mutable state, no re-render
   const loopRafRef = useRef(null);
   const loopEnabledRef = useRef(false);
@@ -45,6 +51,14 @@ export default function Home() {
   const recordingChunksRef = useRef([]);
   const recordingTimerRef = useRef(null);
   const canvasRef = useRef(null); // forwarded from RenderCanvas
+
+  // Persist preferences to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('vidloop_prefs', JSON.stringify({
+      facingMode, loopEnabled, loopDepth, loopSpeed,
+      ghostDelay, ghostInterval, ghostCount, ghostOpacity,
+    }));
+  }, [facingMode, loopEnabled, loopDepth, loopSpeed, ghostDelay, ghostInterval, ghostCount, ghostOpacity]);
 
   // Keep refs in sync so the RAF loop always reads latest values
   loopEnabledRef.current = loopEnabled;
