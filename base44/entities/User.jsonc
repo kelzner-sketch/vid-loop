@@ -1,17 +1,36 @@
 {
-  "properties": {
-    "role": {
-      "type": "string",
-      "description": "The role of the user in the app",
-      "enum": [
-        "admin",
-        "user"
-      ]
-    }
-  },
-  "required": [
-    "role"
-  ],
   "name": "User",
-  "type": "object"
+  "type": "object",
+  "properties": {
+    "preferences": {
+      "type": "object",
+      "description": "User video control preferences",
+      "properties": {
+        "ghostDelay": {
+          "type": "number"
+        },
+        "ghostInterval": {
+          "type": "number"
+        },
+        "ghostCount": {
+          "type": "number"
+        },
+        "ghostOpacity": {
+          "type": "number"
+        },
+        "loopDepth": {
+          "type": "number"
+        },
+        "loopSpeed": {
+          "type": "number"
+        },
+        "loopEnabled": {
+          "type": "boolean"
+        },
+        "facingMode": {
+          "type": "string"
+        }
+      }
+    }
+  }
 }

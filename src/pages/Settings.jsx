@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Film, Camera, Layers, Repeat2, Trash2 } from 'lucide-react';
 import MobileHeader from '@/components/MobileHeader';
+import { useAuth } from '@/lib/AuthContext';
 import { base44 } from '@/api/base44Client';
 import ControlSlider from '@/components/video/ControlSlider';
 import {
@@ -17,6 +18,7 @@ const tips = [
 ];
 
 export default function Settings() {
+  const { user } = useAuth();
   const [deleting, setDeleting] = useState(false);
   
   // Load persisted control prefs
@@ -32,13 +34,29 @@ export default function Settings() {
   const [loopDepth, setLoopDepth] = useState(prefs.loopDepth ?? 30);
   const [loopSpeed, setLoopSpeed] = useState(prefs.loopSpeed ?? 1);
 
-  // Persist prefs whenever they change
+  // Load settings from database if authenticated
   useEffect(() => {
-    localStorage.setItem('vidloop_prefs', JSON.stringify({
+    if (user?.preferences) {
+      if (user.preferences.ghostDelay !== undefined) setGhostDelay(user.preferences.ghostDelay);
+      if (user.preferences.ghostInterval !== undefined) setGhostInterval(user.preferences.ghostInterval);
+      if (user.preferences.ghostCount !== undefined) setGhostCount(user.preferences.ghostCount);
+      if (user.preferences.ghostOpacity !== undefined) setGhostOpacity(user.preferences.ghostOpacity);
+      if (user.preferences.loopDepth !== undefined) setLoopDepth(user.preferences.loopDepth);
+      if (user.preferences.loopSpeed !== undefined) setLoopSpeed(user.preferences.loopSpeed);
+    }
+  }, [user]);
+
+  // Persist prefs to localStorage and database whenever they change
+  useEffect(() => {
+    const updatedPrefs = {
       ...prefs,
       ghostDelay, ghostInterval, ghostCount, ghostOpacity, loopDepth, loopSpeed,
-    }));
-  }, [ghostDelay, ghostInterval, ghostCount, ghostOpacity, loopDepth, loopSpeed]);
+    };
+    localStorage.setItem('vidloop_prefs', JSON.stringify(updatedPrefs));
+    if (user) {
+      base44.auth.updateMe({ preferences: updatedPrefs });
+    }
+  }, [ghostDelay, ghostInterval, ghostCount, ghostOpacity, loopDepth, loopSpeed, user]);
 
   const handleDeleteAccount = async () => {
     setDeleting(true);

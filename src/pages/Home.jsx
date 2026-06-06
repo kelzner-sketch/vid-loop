@@ -4,6 +4,7 @@ import { Switch } from '@/components/ui/switch';
 import { Camera, CameraOff, Layers, Clock, Eye, Play, Circle, Square, Download, SwitchCamera, Repeat2, Film } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTabNav } from '@/components/TabNavigator';
+import { useAuth } from '@/lib/AuthContext';
 import { base44 } from '@/api/base44Client';
 import useCamera from '@/components/video/useCamera';
 import useFrameBuffer from '@/components/video/useFrameBuffer';
@@ -16,7 +17,9 @@ export default function Home() {
   const { videoRef, isActive, error, start, stop } = useCamera();
   const { pushFrame, getFrame, getBufferLength, clearBuffer, maxBufferSize } = useFrameBuffer();
 
-  // Load persisted prefs from localStorage
+  const { user } = useAuth();
+  
+  // Load persisted prefs from localStorage or database
   const loadPrefs = () => {
     try {return JSON.parse(localStorage.getItem('vidloop_prefs') || '{}');} catch {return {};}
   };
@@ -52,13 +55,32 @@ export default function Home() {
   const recordingTimerRef = useRef(null);
   const canvasRef = useRef(null); // forwarded from RenderCanvas
 
-  // Persist preferences to localStorage whenever they change
+  // Load settings from database if authenticated
   useEffect(() => {
-    localStorage.setItem('vidloop_prefs', JSON.stringify({
+    if (user) {
+      const dbPrefs = user.preferences || {};
+      if (dbPrefs.ghostDelay !== undefined) setGhostDelay(dbPrefs.ghostDelay);
+      if (dbPrefs.ghostInterval !== undefined) setGhostInterval(dbPrefs.ghostInterval);
+      if (dbPrefs.ghostCount !== undefined) setGhostCount(dbPrefs.ghostCount);
+      if (dbPrefs.ghostOpacity !== undefined) setGhostOpacity(dbPrefs.ghostOpacity);
+      if (dbPrefs.loopDepth !== undefined) setLoopDepth(dbPrefs.loopDepth);
+      if (dbPrefs.loopSpeed !== undefined) setLoopSpeed(dbPrefs.loopSpeed);
+      if (dbPrefs.loopEnabled !== undefined) setLoopEnabled(dbPrefs.loopEnabled);
+      if (dbPrefs.facingMode !== undefined) setFacingMode(dbPrefs.facingMode);
+    }
+  }, [user]);
+
+  // Persist preferences to localStorage and database whenever they change
+  useEffect(() => {
+    const prefs = {
       facingMode, loopEnabled, loopDepth, loopSpeed,
       ghostDelay, ghostInterval, ghostCount, ghostOpacity
-    }));
-  }, [facingMode, loopEnabled, loopDepth, loopSpeed, ghostDelay, ghostInterval, ghostCount, ghostOpacity]);
+    };
+    localStorage.setItem('vidloop_prefs', JSON.stringify(prefs));
+    if (user) {
+      base44.auth.updateMe({ preferences: prefs });
+    }
+  }, [facingMode, loopEnabled, loopDepth, loopSpeed, ghostDelay, ghostInterval, ghostCount, ghostOpacity, user]);
 
   // Keep refs in sync so the RAF loop always reads latest values
   loopEnabledRef.current = loopEnabled;
