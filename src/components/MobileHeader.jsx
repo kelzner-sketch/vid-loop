@@ -1,9 +1,11 @@
 import React from 'react';
 import { ChevronLeft } from 'lucide-react';
 import { useTabNav } from '@/components/TabNavigator';
+import { motion } from 'framer-motion';
 
 export default function MobileHeader({ title, right }) {
-  const { canGoBack, pop } = useTabNav();
+  const { canGoBack, pop, currentTitle } = useTabNav();
+  const displayTitle = title || currentTitle;
 
   return (
     <div
@@ -23,7 +25,13 @@ export default function MobileHeader({ title, right }) {
       </div>
 
       {/* Center: title */}
-      <h1 className="text-base font-semibold font-heading text-foreground tracking-tight">{title}</h1>
+      <motion.h1 
+        key={displayTitle}
+        initial={{ opacity: 0, y: -4 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="text-base font-semibold font-heading text-foreground tracking-tight">
+        {displayTitle}
+      </motion.h1>
 
       {/* Right slot */}
       <div className="w-10 flex justify-end">

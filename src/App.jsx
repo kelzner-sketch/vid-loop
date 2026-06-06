@@ -15,6 +15,7 @@ import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import BottomTabBar from './components/BottomTabBar';
 import { TabNavigatorProvider, useTabNav } from './components/TabNavigator';
+import { motion, AnimatePresence } from 'framer-motion';
 // Add page imports here
 
 const TAB_PAGES = {
@@ -25,7 +26,8 @@ const TAB_PAGES = {
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
-  const { activeTab, switchTab } = useTabNav();
+  const { activeTab, switchTab, slideDirection } = useTabNav();
+  const { currentPath } = useTabNav();
   const location = useLocation();
 
   // Sync route path to active tab
@@ -62,13 +64,20 @@ const AuthenticatedApp = () => {
         <Route path="/*" element={
           <div className="fixed inset-0">
             {Object.entries(TAB_PAGES).map(([tab, PageComponent]) => (
-              <div
-                key={tab}
-                className="absolute inset-0"
-                style={{ display: activeTab === tab ? 'block' : 'none' }}
-              >
-                <PageComponent />
-              </div>
+              <AnimatePresence mode="wait" key={tab}>
+                {activeTab === tab && (
+                  <motion.div
+                    key={`${tab}-${currentPath}`}
+                    className="absolute inset-0"
+                    initial={{ opacity: 0, x: slideDirection > 0 ? 100 : slideDirection < 0 ? -100 : 0 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: slideDirection > 0 ? -100 : slideDirection < 0 ? 100 : 0 }}
+                    transition={{ duration: 0.3, ease: 'easeInOut' }}
+                  >
+                    <PageComponent />
+                  </motion.div>
+                )}
+              </AnimatePresence>
             ))}
             <BottomTabBar />
           </div>
