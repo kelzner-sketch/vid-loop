@@ -427,7 +427,7 @@ export default function Home() {
         /* ── LANDSCAPE: compact right-side strip ── */
         <div className="absolute right-0 top-0 bottom-0 z-10 flex flex-col justify-end"
         style={{ background: 'linear-gradient(to left, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.3) 70%, transparent 100%)', width: '200px' }}>
-              <div className="px-3 pb-8 pt-4 space-y-3">
+              <div className="px-3 pb-8 pt-4 space-y-3" style={{ marginBottom: '30px' }}>
                 {/* Scrub */}
                 <div className="space-y-1">
                   <div className="flex items-center justify-between">
