@@ -477,15 +477,15 @@ export default function Home() {
 
           {/* ── CONTROLS PANEL — adapts portrait/landscape ── */}
           {isLandscape ? (
-          /* ── LANDSCAPE: left-side sliders ── */
+          /* ── LANDSCAPE: left-side controls ── */
           <motion.div 
            className="absolute left-0 top-0 bottom-0 z-10 flex flex-col pointer-events-none"
            style={{ background: 'linear-gradient(to right, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.3) 70%, transparent 100%)', width: '130px' }}
            animate={{ x: isRecording ? -130 : 0 }}
            transition={{ duration: 0.3 }}
           >
-              {/* Record/camera controls at top-right */}
-              <div className="absolute top-4 right-4 flex flex-col gap-3 z-40 pointer-events-auto">
+              {/* Record/camera controls at top-left */}
+              <div className="flex flex-col gap-3 z-40 pointer-events-auto pt-4 px-2">
                 {/* Record button */}
                 <button
                   onClick={isRecording ? stopRecording : startRecording}
@@ -521,8 +521,8 @@ export default function Home() {
                 </button>
               </div>
 
-               {/* Left panel sliders */}
-               <div className="px-2 pt-4 pb-4 space-y-2 overflow-y-auto overscroll-contain pointer-events-auto text-[7px]" style={{ marginTop: '0px' }}>
+              {/* Left panel sliders - Scrub only */}
+              <div className="px-2 pt-4 pb-4 space-y-2 overflow-y-auto overscroll-contain pointer-events-auto text-[7px]" style={{ marginTop: '0px' }}>
                 {/* Scrub */}
                 <div className="space-y-0.5">
                   <div className="flex flex-col gap-0.5">
@@ -538,8 +538,18 @@ export default function Home() {
                     </div>
                   </div>
                   <ScrubBar value={delayOffset} max={Math.max(1, bufferFill - 1)} onChange={setDelayOffset} bufferFill={bufferFill} maxBufferSize={maxBufferSize} />
-                </div>
+                  </div>
+              </div>
+              </motion.div>
 
+              {/* Right-side panel: Loop and Ghost controls */}
+              <motion.div 
+              className="absolute right-0 top-0 bottom-0 z-10 flex flex-col pointer-events-none"
+              style={{ background: 'linear-gradient(to left, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.3) 70%, transparent 100%)', width: '130px' }}
+              animate={{ x: isRecording ? 130 : 0 }}
+              transition={{ duration: 0.3 }}
+              >
+              <div className="px-2 pt-4 pb-4 space-y-2 overflow-y-auto overscroll-contain pointer-events-auto text-[7px]">
                 {/* Loop toggle + sliders */}
                 <button onClick={toggleLoop}
                   className={`w-full flex items-center gap-1 px-1 py-0.5 rounded border text-[6px] font-mono transition-all ${loopEnabled ? 'bg-accent/30 border-accent/50 text-white' : 'bg-white/5 border-white/10 text-white/40'}`}>
@@ -567,7 +577,8 @@ export default function Home() {
                   </div>
                 }
               </div>
-              </motion.div>) : (
+              </motion.div>
+              ) : (
 
         /* ── PORTRAIT: bottom panel ── */
         <div className="absolute bottom-0 left-0 right-0 z-10" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 70%, transparent 100%)', maxHeight: '65vh', display: 'flex', flexDirection: 'column' }}>
