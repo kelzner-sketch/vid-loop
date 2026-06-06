@@ -297,7 +297,6 @@ export default function Home() {
 
 
   const fillPercent = Math.round(bufferFill / maxBufferSize * 100);
-  const fillPercent = Math.round(bufferFill / maxBufferSize * 100);
   const isDelayed = delayOffset > 0;
 
   return (
@@ -478,59 +477,63 @@ export default function Home() {
 
           {/* ── CONTROLS PANEL — adapts portrait/landscape ── */}
           {isLandscape ? (
-          /* ── LANDSCAPE: left-side controls + top-right record ── */
-          <div className="absolute left-0 top-0 bottom-0 z-10 flex flex-col pointer-events-none"
-          style={{ background: 'linear-gradient(to right, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.3) 70%, transparent 100%)', width: '180px' }}>
-               {/* Floating record/camera controls at top-right */}
-               <div className="absolute top-4 right-4 flex flex-col gap-2 z-40 pointer-events-auto">
-                {/* Smaller record button */}
-                <button
-                  onClick={isRecording ? stopRecording : startRecording}
-                  className={`flex items-center justify-center gap-1 px-2.5 py-1.5 rounded-lg backdrop-blur-md border font-mono text-[9px] transition-all active:scale-95 pointer-events-auto ${
-                    isRecording ?
-                      'bg-red-500/80 border-red-400/60 text-white' :
-                      'bg-white/10 border-white/20 text-white/80'
-                  }`}
-                  title={isRecording ? 'Stop recording' : 'Start recording'}
-                >
-                  {isRecording ? (
-                    <>
-                      <Square className="w-2.5 h-2.5 fill-white" />
-                      <span className="tabular-nums">
-                        {String(Math.floor(recordingTime / 60)).padStart(2, '0')}:{String(recordingTime % 60).padStart(2, '0')}
-                      </span>
-                    </>
-                  ) : (
-                    <>
-                      <Circle className="w-2.5 h-2.5 fill-red-400" />
-                    </>
-                  )}
-                </button>
+          /* ── LANDSCAPE: left-side controls ── */
+          <motion.div 
+            className="absolute left-0 top-0 bottom-0 z-10 flex flex-col pointer-events-none"
+            style={{ background: 'linear-gradient(to right, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.3) 70%, transparent 100%)', width: '130px' }}
+            animate={{ x: isRecording ? -130 : 0 }}
+            transition={{ duration: 0.3 }}
+          >
+               {/* Record/camera controls at top-left */}
+               <div className="flex flex-col gap-2 z-40 pointer-events-auto pt-4 px-2">
+                 {/* Smaller record button */}
+                 <button
+                   onClick={isRecording ? stopRecording : startRecording}
+                   className={`flex items-center justify-center gap-1 px-2 py-1.5 rounded-lg backdrop-blur-md border font-mono text-[8px] transition-all active:scale-95 pointer-events-auto ${
+                     isRecording ?
+                       'bg-red-500/80 border-red-400/60 text-white' :
+                       'bg-white/10 border-white/20 text-white/80'
+                   }`}
+                   title={isRecording ? 'Stop recording' : 'Start recording'}
+                 >
+                   {isRecording ? (
+                     <>
+                       <Square className="w-2 h-2 fill-white" />
+                       <span className="tabular-nums text-[7px]">
+                         {String(Math.floor(recordingTime / 60)).padStart(2, '0')}:{String(recordingTime % 60).padStart(2, '0')}
+                       </span>
+                     </>
+                   ) : (
+                     <>
+                       <Circle className="w-2 h-2 fill-red-400" />
+                     </>
+                   )}
+                 </button>
 
-                {/* Camera switch */}
-                <button
-                  onClick={handleSwitchCamera}
-                  className="flex items-center gap-0 rounded-lg bg-white/10 backdrop-blur-md border border-white/20 text-[9px] font-mono overflow-hidden active:scale-95 transition-all pointer-events-auto"
-                >
-                  <span className={`px-2 py-1 transition-colors ${facingMode === 'environment' ? 'bg-white text-black' : 'text-white/50'}`}>R</span>
-                  <span className={`px-2 py-1 transition-colors ${facingMode === 'user' ? 'bg-white text-black' : 'text-white/50'}`}>F</span>
-                </button>
-              </div>
+                 {/* Camera switch */}
+                 <button
+                   onClick={handleSwitchCamera}
+                   className="flex items-center gap-0 rounded-lg bg-white/10 backdrop-blur-md border border-white/20 text-[7px] font-mono overflow-hidden active:scale-95 transition-all pointer-events-auto"
+                 >
+                   <span className={`px-1.5 py-1 transition-colors ${facingMode === 'environment' ? 'bg-white text-black' : 'text-white/50'}`}>R</span>
+                   <span className={`px-1.5 py-1 transition-colors ${facingMode === 'user' ? 'bg-white text-black' : 'text-white/50'}`}>F</span>
+                 </button>
+               </div>
 
-              {/* Left panel sliders */}
-              <div className="px-3 pt-6 pb-4 space-y-3 overflow-y-auto overscroll-contain pointer-events-auto" style={{ marginTop: '80px' }}>
+               {/* Left panel sliders */}
+               <div className="px-2 pt-4 pb-4 space-y-2 overflow-y-auto overscroll-contain pointer-events-auto text-[7px]" style={{ marginTop: '0px' }}>
                 {/* Scrub */}
-                <div className="space-y-1">
-                  <div className="flex flex-col gap-1">
-                    <span className="text-[8px] font-mono uppercase tracking-widest text-white/40">Scrub</span>
-                    <div className="flex items-center gap-1">
+                <div className="space-y-0.5">
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-[6px] font-mono uppercase tracking-widest text-white/40">SCRUB</span>
+                    <div className="flex items-center gap-0.5">
                       {isDelayed &&
                         <button onClick={() => setDelayOffset(0)}
-                          className="flex items-center gap-0.5 px-1 py-0.5 rounded bg-accent/20 border border-accent/30 text-accent text-[8px] font-mono">
-                          <Play className="w-1.5 h-1.5" />L
+                          className="flex items-center gap-0.5 px-0.5 py-0.5 rounded bg-accent/20 border border-accent/30 text-accent text-[6px] font-mono">
+                          <Play className="w-1 h-1" />L
                         </button>
                       }
-                      <span className="text-[8px] font-mono text-white tabular-nums">{isDelayed ? `−${delaySeconds}s` : 'live'}</span>
+                      <span className="text-[6px] font-mono text-white tabular-nums">{isDelayed ? `−${delaySeconds}s` : 'live'}</span>
                     </div>
                   </div>
                   <ScrubBar value={delayOffset} max={Math.max(1, bufferFill - 1)} onChange={setDelayOffset} bufferFill={bufferFill} maxBufferSize={maxBufferSize} />
@@ -538,32 +541,32 @@ export default function Home() {
 
                 {/* Loop toggle + sliders */}
                 <button onClick={toggleLoop}
-                  className={`w-full flex items-center gap-1.5 px-2 py-1 rounded-lg border text-[8px] font-mono transition-all ${loopEnabled ? 'bg-accent/30 border-accent/50 text-white' : 'bg-white/5 border-white/10 text-white/40'}`}>
-                  <Repeat2 className="w-2.5 h-2.5" />
-                  Loop
+                  className={`w-full flex items-center gap-1 px-1 py-0.5 rounded border text-[6px] font-mono transition-all ${loopEnabled ? 'bg-accent/30 border-accent/50 text-white' : 'bg-white/5 border-white/10 text-white/40'}`}>
+                  <Repeat2 className="w-2 h-2" />
+                  LOOP
                 </button>
                 {loopEnabled &&
-                  <div className="space-y-1.5">
-                    <CompactSlider label="D" valueLabel={`${(loopDepth / 30).toFixed(1)}s`} value={loopDepth} min={5} max={Math.max(5, bufferFill - 1)} step={1} onChange={setLoopDepth} />
-                    <CompactSlider label="S" valueLabel={`${loopSpeed}x`} value={loopSpeed} min={0.25} max={4} step={0.25} onChange={setLoopSpeed} />
+                  <div className="space-y-1">
+                    <CompactSlider label="D" valueLabel={`${(loopDepth / 30).toFixed(1)}s`} value={loopDepth} min={5} max={Math.max(5, bufferFill - 1)} step={1} onChange={setLoopDepth} compact />
+                    <CompactSlider label="S" valueLabel={`${loopSpeed}x`} value={loopSpeed} min={0.25} max={4} step={0.25} onChange={setLoopSpeed} compact />
                   </div>
                 }
 
                 {/* Ghost toggle */}
                 <button onClick={toggleGhost}
-                  className={`w-full flex items-center gap-1.5 px-2 py-1 rounded-lg border text-[8px] font-mono transition-all ${ghostEnabled ? 'bg-primary/30 border-primary/50 text-white' : 'bg-white/5 border-white/10 text-white/40'}`}>
-                  <Layers className="w-2.5 h-2.5" />
-                  Ghost
+                  className={`w-full flex items-center gap-1 px-1 py-0.5 rounded border text-[6px] font-mono transition-all ${ghostEnabled ? 'bg-primary/30 border-primary/50 text-white' : 'bg-white/5 border-white/10 text-white/40'}`}>
+                  <Layers className="w-2 h-2" />
+                  GHOST
                 </button>
                 {ghostEnabled &&
-                  <div className="space-y-1.5">
-                    <CompactSlider label="I" valueLabel={`${ghostInterval}f`} value={ghostInterval} min={1} max={30} step={1} onChange={setGhostInterval} />
-                    <CompactSlider label="L" valueLabel={`${ghostCount}`} value={ghostCount} min={2} max={10} step={1} onChange={setGhostCount} />
-                    <CompactSlider label="O" valueLabel={`${Math.round(ghostOpacity * 100)}%`} value={ghostOpacity} min={0.05} max={1} step={0.05} onChange={setGhostOpacity} />
+                  <div className="space-y-1">
+                    <CompactSlider label="I" valueLabel={`${ghostInterval}f`} value={ghostInterval} min={1} max={30} step={1} onChange={setGhostInterval} compact />
+                    <CompactSlider label="L" valueLabel={`${ghostCount}`} value={ghostCount} min={2} max={10} step={1} onChange={setGhostCount} compact />
+                    <CompactSlider label="O" valueLabel={`${Math.round(ghostOpacity * 100)}%`} value={ghostOpacity} min={0.05} max={1} step={0.05} onChange={setGhostOpacity} compact />
                   </div>
                 }
               </div>
-            </div>) : (
+              </motion.div>) : (
 
         /* ── PORTRAIT: bottom panel ── */
         <div className="absolute bottom-0 left-0 right-0 z-10" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 70%, transparent 100%)', maxHeight: '65vh', display: 'flex', flexDirection: 'column' }}>
@@ -660,14 +663,14 @@ function GhostSliderRow({ label, valueLabel, value, min, max, step, onChange }) 
 
 }
 
-function CompactSlider({ label, valueLabel, value, min, max, step, onChange }) {
+function CompactSlider({ label, valueLabel, value, min, max, step, onChange, compact }) {
   return (
-    <div className="flex items-center gap-2">
-      <span className="text-[8px] font-mono uppercase tracking-widest text-white/40 w-6 shrink-0">{label}</span>
+    <div className={`flex items-center gap-${compact ? '1' : '2'}`}>
+      <span className={`font-mono uppercase tracking-widest text-white/40 shrink-0 ${compact ? 'text-[5px] w-4' : 'text-[8px] w-6'}`}>{label}</span>
       <div className="flex-1">
         <ControlSlider value={value} min={min} max={max} step={step} onChange={onChange} />
       </div>
-      <span className="text-[8px] font-mono text-white/60 w-8 text-right shrink-0 tabular-nums">{valueLabel}</span>
+      <span className={`font-mono text-white/60 text-right shrink-0 tabular-nums ${compact ? 'text-[5px] w-6' : 'text-[8px] w-8'}`}>{valueLabel}</span>
     </div>
   );
 }
