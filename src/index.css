@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -31,10 +31,10 @@
     --chart-4: 330 70% 60%;
     --chart-5: 200 80% 55%;
     --radius: 0.75rem;
-    --font-heading: 'Inter', ui-sans-serif, system-ui, sans-serif;
-    --font-body: 'Inter', ui-sans-serif, system-ui, sans-serif;
-    --font-display: 'Inter', ui-sans-serif, system-ui, sans-serif;
-    --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+    --font-heading: 'Red Hat Display', sans-serif;
+    --font-body: 'Red Hat Display', sans-serif;
+    --font-display: 'Red Hat Display', sans-serif;
+    --font-mono: 'Red Hat Display', sans-serif;
     --sidebar-background: 230 15% 8%;
     --sidebar-foreground: 220 20% 85%;
     --sidebar-primary: 213 80% 65%;
