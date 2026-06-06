@@ -60,35 +60,7 @@ const AuthenticatedApp = () => {
         
         {/* Protected app routes */}
         <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
-          <Route path="/" element={
-            <div className="fixed inset-0">
-              {Object.entries(TAB_PAGES).map(([tab, PageComponent]) => (
-                <div
-                  key={tab}
-                  className="absolute inset-0"
-                  style={{ display: activeTab === tab ? 'block' : 'none' }}
-                >
-                  <PageComponent />
-                </div>
-              ))}
-              <BottomTabBar />
-            </div>
-          } />
-          <Route path="/gallery" element={
-            <div className="fixed inset-0">
-              {Object.entries(TAB_PAGES).map(([tab, PageComponent]) => (
-                <div
-                  key={tab}
-                  className="absolute inset-0"
-                  style={{ display: activeTab === tab ? 'block' : 'none' }}
-                >
-                  <PageComponent />
-                </div>
-              ))}
-              <BottomTabBar />
-            </div>
-          } />
-          <Route path="/settings" element={
+          <Route path="/*" element={
             <div className="fixed inset-0">
               {Object.entries(TAB_PAGES).map(([tab, PageComponent]) => (
                 <div
