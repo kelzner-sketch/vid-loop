@@ -263,32 +263,40 @@ export default function Home() {
         setSavedClip({ url: file_url });
         setTimeout(() => setSavedClip(null), 5000);
       } catch (e) {
+        console.error('Upload failed:', e);
+      }
+      URL.revokeObjectURL(localUrl);
+    };
+    recorder.start();
+    mediaRecorderRef.current = recorder;
+    setIsRecording(true);
+    setRecordingContext(true);
+    setRecordingTime(0);
+    recordingTimerRef._lastTime = 0;
+    recordingTimerRef.current = setInterval(() => {
+      setRecordingTime((t) => {
+        recordingTimerRef._lastTime = t + 1;
+        return t + 1;
+      });
+    }, 1000);
+  }, [setRecordingContext]);
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        // upload failed silently — local download already triggered
-      }URL.revokeObjectURL(localUrl);};recorder.start();mediaRecorderRef.current = recorder;setIsRecording(true);setRecordingContext(true);setRecordingTime(0);recordingTimerRef._lastTime = 0;recordingTimerRef.current = setInterval(() => {setRecordingTime((t) => {recordingTimerRef._lastTime = t + 1;return t + 1;});}, 1000);}, [setRecordingContext]);const stopRecording = useCallback(() => {mediaRecorderRef.current?.stop();
-      clearInterval(recordingTimerRef.current);
-      setIsRecording(false);
-      setRecordingContext(false);
-      setRecordingTime(0);
-    }, [setRecordingContext]);
+  const stopRecording = useCallback(() => {
+    mediaRecorderRef.current?.stop();
+    clearInterval(recordingTimerRef.current);
+    setIsRecording(false);
+    setRecordingContext(false);
+    setRecordingTime(0);
+  }, [setRecordingContext]);
 
   const delaySeconds = (delayOffset / 30).toFixed(2);
+
+
+
+
+
+
+  const fillPercent = Math.round(bufferFill / maxBufferSize * 100);
   const fillPercent = Math.round(bufferFill / maxBufferSize * 100);
   const isDelayed = delayOffset > 0;
 
