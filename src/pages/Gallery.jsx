@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { Camera, Trash2, Download, Film, Pencil, Check, X, CheckSquare, RefreshCw } from 'lucide-react';
+import { Camera, Trash2, Download, Film, Pencil, Check, X, CheckSquare, RefreshCw, Share2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Gallery() {
@@ -77,6 +77,35 @@ export default function Gallery() {
   const deleteClip = async (id) => {
     await base44.entities.Clip.delete(id);
     setClips(prev => prev.filter(c => c.id !== id));
+  };
+
+  const shareClip = async (clip) => {
+    const title = clip.title || 'VidLoop clip';
+    // Try native share with file (works on iOS/Android)
+    if (navigator.share) {
+      try {
+        // Fetch the video as a blob so we can share the actual file
+        const res = await fetch(clip.file_url);
+        const blob = await res.blob();
+        const ext = blob.type.includes('mp4') ? 'mp4' : 'webm';
+        const file = new File([blob], `${title}.${ext}`, { type: blob.type });
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({ files: [file], title });
+          return;
+        }
+        // Fallback: share URL only
+        await navigator.share({ title, url: clip.file_url });
+      } catch (e) {
+        if (e.name !== 'AbortError') {
+          // Copy URL to clipboard as last resort
+          await navigator.clipboard.writeText(clip.file_url);
+          alert('Link copied to clipboard!');
+        }
+      }
+    } else {
+      await navigator.clipboard.writeText(clip.file_url);
+      alert('Link copied to clipboard!');
+    }
   };
 
   return (
@@ -220,6 +249,10 @@ export default function Gallery() {
                         <button onClick={() => startEdit(clip)}
                           className="w-7 h-7 rounded-lg bg-muted flex items-center justify-center hover:bg-primary/20 transition-colors">
                           <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
+                        </button>
+                        <button onClick={() => shareClip(clip)}
+                          className="w-7 h-7 rounded-lg bg-muted flex items-center justify-center hover:bg-primary/20 transition-colors">
+                          <Share2 className="w-3.5 h-3.5 text-muted-foreground" />
                         </button>
                         <a href={clip.file_url} download
                           className="w-7 h-7 rounded-lg bg-muted flex items-center justify-center hover:bg-primary/20 transition-colors">
