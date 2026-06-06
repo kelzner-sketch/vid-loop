@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useCallback } from 'react';
 
-export default function RenderCanvas({ videoRef, getFrame, delayOffset, ghostEnabled, ghostInterval, ghostCount, ghostOpacity, isActive }) {
+export default function RenderCanvas({ videoRef, getFrame, delayOffset, ghostEnabled, ghostInterval, ghostCount, ghostOpacity, isActive, canvasRefOut }) {
   const canvasRef = useRef(null);
   const rafRef = useRef(null);
   const containerRef = useRef(null);
@@ -104,7 +104,7 @@ export default function RenderCanvas({ videoRef, getFrame, delayOffset, ghostEna
   return (
     <div ref={containerRef} className="absolute inset-0">
       <canvas
-        ref={canvasRef}
+        ref={(el) => { canvasRef.current = el; if (canvasRefOut) canvasRefOut.current = el; }}
         style={{ width: '100%', height: '100%', display: 'block' }}
       />
     </div>

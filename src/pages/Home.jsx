@@ -19,9 +19,9 @@ export default function Home() {
   const [ghostActive, setGhostActive] = useState(false);
   const [ghostDelay, setGhostDelay] = useState(0);
   const [ghostCountdown, setGhostCountdown] = useState(null);
-  const [ghostInterval, setGhostInterval] = useState(8);
-  const [ghostCount, setGhostCount] = useState(4);
-  const [ghostOpacity, setGhostOpacity] = useState(0.5);
+  const [ghostInterval, setGhostInterval] = useState(4);
+  const [ghostCount, setGhostCount] = useState(6);
+  const [ghostOpacity, setGhostOpacity] = useState(0.8);
   const ghostCountdownRef = useRef(null);
   const [bufferFill, setBufferFill] = useState(0);
   const [isLandscape, setIsLandscape] = useState(() => window.innerWidth > window.innerHeight);
@@ -31,16 +31,21 @@ export default function Home() {
   const mediaRecorderRef = useRef(null);
   const recordingChunksRef = useRef([]);
   const recordingTimerRef = useRef(null);
-  const canvasRef = useRef(null);
+  const canvasRef = useRef(null); // forwarded from RenderCanvas
 
-  // Track orientation changes without restarting camera
+  // Track orientation changes without restarting camera (debounced)
   useEffect(() => {
-    const update = () => setIsLandscape(window.innerWidth > window.innerHeight);
+    let timer;
+    const update = () => {
+      clearTimeout(timer);
+      timer = setTimeout(() => setIsLandscape(window.innerWidth > window.innerHeight), 150);
+    };
     window.addEventListener('resize', update);
     window.addEventListener('orientationchange', update);
     return () => {
       window.removeEventListener('resize', update);
       window.removeEventListener('orientationchange', update);
+      clearTimeout(timer);
     };
   }, []);
 
@@ -124,8 +129,7 @@ export default function Home() {
   };
 
   const startRecording = useCallback(() => {
-    // Find the canvas element rendered by RenderCanvas
-    const canvas = document.querySelector('canvas');
+    const canvas = canvasRef.current;
     if (!canvas) return;
     const stream = canvas.captureStream(30);
     const mimeType = MediaRecorder.isTypeSupported('video/mp4') ?
@@ -224,7 +228,8 @@ export default function Home() {
             ghostInterval={ghostInterval}
             ghostCount={ghostCount}
             ghostOpacity={ghostOpacity}
-            isActive={isActive} />
+            isActive={isActive}
+            canvasRefOut={canvasRef} />
           
           </div>
 
