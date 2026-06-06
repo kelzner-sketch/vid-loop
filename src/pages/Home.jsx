@@ -640,8 +640,8 @@ export default function Home() {
                      </button>
                    </div>
                    <AnimatePresence>
-                     {ghostEnabled &&
-                <motion.div key="ghost-panel" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
+                     {ghostEnabled && (
+                       <motion.div key="ghost-panel" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
                          <div className="space-y-3 pt-1">
                            <GhostSliderRow label="Delay" valueLabel={ghostDelay === 0 ? 'off' : `${ghostDelay}s`} value={ghostDelay} min={0} max={10} step={1} onChange={setGhostDelay} />
                            <GhostSliderRow label="Interval" valueLabel={`${ghostInterval}f`} value={ghostInterval} min={1} max={30} step={1} onChange={setGhostInterval} />
@@ -649,13 +649,12 @@ export default function Home() {
                            <GhostSliderRow label="Opacity" valueLabel={`${Math.round(ghostOpacity * 100)}%`} value={ghostOpacity} min={0.05} max={1} step={0.05} onChange={setGhostOpacity} />
                          </div>
                        </motion.div>
-                }
+                     )}
                    </AnimatePresence>
                  </div>
-              </div>
-              </div>
-              );
-              }
+                 </div>
+                 );
+                 }
 
               export default Home;
 
