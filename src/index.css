@@ -84,9 +84,22 @@
 @layer base {
   * {
     @apply border-border outline-ring/50;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  p, span, h1, h2, h3, h4, h5, h6, label, input, textarea {
+    user-select: text;
+    -webkit-user-select: text;
   }
 
   body {
     @apply bg-background text-foreground font-body;
+    overscroll-behavior: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  html {
+    overscroll-behavior: none;
   }
 }

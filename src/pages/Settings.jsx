@@ -1,5 +1,11 @@
-import React from 'react';
-import { Film, Camera, Layers, Repeat2, Info } from 'lucide-react';
+import React, { useState } from 'react';
+import { Film, Camera, Layers, Repeat2, Info, Trash2 } from 'lucide-react';
+import { base44 } from '@/api/base44Client';
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel,
+  AlertDialogContent, AlertDialogDescription, AlertDialogFooter,
+  AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 const tips = [
   { icon: Camera, title: 'Scrub', desc: 'Drag the timeline to replay the last ~10 seconds of footage.' },
@@ -9,6 +15,14 @@ const tips = [
 ];
 
 export default function Settings() {
+  const [deleting, setDeleting] = useState(false);
+
+  const handleDeleteAccount = async () => {
+    setDeleting(true);
+    await base44.auth.deleteAccount();
+    window.location.href = '/';
+  };
+
   return (
     <div className="fixed inset-0 bg-background flex flex-col overflow-hidden">
       {/* Header */}
@@ -36,6 +50,34 @@ export default function Settings() {
             </div>
           </div>
         ))}
+        {/* Delete Account */}
+        <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground px-1 pt-2">Account</p>
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <button className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl bg-card border border-destructive/30 text-destructive hover:bg-destructive/10 transition-colors">
+              <Trash2 className="w-4 h-4 shrink-0" />
+              <span className="text-sm font-medium">Delete Account</span>
+            </button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete your account?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This permanently deletes your account and all saved clips. This action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleDeleteAccount}
+                disabled={deleting}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                {deleting ? 'Deleting…' : 'Yes, delete'}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </div>
   );

@@ -1,3 +1,4 @@
+import React from 'react';
 import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
@@ -58,6 +59,15 @@ const AuthenticatedApp = () => {
 
 
 function App() {
+  React.useEffect(() => {
+    const apply = (dark) => {
+      document.documentElement.classList.toggle('dark', dark);
+    };
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    apply(mq.matches);
+    mq.addEventListener('change', (e) => apply(e.matches));
+    return () => mq.removeEventListener('change', (e) => apply(e.matches));
+  }, []);
 
   return (
     <AuthProvider>

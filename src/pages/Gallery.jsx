@@ -53,10 +53,11 @@ export default function Gallery() {
 
   const exitSelectMode = () => { setSelectMode(false); setSelected(new Set()); };
 
-  const deleteSelected = async () => {
-    await Promise.all([...selected].map(id => base44.entities.Clip.delete(id)));
-    setClips(prev => prev.filter(c => !selected.has(c.id)));
+  const deleteSelected = () => {
+    const ids = new Set(selected);
+    setClips(prev => prev.filter(c => !ids.has(c.id)));
     exitSelectMode();
+    Promise.all([...ids].map(id => base44.entities.Clip.delete(id)));
   };
 
   const startEdit = (clip) => { setEditingId(clip.id); setEditingTitle(clip.title || ''); };
@@ -75,9 +76,9 @@ export default function Gallery() {
 
   useEffect(() => { loadClips(); }, []);
 
-  const deleteClip = async (id) => {
-    await base44.entities.Clip.delete(id);
+  const deleteClip = (id) => {
     setClips(prev => prev.filter(c => c.id !== id));
+    base44.entities.Clip.delete(id);
   };
 
   const shareClip = async (clip) => {
