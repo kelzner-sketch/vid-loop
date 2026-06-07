@@ -175,7 +175,10 @@ export default function Camera() {
     };
   }, [isActive, captureLoop]);
 
-  const handleStart = async () => {
+  const handleStart = async (e) => {
+    e?.stopPropagation?.();
+    e?.preventDefault?.();
+    console.log('Enabling camera, facing mode:', facingMode);
     await start(facingMode);
   };
 
@@ -320,9 +323,21 @@ export default function Camera() {
     }, 1000);
   }, [isPro]);
 
-  const handleRecordPress = useCallback(() => {
-    if (!isPro) { setShowProModal(true); return; }
-    startRecording();
+  const handleRecordPress = useCallback((e) => {
+    e?.stopPropagation?.();
+    e?.preventDefault?.();
+    console.log('Record button clicked, isPro:', isPro);
+    try {
+      if (!isPro) { 
+        console.log('Showing Pro modal');
+        setShowProModal(true); 
+        return; 
+      }
+      console.log('Starting recording');
+      startRecording();
+    } catch (err) {
+      console.error('Record handler error:', err);
+    }
   }, [isPro, startRecording]);
 
   // When free user dismisses the Pro modal, start recording at capped resolution
