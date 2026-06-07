@@ -15,7 +15,7 @@ export default function useCamera() {
     }
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode },
+        video: { facingMode: { ideal: facingMode } },
         audio: false
       });
       streamRef.current = stream;
