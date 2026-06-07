@@ -36,6 +36,7 @@ export default function Camera() {
 
   const [facingMode, setFacingMode] = useState(prefs.facingMode ?? 'environment');
   const [delayOffset, setDelayOffset] = useState(15);
+  const delayOffsetRef = useRef(15);
   const [ghostEnabled, setGhostEnabled] = useState(false);
   const [ghostActive, setGhostActive] = useState(false);
   const [ghostDelay, setGhostDelay] = useState(prefs.ghostDelay ?? 0);
@@ -108,18 +109,24 @@ export default function Camera() {
       return;
     }
     const tick = () => {
-      if (!loopEnabledRef.current) return;
-      const state = loopStateRef.current;
-      state.pos += state.dir * loopSpeed;
-      if (state.pos >= loopDepth) {
-        state.pos = loopDepth;
-        state.dir = -1;
-      } else if (state.pos <= 0) {
-        state.pos = 0;
-        state.dir = 1;
-      }
-      setDelayOffset(Math.round(state.pos));
-      loopRafRef.current = requestAnimationFrame(tick);
+    if (!loopEnabledRef.current) return;
+    const state = loopStateRef.current;
+    state.pos += state.dir * loopSpeed;
+    if (state.pos >= loopDepth) {
+      state.pos = loopDepth;
+      state.dir = -1;
+    } else if (state.pos <= 0) {
+      state.pos = 0;
+      state.dir = 1;
+    }
+    const rounded = Math.round(state.pos);
+    delayOffsetRef.current = rounded;
+    // Throttle React state updates to ~10fps to avoid re-render jitter
+    if (!tick._lastUpdate || performance.now() - tick._lastUpdate > 100) {
+      tick._lastUpdate = performance.now();
+      setDelayOffset(rounded);
+    }
+    loopRafRef.current = requestAnimationFrame(tick);
     };
     loopStateRef.current = { dir: 1, pos: 0 };
     loopRafRef.current = requestAnimationFrame(tick);
@@ -128,11 +135,13 @@ export default function Camera() {
     };
   }, [loopEnabled, loopDepth, loopSpeed]);
 
+  const setDelay = (v) => { delayOffsetRef.current = v; setDelayOffset(v); };
+
   const toggleLoop = () => {
     setLoopEnabled((prev) => {
       if (prev) {
         // turning off — snap back to live
-        setDelayOffset(0);
+        setDelay(0);
       }
       return !prev;
     });
@@ -234,7 +243,7 @@ export default function Camera() {
     stop();
     clearBuffer();
     setBufferFill(0);
-    setDelayOffset(0);
+    setDelay(0);
   };
 
   const startRecording = useCallback(() => {
@@ -432,6 +441,7 @@ export default function Camera() {
             videoRef={videoRef}
             getFrame={getFrame}
             delayOffset={delayOffset}
+            delayOffsetRef={delayOffsetRef}
             ghostEnabled={ghostActive}
             ghostInterval={ghostInterval}
             ghostCount={ghostCount}
@@ -609,7 +619,7 @@ export default function Camera() {
                     <span className="text-[7px] font-mono uppercase tracking-widest text-white/40">Scrub</span>
                     <div className="flex items-center gap-1">
                       {isDelayed &&
-                    <button onClick={() => setDelayOffset(0)}
+                    <button onClick={() => setDelay(0)}
                     className="flex items-center gap-0.5 px-1 py-0.5 rounded bg-accent/20 border border-accent/30 text-accent text-[7px] font-mono pointer-events-auto">
                           <Play className="w-1.5 h-1.5" />L
                         </button>
@@ -617,7 +627,7 @@ export default function Camera() {
                       <span className="text-[7px] font-mono text-white tabular-nums">{isDelayed ? `−${delaySeconds}s` : 'live'}</span>
                     </div>
                   </div>
-                  <ScrubBar value={delayOffset} max={Math.max(1, bufferFill - 1)} onChange={setDelayOffset} bufferFill={bufferFill} maxBufferSize={maxBufferSize} />
+                  <ScrubBar value={delayOffset} max={Math.max(1, bufferFill - 1)} onChange={setDelay} bufferFill={bufferFill} maxBufferSize={maxBufferSize} />
                 </div>
                 <button onClick={toggleLoop}
               className={`w-full flex items-center gap-1.5 px-2 py-1 rounded-lg border text-[8px] font-mono transition-all pointer-events-auto ${loopEnabled ? 'bg-accent/30 border-accent/50 text-white' : 'bg-white/5 border-white/10 text-white/40'}`}>
@@ -661,7 +671,7 @@ export default function Camera() {
                     </div>
                     <div className="flex items-center gap-2">
                       {isDelayed &&
-                  <button onClick={() => setDelayOffset(0)}
+                  <button onClick={() => setDelay(0)}
                   className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-accent/20 border border-accent/30 text-accent text-[10px] font-mono">
                           <Play className="w-2.5 h-2.5" />LIVE
                         </button>
@@ -669,7 +679,7 @@ export default function Camera() {
                       <span className="text-sm font-mono text-white tabular-nums">{isDelayed ? `−${delaySeconds}s` : 'live'}</span>
                     </div>
                   </div>
-                  <ScrubBar value={delayOffset} max={Math.max(1, bufferFill - 1)} onChange={setDelayOffset} bufferFill={bufferFill} maxBufferSize={maxBufferSize} />
+                  <ScrubBar value={delayOffset} max={Math.max(1, bufferFill - 1)} onChange={setDelay} bufferFill={bufferFill} maxBufferSize={maxBufferSize} />
                   <div className="flex justify-between text-[9px] font-mono text-white/25 px-0.5">
                     <span>−{(Math.max(1, bufferFill - 1) / 30).toFixed(1)}s</span>
                     <span>now</span>
