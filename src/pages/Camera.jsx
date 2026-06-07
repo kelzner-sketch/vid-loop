@@ -258,7 +258,15 @@ export default function Camera() {
       recordCanvas = oc;
     }
 
+    if (!recordCanvas) {
+      console.error('Canvas not available for recording');
+      return;
+    }
     const stream = recordCanvas.captureStream(30);
+    if (!stream) {
+      console.error('Failed to capture stream from canvas');
+      return;
+    }
     const mimeType =
     MediaRecorder.isTypeSupported('video/webm;codecs=vp9') ? 'video/webm;codecs=vp9' :
     MediaRecorder.isTypeSupported('video/webm;codecs=vp8') ? 'video/webm;codecs=vp8' :
@@ -324,21 +332,28 @@ export default function Camera() {
   }, [isPro]);
 
   const handleRecordPress = useCallback((e) => {
-    e?.stopPropagation?.();
-    e?.preventDefault?.();
-    console.log('Record button clicked, isPro:', isPro);
+    if (e) {
+      e.stopPropagation();
+      e.preventDefault();
+    }
+    console.log('Record button clicked, isPro:', isPro, 'isRecording:', isRecording, 'canvas:', canvasRef.current ? 'exists' : 'missing');
+    if (isRecording) {
+      console.log('Stopping recording');
+      stopRecording();
+      return;
+    }
     try {
       if (!isPro) { 
-        console.log('Showing Pro modal');
+        console.log('Showing Pro modal (free tier)');
         setShowProModal(true); 
         return; 
       }
-      console.log('Starting recording');
+      console.log('Starting recording (pro)');
       startRecording();
     } catch (err) {
       console.error('Record handler error:', err);
     }
-  }, [isPro, startRecording]);
+  }, [isPro, startRecording, isRecording, stopRecording]);
 
   // When free user dismisses the Pro modal, start recording at capped resolution
   const handleProModalClose = useCallback(() => {
@@ -556,8 +571,9 @@ export default function Camera() {
                 </span>
               </div>
               <button
-              onClick={isRecording ? stopRecording : handleRecordPress}
+              onClick={handleRecordPress}
               disabled={uploadStatus === 'uploading'}
+              type="button"
               className={`flex flex-col items-center justify-center w-12 h-12 rounded-full backdrop-blur-md border font-mono transition-all active:scale-95 disabled:opacity-50 pointer-events-auto ${
               isRecording ? 'bg-red-500/80 border-red-400/60 text-white' : 'bg-white/15 border-white/30 text-white/80'}`
               }>
