@@ -20,15 +20,19 @@ export function ProProvider({ children }) {
 
   useEffect(() => {
     refresh();
-    // Check if returning from successful checkout
+
+    // Check if returning from successful checkout (same-tab flow)
     const params = new URLSearchParams(window.location.search);
     if (params.get('pro') === 'success') {
-      // Poll a couple times to catch webhook delay
       setTimeout(refresh, 2000);
       setTimeout(refresh, 5000);
-      // Clean up URL
       window.history.replaceState({}, '', window.location.pathname);
     }
+
+    // Re-check when user returns to this tab after completing checkout in new tab
+    const onFocus = () => refresh();
+    window.addEventListener('focus', onFocus);
+    return () => window.removeEventListener('focus', onFocus);
   }, []);
 
   return (

@@ -21,30 +21,16 @@ Deno.serve(async (req) => {
     const session = event.data.object;
     const userId = session.metadata?.user_id;
 
-    if (event.type === 'checkout.session.completed') {
-      const subscription = await stripe.subscriptions.retrieve(session.subscription);
+    if (event.type === 'checkout.session.completed' && session.payment_status === 'paid') {
       if (userId) {
         await base44.asServiceRole.entities.User.update(userId, {
           is_pro: true,
           stripe_customer_id: session.customer,
-          stripe_subscription_id: session.subscription,
           pro_status: 'active',
         });
-      }
-      console.log('Pro activated for user:', userId);
-    }
-
-    if (event.type === 'customer.subscription.deleted' || event.type === 'customer.subscription.updated') {
-      const sub = event.data.object;
-      const isActive = sub.status === 'active' || sub.status === 'trialing';
-      // Find user by stripe customer id
-      const users = await base44.asServiceRole.entities.User.filter({ stripe_customer_id: sub.customer });
-      if (users.length > 0) {
-        await base44.asServiceRole.entities.User.update(users[0].id, {
-          is_pro: isActive,
-          pro_status: sub.status,
-        });
-        console.log('Pro status updated:', sub.status, 'for user:', users[0].id);
+        console.log('Pro activated for user:', userId);
+      } else {
+        console.log('No user_id in metadata; customer:', session.customer, 'email:', session.customer_details?.email);
       }
     }
 
