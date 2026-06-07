@@ -606,7 +606,7 @@ export default function Camera() {
             {/* ── LANDSCAPE RIGHT: Sliders ── */}
             <div className="absolute right-0 top-0 bottom-0 z-30"
           style={{ background: 'linear-gradient(to left, rgba(0,0,0,0.82) 0%, transparent 100%)', width: '158px' }}>
-              <div className="h-full px-3 space-y-2 overflow-y-auto overscroll-contain pointer-events-none"
+              <div className="h-full px-3 space-y-2 overflow-y-auto overscroll-contain"
             style={{ paddingTop: 'calc(0.75rem + env(safe-area-inset-top))', paddingBottom: '0.75rem' }}>
                 <div className="space-y-1 pointer-events-auto">
                   <div className="flex items-center justify-between">
@@ -621,14 +621,14 @@ export default function Camera() {
                       <span className="text-[7px] font-mono text-white tabular-nums">{isDelayed ? `−${delaySeconds}s` : 'live'}</span>
                     </div>
                   </div>
-                  <div className="pointer-events-auto"><ScrubBar value={delayOffset} max={Math.max(1, bufferFill - 1)} onChange={setDelayOffset} bufferFill={bufferFill} maxBufferSize={maxBufferSize} /></div>
+                  <ScrubBar value={delayOffset} max={Math.max(1, bufferFill - 1)} onChange={setDelayOffset} bufferFill={bufferFill} maxBufferSize={maxBufferSize} />
                 </div>
                 <button onClick={toggleLoop}
               className={`w-full flex items-center gap-1.5 px-2 py-1 rounded-lg border text-[8px] font-mono transition-all pointer-events-auto ${loopEnabled ? 'bg-accent/30 border-accent/50 text-white' : 'bg-white/5 border-white/10 text-white/40'}`}>
                   <Repeat2 className="w-2.5 h-2.5" />Loop
                 </button>
                 {loopEnabled &&
-              <div className="space-y-1.5 pointer-events-auto">
+              <div className="space-y-1.5">
                     <CompactSlider label="D" valueLabel={`${(loopDepth / 30).toFixed(1)}s`} value={loopDepth} min={5} max={Math.max(5, bufferFill - 1)} step={1} onChange={setLoopDepth} />
                     <CompactSlider label="S" valueLabel={`${loopSpeed}x`} value={loopSpeed} min={0.25} max={4} step={0.25} onChange={setLoopSpeed} />
                   </div>
@@ -639,7 +639,7 @@ export default function Camera() {
                   {ghostCountdown !== null ? `Ghost ${ghostCountdown}s` : 'Ghost'}
                 </button>
                 {ghostEnabled &&
-              <div className="space-y-1.5 pointer-events-auto">
+              <div className="space-y-1.5">
                     <CompactSlider label="I" valueLabel={`${ghostInterval}f`} value={ghostInterval} min={1} max={30} step={1} onChange={setGhostInterval} />
                     <CompactSlider label="L" valueLabel={`${ghostCount}`} value={ghostCount} min={2} max={4} step={1} onChange={setGhostCount} />
                     <CompactSlider label="O" valueLabel={`${Math.round(ghostOpacity * 100)}%`} value={ghostOpacity} min={0.05} max={1} step={0.05} onChange={setGhostOpacity} />
