@@ -315,26 +315,7 @@ export default function Camera() {
       console.log('[Record] actual recorder mimeType:', actualMimeType);
       let finalBlob = new Blob(recordingChunksRef.current, { type: actualMimeType });
       let finalType = actualMimeType;
-      let finalExt = isPro ? 'mp4' : 'webm';
-
-      // Convert WebM → MP4 for Pro users (skip if already MP4, e.g. iOS Safari)
-      if (isPro && !actualMimeType.includes('mp4')) {
-        try {
-          setUploadStatus('converting');
-          finalBlob = await convert(finalBlob);
-          finalType = 'video/mp4';
-        } catch (e) {
-          console.error('FFmpeg conversion failed:', e);
-          setUploadStatus('error');
-          setUploadError('Conversion failed. Using WebM format instead.');
-          finalExt = 'webm';
-          finalType = mimeType;
-          setTimeout(() => setUploadStatus(null), 5000);
-        }
-      } else if (isPro && actualMimeType.includes('mp4')) {
-        // Already MP4 (iOS Safari records natively in MP4)
-        finalType = 'video/mp4';
-      }
+      let finalExt = actualMimeType.includes('mp4') ? 'mp4' : 'webm';
 
       // Convert blob to base64 and upload via SDK
       setUploadStatus('uploading');
