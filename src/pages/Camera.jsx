@@ -278,8 +278,8 @@ export default function Camera() {
 
       // Upload to storage and save to gallery
       try {
-        const isAuthed = await base44.auth.isAuthenticated();
-        if (!isAuthed) {
+        const currentUser = await base44.auth.me().catch(() => null);
+        if (!currentUser) {
           setUploadStatus('error');
           setUploadError('Sign in to save clips to gallery');
           setTimeout(() => setUploadStatus(null), 4000);
@@ -318,7 +318,7 @@ export default function Camera() {
         return t + 1;
       });
     }, 1000);
-  }, []);
+  }, [isPro]);
 
   const handleRecordPress = useCallback(() => {
     if (!isPro) { setShowProModal(true); return; }
