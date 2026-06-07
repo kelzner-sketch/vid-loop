@@ -388,7 +388,7 @@ export default function Gallery() {
               }
                 </div>
                 {/* Footer */}
-                <div className="px-2 py-1.5 flex items-center justify-between gap-1">
+                <div className="px-2 py-1.5 flex items-center justify-between gap-1" onClick={(e) => e.stopPropagation()}>
                   {editingId === clip.id ?
               <>
                       <input
