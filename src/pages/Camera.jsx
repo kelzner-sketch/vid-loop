@@ -384,7 +384,7 @@ export default function Camera() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="absolute inset-0 z-20 flex flex-col items-center bg-[#3b917b]/6 overflow-y-auto overscroll-contain">
+          className="absolute inset-0 z-20 flex flex-col items-center bg-[hsl(var(--popover))] overflow-y-auto overscroll-contain">
           
             <div className="flex flex-col items-center gap-6 px-8 py-10 w-full min-h-full justify-center">
               {/* Logo mark */}
