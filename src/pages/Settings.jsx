@@ -23,9 +23,31 @@ const tips = [
 
 export default function Settings() {
   const { user } = useAuth();
-  const { isPro } = usePro();
+  const { isPro, refresh } = usePro();
   const [showProModal, setShowProModal] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [restoring, setRestoring] = useState(false);
+  const [restoreMsg, setRestoreMsg] = useState(null);
+
+  const handleRestorePurchase = async () => {
+    setRestoring(true);
+    setRestoreMsg(null);
+    try {
+      const res = await base44.functions.invoke('getProStatus', {});
+      const proResult = !!res.data?.is_pro;
+      if (proResult) {
+        await refresh();
+        setRestoreMsg('✓ Pro restored!');
+      } else {
+        setRestoreMsg('No purchase found for this account.');
+      }
+    } catch {
+      setRestoreMsg('Could not check — please try again.');
+    } finally {
+      setRestoring(false);
+      setTimeout(() => setRestoreMsg(null), 4000);
+    }
+  };
   
   // Load persisted control prefs
   const loadPrefs = () => {
@@ -106,6 +128,22 @@ export default function Settings() {
               <p className="text-xs text-muted-foreground">HD · MP4 export · 30s scrub buffer</p>
             </div>
           </button>
+        )}
+
+        {/* Restore Purchase */}
+        {!isPro && (
+          <div className="space-y-1">
+            <button
+              onClick={handleRestorePurchase}
+              disabled={restoring}
+              className="w-full text-xs text-muted-foreground py-2 hover:text-foreground transition-colors disabled:opacity-50"
+            >
+              {restoring ? 'Checking…' : 'Restore Purchase'}
+            </button>
+            {restoreMsg && (
+              <p className="text-xs text-center text-primary">{restoreMsg}</p>
+            )}
+          </div>
         )}
 
         {/* Auth Section */}
