@@ -336,7 +336,7 @@ export default function Camera() {
         finalType = 'video/mp4';
       }
 
-      // Upload via uploadClip backend function using FormData
+      // Upload via direct fetch (not SDK invoke, which can't handle FormData)
       try {
         setUploadStatus('uploading');
         const timestamp = Date.now();
@@ -349,9 +349,12 @@ export default function Camera() {
         fd.append('duration', String(recordingTimerRef._lastTime || 0));
         fd.append('title', `Clip ${new Date().toLocaleTimeString()}`);
 
-        const res = await base44.functions.invoke('uploadClip', fd);
-
-        const { clip, file_url } = res.data;
+        const res = await fetch('/.base44/functions/uploadClip', { method: 'POST', body: fd });
+        const json = await res.json();
+        
+        if (!res.ok) throw new Error(json.error || 'Upload failed');
+        
+        const { clip, file_url } = json;
         console.log('Clip saved:', clip?.id, file_url);
         setUploadStatus(null);
         setSavedClip({ url: file_url });
