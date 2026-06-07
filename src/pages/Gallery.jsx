@@ -404,12 +404,15 @@ export default function Gallery() {
                         <Loader2 className="w-3 h-3 text-primary animate-spin" /> :
                         <Share2 className="w-3 h-3 text-muted-foreground" />}
                           </button>
-                          <button onClick={() => {
+                          <button onClick={(e) => {
+                            e.stopPropagation();
                             const ext = clip.file_url.includes('mp4') ? 'mp4' : 'webm';
                             const a = document.createElement('a');
                             a.href = clip.file_url;
                             a.download = `${clip.title || `vidloop-${clip.id}`}.${ext}`;
+                            document.body.appendChild(a);
                             a.click();
+                            document.body.removeChild(a);
                           }}
                         className="w-6 h-6 rounded bg-muted flex items-center justify-center hover:bg-primary/20 transition-colors">
                             <Download className="w-3 h-3 text-muted-foreground" />
