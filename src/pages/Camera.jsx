@@ -339,15 +339,13 @@ export default function Camera() {
         const fileName = `vid-loop-${timestamp}.${finalExt}`;
         console.log('Encoding file for upload:', { name: fileName, size: finalBlob.size, type: finalType });
 
-        // Convert blob to base64
-        const arrayBuffer = await finalBlob.arrayBuffer();
-        const uint8 = new Uint8Array(arrayBuffer);
-        let binary = '';
-        const chunkSize = 8192;
-        for (let i = 0; i < uint8.length; i += chunkSize) {
-          binary += String.fromCharCode(...uint8.subarray(i, i + chunkSize));
-        }
-        const fileBase64 = btoa(binary);
+        // Convert blob to base64 using FileReader (works reliably on mobile)
+        const fileBase64 = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result.split(',')[1]);
+          reader.onerror = reject;
+          reader.readAsDataURL(finalBlob);
+        });
 
         const res = await base44.functions.invoke('uploadClip', {
           fileBase64,
