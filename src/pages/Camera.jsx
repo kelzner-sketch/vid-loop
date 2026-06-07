@@ -398,10 +398,6 @@ export default function Camera() {
       e.stopPropagation();
       e.preventDefault();
     }
-    if (!isActive) {
-      console.log('Camera not active, skipping record');
-      return;
-    }
     console.log('Record button clicked, isPro:', isPro, 'isRecording:', isRecording, 'canvas:', canvasRef.current ? 'exists' : 'missing');
     if (isRecording) {
       console.log('Stopping recording');
@@ -419,7 +415,7 @@ export default function Camera() {
     } catch (err) {
       console.error('Record handler error:', err);
     }
-  }, [isPro, startRecording, isRecording, stopRecording, isActive]);
+  }, [isPro, startRecording, isRecording, stopRecording]);
 
   // Pro modal close: 'record' = record free, 'dismiss' or undefined = just close
   const handleProModalClose = useCallback((action) => {
@@ -778,20 +774,18 @@ export default function Camera() {
                 {/* Loop (ping-pong) controls */}
                  <div className="space-y-3">
                    <button onClick={toggleLoop}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-mono transition-all ${loopEnabled ? 'bg-accent/30 border-accent/50 text-white' : 'bg-white/5 border-white/10 text-white/40'}`}>
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-mono transition-all ${loopEnabled ? 'bg-accent/30 border-accent/50 text-white' : 'bg-white/5 border-white/10 text-white/40'}`}>
                      <Repeat2 className="w-3.5 h-3.5" />
                      Loop
                    </button>
-                   <AnimatePresence>
+                   <motion.div key="loop-panel" initial={{ opacity: 0, height: 0 }} animate={{ opacity: loopEnabled ? 1 : 0, height: loopEnabled ? 'auto' : 0 }} transition={{ duration: 0.3 }} className="overflow-hidden">
                      {loopEnabled &&
-                <motion.div key="loop-panel" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
                          <div className="space-y-3 pt-1">
                            <GhostSliderRow label="Depth" valueLabel={`${(loopDepth / 30).toFixed(1)}s`} value={loopDepth} min={5} max={Math.max(5, bufferFill - 1)} step={1} onChange={setLoopDepth} />
                            <GhostSliderRow label="Speed" valueLabel={`${loopSpeed}x`} value={loopSpeed} min={0.25} max={4} step={0.25} onChange={setLoopSpeed} />
                          </div>
-                       </motion.div>
-                }
-                   </AnimatePresence>
+                     }
+                   </motion.div>
                  </div>
 
                  {/* Ghost controls */}
