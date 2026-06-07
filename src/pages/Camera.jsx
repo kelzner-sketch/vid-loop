@@ -345,9 +345,9 @@ export default function Camera() {
               </Button>
             </div>
 
-            <p className="text-xs text-muted-foreground/60 text-center max-w-xs">
-              Works in browser — opens front or rear camera. On iPhone, use Safari for full access.
-            </p>
+            <p className="text-xs text-muted-foreground/60 text-center max-w-xs bg-[hsl(var(--background))]">Works in browser — opens front or rear camera. On iPhone, use Safari for full access.
+
+          </p>
           </motion.div>
         }
       </AnimatePresence>
