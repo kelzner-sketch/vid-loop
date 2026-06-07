@@ -318,7 +318,7 @@ export default function Camera() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-8 px-8 bg-[hsl(var(--chart-5))]">
+          className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-8 px-8 bg-[#4c8a7b]">
           
             {/* Logo mark */}
             <div className="relative">
