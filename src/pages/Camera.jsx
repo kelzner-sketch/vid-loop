@@ -332,28 +332,20 @@ export default function Camera() {
         URL.revokeObjectURL(localUrl);
       }, 5000);
 
-      // Upload via uploadClip backend function (base64 JSON — works with SDK invoke)
+      // Upload via uploadClip backend function using FormData
       try {
         setUploadStatus('uploading');
         const timestamp = Date.now();
         const fileName = `vid-loop-${timestamp}.${finalExt}`;
-        console.log('Encoding file for upload:', { name: fileName, size: finalBlob.size, type: finalType });
+        const uploadFile = new File([finalBlob], fileName, { type: finalType });
+        console.log('Uploading file:', { name: fileName, size: uploadFile.size, type: finalType });
 
-        // Convert blob to base64 using FileReader (works reliably on mobile)
-        const fileBase64 = await new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => resolve(reader.result.split(',')[1]);
-          reader.onerror = reject;
-          reader.readAsDataURL(finalBlob);
-        });
+        const fd = new FormData();
+        fd.append('file', uploadFile);
+        fd.append('duration', String(recordingTimerRef._lastTime || 0));
+        fd.append('title', `Clip ${new Date().toLocaleTimeString()}`);
 
-        const res = await base44.functions.invoke('uploadClip', {
-          fileBase64,
-          fileName,
-          fileType: finalType,
-          duration: recordingTimerRef._lastTime || 0,
-          title: `Clip ${new Date().toLocaleTimeString()}`,
-        });
+        const res = await base44.functions.invoke('uploadClip', fd);
 
         const { clip, file_url } = res.data;
         console.log('Clip saved:', clip?.id, file_url);
