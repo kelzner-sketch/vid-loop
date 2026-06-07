@@ -269,6 +269,7 @@ export default function Gallery() {
             src={fullscreenClip.file_url}
             controls
             autoPlay
+            playsInline
             className="w-full h-full max-w-4xl max-h-[90vh] object-contain"
           />
         </motion.div>
@@ -338,6 +339,8 @@ export default function Gallery() {
                 className="w-full h-full object-cover"
                 muted
                 playsInline
+                preload="metadata"
+                onLoadedMetadata={(e) => { e.currentTarget.currentTime = 0.1; }}
                 onMouseEnter={(e) => {const v = e.currentTarget;v.play().catch(() => {});}}
                 onMouseLeave={(e) => {const v = e.currentTarget;v.pause();v.currentTime = 0;}} />
               

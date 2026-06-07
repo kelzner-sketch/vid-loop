@@ -231,31 +231,30 @@ export default function Camera() {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const stream = canvas.captureStream(30);
-    const mimeType = MediaRecorder.isTypeSupported('video/mp4') ?
-    'video/mp4' :
-    MediaRecorder.isTypeSupported('video/webm;codecs=vp9') ?
-    'video/webm;codecs=vp9' :
-    'video/webm';
+    const mimeType =
+      MediaRecorder.isTypeSupported('video/webm;codecs=vp9') ? 'video/webm;codecs=vp9' :
+      MediaRecorder.isTypeSupported('video/webm;codecs=vp8') ? 'video/webm;codecs=vp8' :
+      MediaRecorder.isTypeSupported('video/webm') ? 'video/webm' :
+      MediaRecorder.isTypeSupported('video/mp4') ? 'video/mp4' :
+      'video/webm';
     const recorder = new MediaRecorder(stream, { mimeType });
     recordingChunksRef.current = [];
     recorder.ondataavailable = (e) => {if (e.data.size > 0) recordingChunksRef.current.push(e.data);};
     recorder.onstop = async () => {
-      const isMP4 = mimeType.startsWith('video/mp4');
+      const ext = mimeType.startsWith('video/mp4') ? 'mp4' : 'webm';
       const blob = new Blob(recordingChunksRef.current, { type: mimeType });
-      const duration = recordingTimerRef._lastTime || 0;
 
       // Trigger browser download
       const localUrl = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = localUrl;
-      a.download = `vid-loop-${Date.now()}.${isMP4 ? 'mp4' : 'webm'}`;
+      a.download = `vid-loop-${Date.now()}.${ext}`;
       a.click();
 
       // Upload to storage and save to gallery
       try {
         setUploadStatus('uploading');
         const timestamp = Date.now();
-        const ext = isMP4 ? 'mp4' : 'webm';
         const file = new File([blob], `vid-loop-${timestamp}.${ext}`, { type: mimeType });
         const { file_url } = await base44.integrations.Core.UploadFile({ file });
         const clip = await base44.entities.Clip.create({
