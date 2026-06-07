@@ -89,7 +89,7 @@ export default function Camera() {
   useEffect(() => {
     clearTimeout(debounceRef.current);
     const prefs = {
-      facingMode, loopEnabled, loopDepth, loopSpeed,
+      facingMode, loopDepth, loopSpeed,
       ghostDelay, ghostInterval, ghostCount, ghostOpacity
     };
     localStorage.setItem('vidloop_prefs', JSON.stringify(prefs));
@@ -249,11 +249,12 @@ export default function Camera() {
     setGhostEnabled(false);
     setGhostActive(false);
     setGhostCountdown(null);
-    setLoopEnabled(false);
     stop();
     clearBuffer();
     setBufferFill(0);
     setDelay(0);
+    // Reset loop to on so it's ready next time camera starts
+    setLoopEnabled(true);
   };
 
   const startRecording = useCallback(() => {
