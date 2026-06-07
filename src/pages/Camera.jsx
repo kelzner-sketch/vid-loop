@@ -292,8 +292,8 @@ export default function Camera() {
       let finalType = mimeType;
       let finalExt = isPro ? 'mp4' : 'webm';
 
-      // Convert WebM → MP4 for Pro users
-      if (isPro) {
+      // Convert WebM → MP4 for Pro users (skip if already MP4, e.g. iOS Safari)
+      if (isPro && !mimeType.includes('mp4')) {
         try {
           setUploadStatus('converting');
           finalBlob = await convert(finalBlob);
@@ -306,6 +306,9 @@ export default function Camera() {
           finalType = mimeType;
           setTimeout(() => setUploadStatus(null), 5000);
         }
+      } else if (isPro && mimeType.includes('mp4')) {
+        // Already MP4 (iOS Safari records natively in MP4)
+        finalType = 'video/mp4';
       }
 
       // Trigger browser download
