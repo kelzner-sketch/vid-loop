@@ -5,6 +5,7 @@ import { queryClientInstance } from '@/lib/query-client'
 import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import { RecordingProvider } from '@/lib/RecordingContext';
+import { ProProvider } from '@/lib/ProContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Gallery from './pages/Gallery';
@@ -103,6 +104,7 @@ function App() {
   return (
     <AuthProvider>
       <RecordingProvider>
+        <ProProvider>
         <QueryClientProvider client={queryClientInstance}>
           <Router>
             <TabNavigatorProvider>

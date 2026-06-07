@@ -2,35 +2,34 @@
   "name": "User",
   "type": "object",
   "properties": {
+    "role": {
+      "type": "string",
+      "enum": [
+        "admin",
+        "user"
+      ],
+      "default": "user"
+    },
+    "is_pro": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the user has an active Pro subscription"
+    },
+    "pro_status": {
+      "type": "string",
+      "description": "Stripe subscription status (active, canceled, past_due, etc.)"
+    },
+    "stripe_customer_id": {
+      "type": "string",
+      "description": "Stripe customer ID"
+    },
+    "stripe_subscription_id": {
+      "type": "string",
+      "description": "Stripe subscription ID"
+    },
     "preferences": {
       "type": "object",
-      "description": "User video control preferences",
-      "properties": {
-        "ghostDelay": {
-          "type": "number"
-        },
-        "ghostInterval": {
-          "type": "number"
-        },
-        "ghostCount": {
-          "type": "number"
-        },
-        "ghostOpacity": {
-          "type": "number"
-        },
-        "loopDepth": {
-          "type": "number"
-        },
-        "loopSpeed": {
-          "type": "number"
-        },
-        "loopEnabled": {
-          "type": "boolean"
-        },
-        "facingMode": {
-          "type": "string"
-        }
-      }
+      "description": "User camera preferences"
     }
   }
 }
