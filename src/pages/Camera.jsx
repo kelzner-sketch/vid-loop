@@ -336,42 +336,39 @@ export default function Camera() {
         finalType = 'video/mp4';
       }
 
-      // Upload via direct fetch with auth token
-      try {
-        setUploadStatus('uploading');
-        const timestamp = Date.now();
-        const fileName = `vid-loop-${timestamp}.${finalExt}`;
-        const uploadFile = new File([finalBlob], fileName, { type: finalType });
-        console.log('Uploading file:', { name: fileName, size: uploadFile.size, type: finalType });
+      // Convert blob to base64 and upload via SDK
+      setUploadStatus('uploading');
+      const timestamp = Date.now();
+      const fileName = `vid-loop-${timestamp}.${finalExt}`;
+      console.log('Uploading file:', { name: fileName, size: finalBlob.size, type: finalType });
 
-        const fd = new FormData();
-        fd.append('file', uploadFile);
-        fd.append('duration', String(recordingTimerRef._lastTime || 0));
-        fd.append('title', `Clip ${new Date().toLocaleTimeString()}`);
+      // Convert blob to base64
+      const reader = new FileReader();
+      reader.onload = async () => {
+        try {
+          const base64 = reader.result.split(',')[1]; // Remove data:video/... prefix
+          const res = await base44.functions.invoke('uploadClip', {
+            fileBase64: base64,
+            fileName: fileName,
+            fileType: finalType,
+            duration: recordingTimerRef._lastTime || 0,
+            title: `Clip ${new Date().toLocaleTimeString()}`
+          });
 
-        const token = localStorage.getItem('base44_token');
-        const res = await fetch('/.base44/functions/uploadClip', { 
-          method: 'POST', 
-          body: fd,
-          headers: token ? { 'Authorization': `Bearer ${token}` } : {}
-        });
-        const json = await res.json();
-        
-        if (!res.ok) throw new Error(json.error || 'Upload failed');
-        
-        const { clip, file_url } = json;
-        console.log('Clip saved:', clip?.id, file_url);
-        setUploadStatus(null);
-        setSavedClip({ url: file_url });
-        window.dispatchEvent(new CustomEvent('clip-saved', { detail: clip }));
-        setTimeout(() => setSavedClip(null), 5000);
-      } catch (e) {
-        console.error('Gallery save failed:', e);
-        setUploadStatus('error');
-        setUploadError(e?.message || e?.toString());
-        setTimeout(() => setUploadStatus(null), 8000);
-      }
-    };
+          const { clip, file_url } = res.data;
+          console.log('Clip saved:', clip?.id, file_url);
+          setUploadStatus(null);
+          setSavedClip({ url: file_url });
+          window.dispatchEvent(new CustomEvent('clip-saved', { detail: clip }));
+          setTimeout(() => setSavedClip(null), 5000);
+        } catch (e) {
+          console.error('Gallery save failed:', e);
+          setUploadStatus('error');
+          setUploadError(e?.message || e?.toString());
+          setTimeout(() => setUploadStatus(null), 8000);
+        }
+      };
+      reader.readAsDataURL(finalBlob);
     recorder.start();
     mediaRecorderRef.current = recorder;
     setIsRecording(true);
