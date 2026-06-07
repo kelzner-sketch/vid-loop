@@ -331,6 +331,14 @@ export default function Camera() {
     }, 1000);
   }, [isPro]);
 
+  const stopRecording = useCallback(() => {
+    mediaRecorderRef.current?.stop();
+    clearInterval(recordingTimerRef.current);
+    if (mirrorRafRef.current) cancelAnimationFrame(mirrorRafRef.current);
+    setIsRecording(false);
+    setRecordingTime(0);
+  }, []);
+
   const handleRecordPress = useCallback((e) => {
     if (e) {
       e.stopPropagation();
@@ -360,14 +368,6 @@ export default function Camera() {
     setShowProModal(false);
     startRecording();
   }, [startRecording]);
-
-  const stopRecording = useCallback(() => {
-    mediaRecorderRef.current?.stop();
-    clearInterval(recordingTimerRef.current);
-    if (mirrorRafRef.current) cancelAnimationFrame(mirrorRafRef.current);
-    setIsRecording(false);
-    setRecordingTime(0);
-  }, []);
 
   const delaySeconds = (delayOffset / 30).toFixed(2);
   const fillPercent = Math.round(bufferFill / maxBufferSize * 100);
