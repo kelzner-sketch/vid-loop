@@ -286,7 +286,7 @@ export default function Camera() {
     recordingChunksRef.current = [];
     recorder.ondataavailable = (e) => {if (e.data.size > 0) recordingChunksRef.current.push(e.data);};
     recorder.onstop = async () => {
-      const ext = mimeType.startsWith('video/mp4') ? 'mp4' : 'webm';
+      const ext = isPro ? 'mp4' : 'webm';
       const blob = new Blob(recordingChunksRef.current, { type: mimeType });
 
       // Trigger browser download
