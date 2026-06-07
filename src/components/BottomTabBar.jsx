@@ -15,12 +15,23 @@ export default function BottomTabBar() {
   const { activeTab, switchTab } = useTabNav();
   const { isRecording } = useRecording();
   const navigate = useNavigate();
+  const [isLandscape, setIsLandscape] = React.useState(() => window.innerWidth > window.innerHeight);
+
+  React.useEffect(() => {
+    const update = () => setIsLandscape(window.innerWidth > window.innerHeight);
+    window.addEventListener('resize', update);
+    window.addEventListener('orientationchange', update);
+    return () => {
+      window.removeEventListener('resize', update);
+      window.removeEventListener('orientationchange', update);
+    };
+  }, []);
 
   return (
     <motion.div
       className="fixed bottom-0 left-0 right-0 z-50 flex items-center justify-around bg-black/80 backdrop-blur-xl border-t border-white/10 pointer-events-auto"
       initial={{ y: 0 }}
-      animate={{ y: isRecording ? '100%' : 0 }}
+      animate={{ y: (isRecording || isLandscape) ? '100%' : 0 }}
       transition={{ duration: 0.3 }}
       style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
     >

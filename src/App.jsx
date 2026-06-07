@@ -7,7 +7,6 @@ import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import { RecordingProvider } from '@/lib/RecordingContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ProtectedRoute from '@/components/ProtectedRoute';
-import Home from './pages/Home';
 import Gallery from './pages/Gallery';
 import Settings from './pages/Settings';
 import Camera from './pages/Camera';
@@ -21,7 +20,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 // Add page imports here
 
 const TAB_PAGES = {
-  '/': Home,
+  '/': Camera,
   '/gallery': Gallery,
   '/settings': Settings,
 };
@@ -61,9 +60,6 @@ const AuthenticatedApp = () => {
         <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
-        
-        {/* Camera route */}
-        <Route path="/camera" element={<Camera />} />
         
         {/* App routes - publicly accessible */}
         <Route path="/*" element={

@@ -12,10 +12,12 @@ import useFrameBuffer from '@/components/video/useFrameBuffer';
 import RenderCanvas from '@/components/video/RenderCanvas';
 import ControlSlider from '@/components/video/ControlSlider';
 import ScrubBar from '@/components/video/ScrubBar';
+import { useRecording } from '@/lib/RecordingContext';
 
 export default function Camera() {
   const navigate = useNavigate();
   const { switchTab } = useTabNav();
+  const { isRecording, setIsRecording } = useRecording();
   const { videoRef, isActive, error, start, stop } = useCamera();
   const { pushFrame, getFrame, getBufferLength, clearBuffer, maxBufferSize } = useFrameBuffer();
 
@@ -34,7 +36,7 @@ export default function Camera() {
   const [ghostDelay, setGhostDelay] = useState(prefs.ghostDelay ?? 0);
   const [ghostCountdown, setGhostCountdown] = useState(null);
   const [ghostInterval, setGhostInterval] = useState(prefs.ghostInterval ?? 4);
-  const [ghostCount, setGhostCount] = useState(prefs.ghostCount ?? 6);
+  const [ghostCount, setGhostCount] = useState(prefs.ghostCount ?? 4);
   const [ghostOpacity, setGhostOpacity] = useState(prefs.ghostOpacity ?? 0.8);
   const ghostCountdownRef = useRef(null);
 
@@ -48,7 +50,6 @@ export default function Camera() {
 
   const [bufferFill, setBufferFill] = useState(0);
   const [isLandscape, setIsLandscape] = useState(() => window.innerWidth > window.innerHeight);
-  const [isRecording, setIsRecording] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
   const [savedClip, setSavedClip] = useState(null); // {url, duration} shown after save
   const captureRef = useRef(null);
@@ -374,8 +375,8 @@ export default function Camera() {
           }
           </AnimatePresence>
 
-          {/* ── TOP HUD ── */}
-          <div className="absolute top-0 left-0 right-0 z-10 flex items-start justify-between px-5 pb-6"
+          {/* ── TOP HUD — portrait only ── */}
+          {!isLandscape && <div className="absolute top-0 left-0 right-0 z-10 flex items-start justify-between px-5 pb-6"
         style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, transparent 100%)', paddingTop: 'calc(3rem + env(safe-area-inset-top))' }}>
 
             {/* Left: status + gallery */}
@@ -455,7 +456,7 @@ export default function Camera() {
                 <CameraOff className="w-4 h-4 text-white" />
               </button>
             </div>
-          </div>
+          </div>}
 
           {/* ── BUFFER PROGRESS BAR ── */}
           <div className="absolute top-0 left-0 right-0 z-20 h-0.5">
@@ -467,92 +468,97 @@ export default function Camera() {
 
           {/* ── CONTROLS PANEL — adapts portrait/landscape ── */}
           {isLandscape ? (
-          /* ── LANDSCAPE: left-side controls + top-right record ── */
-          <div className="absolute left-0 top-0 bottom-0 z-10 flex flex-col"
-          style={{ background: 'linear-gradient(to right, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.3) 70%, transparent 100%)', width: '180px' }}>
-              {/* Floating record/camera controls at top-right */}
-              <div className="absolute top-4 right-4 flex flex-col gap-2 z-30 pointer-events-auto">
-                {/* Smaller record button */}
-                <button
-                  onClick={isRecording ? stopRecording : startRecording}
-                  className={`flex items-center justify-center gap-1 px-2.5 py-1.5 rounded-lg backdrop-blur-md border font-mono text-[9px] transition-all active:scale-95 pointer-events-auto ${
-                    isRecording ?
-                      'bg-red-500/80 border-red-400/60 text-white' :
-                      'bg-white/10 border-white/20 text-white/80'
-                  }`}
-                  title={isRecording ? 'Stop recording' : 'Start recording'}
-                >
-                  {isRecording ? (
-                    <>
-                      <Square className="w-2.5 h-2.5 fill-white" />
-                      <span className="tabular-nums">
-                        {String(Math.floor(recordingTime / 60)).padStart(2, '0')}:{String(recordingTime % 60).padStart(2, '0')}
-                      </span>
-                    </>
-                  ) : (
-                    <>
-                      <Circle className="w-2.5 h-2.5 fill-red-400" />
-                    </>
-                  )}
-                </button>
-
-                {/* Camera switch */}
-                <button
-                  onClick={handleSwitchCamera}
-                  className="flex items-center gap-0 rounded-lg bg-white/10 backdrop-blur-md border border-white/20 text-[9px] font-mono overflow-hidden active:scale-95 transition-all pointer-events-auto"
-                >
-                  <span className={`px-2 py-1 transition-colors ${facingMode === 'environment' ? 'bg-white text-black' : 'text-white/50'}`}>R</span>
-                  <span className={`px-2 py-1 transition-colors ${facingMode === 'user' ? 'bg-white text-black' : 'text-white/50'}`}>F</span>
-                </button>
+          <>
+            {/* ── LANDSCAPE LEFT: Record + Camera + Stop ── */}
+            <div className="absolute left-0 top-0 bottom-0 z-30 flex flex-col items-center justify-center gap-4 px-2"
+              style={{ background: 'linear-gradient(to right, rgba(0,0,0,0.82) 0%, transparent 100%)', width: '70px' }}>
+              <div className="flex flex-col items-center gap-0.5">
+                <div className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
+                <span className="text-[6px] font-mono text-white/50 uppercase tracking-widest text-center leading-tight">
+                  {loopEnabled ? 'LOOP' : isDelayed ? 'DLY' : 'LIVE'}
+                </span>
               </div>
+              <button
+                onClick={isRecording ? stopRecording : startRecording}
+                className={`flex flex-col items-center justify-center w-12 h-12 rounded-full backdrop-blur-md border font-mono transition-all active:scale-95 ${
+                  isRecording ? 'bg-red-500/80 border-red-400/60 text-white' : 'bg-white/15 border-white/30 text-white/80'
+                }`}
+              >
+                {isRecording ? (
+                  <>
+                    <Square className="w-3.5 h-3.5 fill-white mb-0.5" />
+                    <span className="tabular-nums text-[7px]">
+                      {String(Math.floor(recordingTime / 60)).padStart(2, '0')}:{String(recordingTime % 60).padStart(2, '0')}
+                    </span>
+                  </>
+                ) : (
+                  <Circle className="w-5 h-5 fill-red-400 text-red-400" />
+                )}
+              </button>
+              <button
+                onClick={handleSwitchCamera}
+                className="flex flex-col items-center rounded-xl bg-white/10 backdrop-blur-md border border-white/20 text-[8px] font-mono overflow-hidden active:scale-95 transition-all"
+              >
+                <span className={`px-3 py-1 w-full text-center transition-colors ${facingMode === 'environment' ? 'bg-white text-black' : 'text-white/50'}`}>R</span>
+                <span className={`px-3 py-1 w-full text-center transition-colors ${facingMode === 'user' ? 'bg-white text-black' : 'text-white/50'}`}>F</span>
+              </button>
+              <button
+                onClick={handleStop}
+                className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center active:scale-95 transition-transform"
+              >
+                <CameraOff className="w-4 h-4 text-white/70" />
+              </button>
+            </div>
 
-              {/* Left panel sliders */}
-              <div className="px-3 pt-6 pb-4 space-y-3 overflow-y-auto overscroll-contain" style={{ marginTop: '80px' }}>
-                {/* Scrub */}
+            {/* ── LANDSCAPE RIGHT: Sliders ── */}
+            <div className="absolute right-0 top-0 bottom-0 z-30"
+              style={{ background: 'linear-gradient(to left, rgba(0,0,0,0.82) 0%, transparent 100%)', width: '158px' }}>
+              <div className="h-full px-3 space-y-2 overflow-y-auto overscroll-contain"
+                style={{ paddingTop: 'calc(0.75rem + env(safe-area-inset-top))', paddingBottom: '0.75rem' }}>
                 <div className="space-y-1">
-                  <div className="flex flex-col gap-1">
-                    <span className="text-[8px] font-mono uppercase tracking-widest text-white/40">Scrub</span>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[7px] font-mono uppercase tracking-widest text-white/40">Scrub</span>
                     <div className="flex items-center gap-1">
-                      {isDelayed &&
+                      {isDelayed && (
                         <button onClick={() => setDelayOffset(0)}
-                          className="flex items-center gap-0.5 px-1 py-0.5 rounded bg-accent/20 border border-accent/30 text-accent text-[8px] font-mono">
+                          className="flex items-center gap-0.5 px-1 py-0.5 rounded bg-accent/20 border border-accent/30 text-accent text-[7px] font-mono">
                           <Play className="w-1.5 h-1.5" />L
                         </button>
-                      }
-                      <span className="text-[8px] font-mono text-white tabular-nums">{isDelayed ? `−${delaySeconds}s` : 'live'}</span>
+                      )}
+                      <span className="text-[7px] font-mono text-white tabular-nums">{isDelayed ? `−${delaySeconds}s` : 'live'}</span>
                     </div>
                   </div>
                   <ScrubBar value={delayOffset} max={Math.max(1, bufferFill - 1)} onChange={setDelayOffset} bufferFill={bufferFill} maxBufferSize={maxBufferSize} />
                 </div>
-
-                {/* Loop toggle + sliders */}
                 <button onClick={toggleLoop}
                   className={`w-full flex items-center gap-1.5 px-2 py-1 rounded-lg border text-[8px] font-mono transition-all ${loopEnabled ? 'bg-accent/30 border-accent/50 text-white' : 'bg-white/5 border-white/10 text-white/40'}`}>
-                  <Repeat2 className="w-2.5 h-2.5" />
-                  Loop
+                  <Repeat2 className="w-2.5 h-2.5" />Loop
                 </button>
-                {loopEnabled &&
+                {loopEnabled && (
                   <div className="space-y-1.5">
                     <CompactSlider label="D" valueLabel={`${(loopDepth / 30).toFixed(1)}s`} value={loopDepth} min={5} max={Math.max(5, bufferFill - 1)} step={1} onChange={setLoopDepth} />
                     <CompactSlider label="S" valueLabel={`${loopSpeed}x`} value={loopSpeed} min={0.25} max={4} step={0.25} onChange={setLoopSpeed} />
                   </div>
-                }
-
-                {/* Ghost toggle */}
+                )}
                 <button onClick={toggleGhost}
                   className={`w-full flex items-center gap-1.5 px-2 py-1 rounded-lg border text-[8px] font-mono transition-all ${ghostEnabled ? 'bg-primary/30 border-primary/50 text-white' : 'bg-white/5 border-white/10 text-white/40'}`}>
                   <Layers className="w-2.5 h-2.5" />
-                  Ghost
+                  {ghostCountdown !== null ? `Ghost ${ghostCountdown}s` : 'Ghost'}
                 </button>
-                {ghostEnabled &&
+                {ghostEnabled && (
                   <div className="space-y-1.5">
                     <CompactSlider label="I" valueLabel={`${ghostInterval}f`} value={ghostInterval} min={1} max={30} step={1} onChange={setGhostInterval} />
-                    <CompactSlider label="L" valueLabel={`${ghostCount}`} value={ghostCount} min={2} max={10} step={1} onChange={setGhostCount} />
+                    <CompactSlider label="L" valueLabel={`${ghostCount}`} value={ghostCount} min={2} max={4} step={1} onChange={setGhostCount} />
                     <CompactSlider label="O" valueLabel={`${Math.round(ghostOpacity * 100)}%`} value={ghostOpacity} min={0.05} max={1} step={0.05} onChange={setGhostOpacity} />
                   </div>
-                }
+                )}
+                <button onClick={() => { switchTab('/gallery'); navigate('/gallery'); }}
+                  className="w-full flex items-center gap-1.5 px-2 py-1 rounded-lg border bg-white/5 border-white/10 text-white/40 text-[8px] font-mono">
+                  <Film className="w-2.5 h-2.5" />Gallery
+                </button>
               </div>
-            </div>) : (
+            </div>
+          </>) : (
 
         /* ── PORTRAIT: bottom panel ── */
         <div className="absolute bottom-0 left-0 right-0 z-10" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 70%, transparent 100%)', maxHeight: '65vh', display: 'flex', flexDirection: 'column' }}>
@@ -618,7 +624,7 @@ export default function Camera() {
                          <div className="space-y-3 pt-1">
                            <GhostSliderRow label="Delay" valueLabel={ghostDelay === 0 ? 'off' : `${ghostDelay}s`} value={ghostDelay} min={0} max={10} step={1} onChange={setGhostDelay} />
                            <GhostSliderRow label="Interval" valueLabel={`${ghostInterval}f`} value={ghostInterval} min={1} max={30} step={1} onChange={setGhostInterval} />
-                           <GhostSliderRow label="Layers" valueLabel={`${ghostCount}`} value={ghostCount} min={2} max={10} step={1} onChange={setGhostCount} />
+                           <GhostSliderRow label="Layers" valueLabel={`${ghostCount}`} value={ghostCount} min={2} max={4} step={1} onChange={setGhostCount} />
                            <GhostSliderRow label="Opacity" valueLabel={`${Math.round(ghostOpacity * 100)}%`} value={ghostOpacity} min={0.05} max={1} step={0.05} onChange={setGhostOpacity} />
                          </div>
                        </motion.div>
