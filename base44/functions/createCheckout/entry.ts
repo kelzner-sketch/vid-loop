@@ -1,7 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 import Stripe from 'npm:stripe@14';
 
-const PRICE_ID = 'price_1Tfa1jAGYhybVsu2TCxrh96P';
+const PRICE_ID = 'price_1Tfg4OAGYhybVsu2KJOPLH7F';
 
 Deno.serve(async (req) => {
   try {
@@ -20,7 +20,7 @@ Deno.serve(async (req) => {
     const origin = returnUrl || req.headers.get('origin') || 'https://app.base44.com';
 
     const session = await stripe.checkout.sessions.create({
-      mode: 'subscription',
+      mode: 'payment',
       line_items: [{ price: PRICE_ID, quantity: 1 }],
       success_url: `${origin}?pro=success`,
       cancel_url: `${origin}?pro=cancel`,

@@ -98,11 +98,11 @@ export default function ProModal({ onClose, context = 'settings' }) {
             ) : (
               <>
                 <Zap className="w-4 h-4" />
-                Upgrade — $2.99/month
+                Upgrade — $9.99 one-time
               </>
             )}
           </button>
-          <p className="text-xs text-muted-foreground text-center">Cancel anytime · Billed monthly</p>
+          <p className="text-xs text-muted-foreground text-center">One-time purchase · Lifetime access</p>
         </div>
       </motion.div>
     </motion.div>
