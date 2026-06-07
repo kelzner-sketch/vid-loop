@@ -384,35 +384,31 @@ export default function Camera() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-8 px-8 bg-[#3b917b]/6">
+          className="absolute inset-0 z-20 flex flex-col items-center bg-[#3b917b]/6 overflow-y-auto overscroll-contain">
           
-            {/* Logo mark */}
-            <div className="relative">
-              <img src="https://media.base44.com/images/public/6a2067de3230ec7bd237c422/26d8fea39_vid-loop-icon.png" alt="VidLoop" className="w-24 h-24 rounded-3xl" />
+            <div className="flex flex-col items-center gap-6 px-8 py-10 w-full min-h-full justify-center">
+              {/* Logo mark */}
+              <div className="relative">
+                <img src="https://media.base44.com/images/public/6a2067de3230ec7bd237c422/26d8fea39_vid-loop-icon.png" alt="VidLoop" className="w-20 h-20 rounded-3xl" />
+              </div>
+
+              <div className="text-center space-y-2">
+                <h1 className="font-heading tracking-tight text-foreground font-light lowercase text-center text-4xl">Vid-Loop</h1>
+                <p className="text-sm leading-relaxed max-w-xs">Live camera tool that lets you scrub back through the last few seconds of footage, layer motion ghost trails, and loop clips in a ping-pong effect. Record and share directly from your phone.</p>
+              </div>
+
+              <div className="w-full max-w-xs space-y-3">
+                {error &&
+                  <p className="text-sm text-destructive bg-destructive/10 border border-destructive/20 px-4 py-3 rounded-xl text-center">{error}</p>
+                }
+                <Button onClick={handleStart} size="lg" className="w-full gap-2 h-14 rounded-2xl lowercase text-center text-xl bg-[hsl(var(--primary))]">
+                  <CameraIcon className="w-8 h-8" />
+                  Enable Camera
+                </Button>
+              </div>
+
+              <p className="text-xs text-center max-w-xs text-muted-foreground">Works in browser — opens front or rear camera. On iPhone, use Safari for full access.</p>
             </div>
-
-            <div className="text-center space-y-2">
-              <h1 className="font-heading tracking-tight text-foreground font-light lowercase text-center text-4xl">Vid-Loop</h1>
-              <p className="text-sm leading-relaxed max-w-xs">Live camera tool that lets you scrub back through the last few seconds of footage, layer motion ghost trails, and loop clips in a ping-pong effect. Record and share directly from your phone.
-
-            </p>
-            </div>
-
-            <div className="w-full max-w-xs space-y-3">
-              {error &&
-            <p className="text-sm text-destructive bg-destructive/10 border border-destructive/20 px-4 py-3 rounded-xl text-center">
-                  {error}
-                </p>
-            }
-              <Button onClick={handleStart} size="lg" className="w-full gap-2 h-14 rounded-2xl lowercase text-center text-xl bg-[hsl(var(--primary))]">
-               <CameraIcon className="w-8 h-8" />
-               Enable Camera
-              </Button>
-            </div>
-
-            <p className="text-xs text-center max-w-xs bg-[hsl(var(--popover))]">Works in browser — opens front or rear camera. On iPhone, use Safari for full access.
-
-          </p>
           </motion.div>
         }
       </AnimatePresence>
