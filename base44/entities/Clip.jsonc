@@ -21,5 +21,8 @@
   },
   "required": [
     "file_url"
-  ]
+  ],
+  "permissions": {
+    "public": true
+  }
 }
