@@ -332,19 +332,23 @@ export default function Camera() {
         URL.revokeObjectURL(localUrl);
       }, 5000);
 
-      // Upload to storage via backend function (File object triggers multipart automatically)
+      // Upload to storage: first upload file directly, then save entity via backend
       try {
         setUploadStatus('uploading');
         const timestamp = Date.now();
         const fileName = `vid-loop-${timestamp}.${finalExt}`;
         const uploadFile = new File([finalBlob], fileName, { type: finalType });
-        console.log('Uploading via backend:', { name: fileName, size: uploadFile.size, type: finalType });
+        console.log('Uploading file directly:', { name: fileName, size: uploadFile.size, type: finalType });
+        // Step 1: upload the file using the integration directly
+        const { file_url } = await base44.integrations.Core.UploadFile({ file: uploadFile });
+        console.log('File uploaded:', file_url);
+        // Step 2: save the Clip entity record
         const res = await base44.functions.invoke('uploadClip', {
-          file: uploadFile,
+          file_url,
           duration: String(recordingTimerRef._lastTime || 0),
           title: `Clip ${new Date().toLocaleTimeString()}`
         });
-        const { file_url, clip } = res.data;
+        const { clip } = res.data;
         console.log('Upload successful:', file_url);
         setUploadStatus(null);
         setSavedClip({ url: file_url });
