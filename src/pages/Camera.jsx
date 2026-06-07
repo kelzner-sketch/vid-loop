@@ -443,7 +443,7 @@ export default function Camera() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
             className="absolute bottom-32 left-1/2 -translate-x-1/2 z-30 flex items-center gap-3 px-4 py-3 rounded-2xl bg-red-900/80 backdrop-blur-md border border-red-500/40 text-white text-sm font-mono">
-                ⚠ Gallery save failed: {uploadError || 'check you are signed in'}
+                ⚠ {uploadError || 'Upload failed. Check console for details.'}
               </motion.div>
           }
           </AnimatePresence>
