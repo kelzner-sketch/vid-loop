@@ -113,6 +113,7 @@ function App() {
           </Router>
           <Toaster />
         </QueryClientProvider>
+        </ProProvider>
       </RecordingProvider>
     </AuthProvider>
   )

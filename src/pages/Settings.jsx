@@ -1,10 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Film, Camera, Layers, Repeat2, Trash2 } from 'lucide-react';
+import { Film, Camera, Layers, Repeat2, Trash2, Zap } from 'lucide-react';
 import MobileHeader from '@/components/MobileHeader';
 import UserProfile from '@/components/UserProfile';
 import { useAuth } from '@/lib/AuthContext';
 import { base44 } from '@/api/base44Client';
 import ControlSlider from '@/components/video/ControlSlider';
+import { usePro } from '@/lib/ProContext';
+import ProModal from '@/components/ProModal';
+import { AnimatePresence } from 'framer-motion';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel,
   AlertDialogContent, AlertDialogDescription, AlertDialogFooter,
@@ -20,6 +23,8 @@ const tips = [
 
 export default function Settings() {
   const { user } = useAuth();
+  const { isPro } = usePro();
+  const [showProModal, setShowProModal] = useState(false);
   const [deleting, setDeleting] = useState(false);
   
   // Load persisted control prefs
@@ -74,8 +79,34 @@ export default function Settings() {
     <div className="fixed inset-0 bg-background flex flex-col overflow-hidden">
       <MobileHeader title="About" />
 
+      <AnimatePresence>
+        {showProModal && <ProModal onClose={() => setShowProModal(false)} />}
+      </AnimatePresence>
+
       <div className="flex-1 overflow-y-auto px-5 py-6 space-y-4" style={{ paddingBottom: 'calc(1rem + env(safe-area-inset-bottom) + 56px)' }}>
         {user && <UserProfile />}
+
+        {/* Pro upgrade / status card */}
+        {isPro ? (
+          <div className="flex items-center gap-3 px-4 py-3.5 rounded-2xl bg-primary/10 border border-primary/30">
+            <Zap className="w-4 h-4 text-primary shrink-0" />
+            <div>
+              <p className="text-sm font-semibold text-primary">VidLoop Pro</p>
+              <p className="text-xs text-muted-foreground">HD · MP4 · 30s buffer active</p>
+            </div>
+          </div>
+        ) : (
+          <button
+            onClick={() => setShowProModal(true)}
+            className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl bg-primary/10 border border-primary/30 text-left hover:bg-primary/20 transition-colors active:scale-[0.98]"
+          >
+            <Zap className="w-4 h-4 text-primary shrink-0" />
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-primary">Upgrade to Pro — $2.99/mo</p>
+              <p className="text-xs text-muted-foreground">HD · MP4 export · 30s scrub buffer</p>
+            </div>
+          </button>
+        )}
 
         {/* Auth Section */}
         {!user && (
