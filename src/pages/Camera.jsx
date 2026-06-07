@@ -237,7 +237,13 @@ export default function Camera() {
   const handleRecordPress = useCallback(() => {
     if (!isPro) { setShowProModal(true); return; }
     startRecording();
-  }, [isPro]);
+  }, [isPro, startRecording]);
+
+  // When free user dismisses the Pro modal, start recording at capped resolution
+  const handleProModalClose = useCallback(() => {
+    setShowProModal(false);
+    startRecording();
+  }, [startRecording]);
 
   const startRecording = useCallback(() => {
     const canvas = canvasRef.current;
@@ -384,7 +390,7 @@ export default function Camera() {
 
       {/* Pro modal */}
       <AnimatePresence>
-        {showProModal && <ProModal onClose={() => setShowProModal(false)} context="record" />}
+        {showProModal && <ProModal onClose={handleProModalClose} context="record" />}
       </AnimatePresence>
 
       {/* ── LIVE VIEW ── */}
