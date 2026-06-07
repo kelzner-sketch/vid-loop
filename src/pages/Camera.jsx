@@ -398,6 +398,10 @@ export default function Camera() {
       e.stopPropagation();
       e.preventDefault();
     }
+    if (!isActive) {
+      console.log('Camera not active, skipping record');
+      return;
+    }
     console.log('Record button clicked, isPro:', isPro, 'isRecording:', isRecording, 'canvas:', canvasRef.current ? 'exists' : 'missing');
     if (isRecording) {
       console.log('Stopping recording');
@@ -415,7 +419,7 @@ export default function Camera() {
     } catch (err) {
       console.error('Record handler error:', err);
     }
-  }, [isPro, startRecording, isRecording, stopRecording]);
+  }, [isPro, startRecording, isRecording, stopRecording, isActive]);
 
   // Pro modal close: 'record' = record free, 'dismiss' or undefined = just close
   const handleProModalClose = useCallback((action) => {
@@ -791,31 +795,29 @@ export default function Camera() {
                  </div>
 
                  {/* Ghost controls */}
-                 <div className="space-y-3">
-                   <div className="flex items-center justify-between">
-                     <button onClick={toggleGhost}
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-mono transition-all ${ghostEnabled ? 'bg-primary/30 border-primary/50 text-white' : 'bg-white/5 border-white/10 text-white/40'}`}>
-                       <Layers className="w-3.5 h-3.5" />
-                       {ghostCountdown !== null ? `Ghost in ${ghostCountdown}s…` : 'Ghost Blend'}
-                     </button>
-                     <button onClick={handleStop}
-                className="w-9 h-9 rounded-full bg-white/10 border border-white/15 flex items-center justify-center active:scale-95 transition-transform">
-                       <CameraOff className="w-4 h-4 text-white/70" />
-                     </button>
-                   </div>
-                   <AnimatePresence>
-                     {ghostEnabled &&
-                <motion.div key="ghost-panel" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
-                         <div className="space-y-3 pt-1">
-                           <GhostSliderRow label="Delay" valueLabel={ghostDelay === 0 ? 'off' : `${ghostDelay}s`} value={ghostDelay} min={0} max={10} step={1} onChange={setGhostDelay} />
-                           <GhostSliderRow label="Interval" valueLabel={`${ghostInterval}f`} value={ghostInterval} min={1} max={30} step={1} onChange={setGhostInterval} />
-                           <GhostSliderRow label="Layers" valueLabel={`${ghostCount}`} value={ghostCount} min={2} max={4} step={1} onChange={setGhostCount} />
-                           <GhostSliderRow label="Opacity" valueLabel={`${Math.round(ghostOpacity * 100)}%`} value={ghostOpacity} min={0.05} max={1} step={0.05} onChange={setGhostOpacity} />
-                         </div>
-                       </motion.div>
-                }
-                   </AnimatePresence>
-                 </div>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <button onClick={toggleGhost}
+                 className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-mono transition-all ${ghostEnabled ? 'bg-primary/30 border-primary/50 text-white' : 'bg-white/5 border-white/10 text-white/40'}`}>
+                        <Layers className="w-3.5 h-3.5" />
+                        {ghostCountdown !== null ? `Ghost in ${ghostCountdown}s…` : 'Ghost Blend'}
+                      </button>
+                      <button onClick={handleStop}
+                 className="w-9 h-9 rounded-full bg-white/10 border border-white/15 flex items-center justify-center active:scale-95 transition-transform">
+                        <CameraOff className="w-4 h-4 text-white/70" />
+                      </button>
+                    </div>
+                    <motion.div key="ghost-panel" initial={{ opacity: 0, height: 0 }} animate={{ opacity: ghostEnabled ? 1 : 0, height: ghostEnabled ? 'auto' : 0 }} transition={{ duration: 0.3 }} className="overflow-hidden">
+                      {ghostEnabled &&
+                          <div className="space-y-3 pt-1">
+                            <GhostSliderRow label="Delay" valueLabel={ghostDelay === 0 ? 'off' : `${ghostDelay}s`} value={ghostDelay} min={0} max={10} step={1} onChange={setGhostDelay} />
+                            <GhostSliderRow label="Interval" valueLabel={`${ghostInterval}f`} value={ghostInterval} min={1} max={30} step={1} onChange={setGhostInterval} />
+                            <GhostSliderRow label="Layers" valueLabel={`${ghostCount}`} value={ghostCount} min={2} max={4} step={1} onChange={setGhostCount} />
+                            <GhostSliderRow label="Opacity" valueLabel={`${Math.round(ghostOpacity * 100)}%`} value={ghostOpacity} min={0.05} max={1} step={0.05} onChange={setGhostOpacity} />
+                          </div>
+                      }
+                    </motion.div>
+                  </div>
               </div>
             </div>)
         }
