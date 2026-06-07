@@ -15,6 +15,7 @@ import ScrubBar from '@/components/video/ScrubBar';
 import { useRecording } from '@/lib/RecordingContext';
 import { usePro } from '@/lib/ProContext';
 import ProModal from '@/components/ProModal';
+import { useFFmpegConvert } from '@/components/video/useFFmpegConvert';
 
 
 export default function Camera() {
@@ -25,6 +26,7 @@ export default function Camera() {
   const [showProModal, setShowProModal] = useState(false);
   const { videoRef, isActive, error, start, stop } = useCamera();
   const { pushFrame, getFrame, getBufferLength, clearBuffer, maxBufferSize } = useFrameBuffer();
+  const { convert } = useFFmpegConvert();
 
   const { user } = useAuth();
 
@@ -286,21 +288,38 @@ export default function Camera() {
     recordingChunksRef.current = [];
     recorder.ondataavailable = (e) => {if (e.data.size > 0) recordingChunksRef.current.push(e.data);};
     recorder.onstop = async () => {
-      const ext = isPro ? 'mp4' : 'webm';
-      const blob = new Blob(recordingChunksRef.current, { type: mimeType });
+      let finalBlob = new Blob(recordingChunksRef.current, { type: mimeType });
+      let finalType = mimeType;
+      let finalExt = isPro ? 'mp4' : 'webm';
+
+      // Convert WebM → MP4 for Pro users
+      if (isPro) {
+        try {
+          setUploadStatus('converting');
+          finalBlob = await convert(finalBlob);
+          finalType = 'video/mp4';
+        } catch (e) {
+          console.error('FFmpeg conversion failed:', e);
+          setUploadStatus('error');
+          setUploadError('Conversion failed. Using WebM format instead.');
+          finalExt = 'webm';
+          finalType = mimeType;
+          setTimeout(() => setUploadStatus(null), 5000);
+        }
+      }
 
       // Trigger browser download
-      const localUrl = URL.createObjectURL(blob);
+      const localUrl = URL.createObjectURL(finalBlob);
       const a = document.createElement('a');
       a.href = localUrl;
-      a.download = `vid-loop-${Date.now()}.${ext}`;
+      a.download = `vid-loop-${Date.now()}.${finalExt}`;
       a.click();
 
       // Upload to storage and save to gallery
       try {
         setUploadStatus('uploading');
         const timestamp = Date.now();
-        const file = new File([blob], `vid-loop-${timestamp}.${ext}`, { type: mimeType });
+        const file = new File([finalBlob], `vid-loop-${timestamp}.${finalExt}`, { type: finalType });
         console.log('Uploading file:', { name: file.name, size: file.size, type: file.type });
         const response = await base44.integrations.Core.UploadFile({ file });
         const { file_url } = response;
@@ -464,6 +483,17 @@ export default function Camera() {
                 <Film className="w-4 h-4 text-primary" />
                 Clip saved!
                 <button onClick={() => {switchTab('/gallery');navigate('/gallery');}} className="text-primary underline text-xs">View Gallery</button>
+              </motion.div>
+          }
+            {uploadStatus === 'converting' &&
+          <motion.div
+            key="convert-toast"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            className="absolute bottom-32 left-1/2 -translate-x-1/2 z-30 flex items-center gap-3 px-4 py-3 rounded-2xl bg-black/80 backdrop-blur-md border border-white/20 text-white text-sm font-mono whitespace-nowrap">
+                <div className="w-3 h-3 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                Converting to MP4…
               </motion.div>
           }
             {uploadStatus === 'uploading' &&
