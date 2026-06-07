@@ -130,11 +130,10 @@ export default function Gallery() {
   };
 
   useEffect(() => {
-    // Set up subscription first so it's ready to catch new clips
+    // Real-time subscription for updates/deletes
     const unsubscribe = base44.entities.Clip.subscribe((event) => {
       if (event.type === 'create') {
         setClips((prev) => {
-          // Dedupe: don't add if clip with same ID already exists
           if (prev.some((c) => c.id === event.data.id)) return prev;
           return [event.data, ...prev];
         });
@@ -145,10 +144,24 @@ export default function Gallery() {
       }
     });
 
-    // Then load initial clips
+    // Listen for clip saved from camera (works even when tab is mounted)
+    const onClipSaved = (e) => {
+      const clip = e.detail;
+      if (!clip) return;
+      setClips((prev) => {
+        if (prev.some((c) => c.id === clip.id)) return prev;
+        return [clip, ...prev];
+      });
+    };
+    window.addEventListener('clip-saved', onClipSaved);
+
+    // Load initial clips
     loadClips();
-    
-    return unsubscribe;
+
+    return () => {
+      unsubscribe();
+      window.removeEventListener('clip-saved', onClipSaved);
+    };
   }, []);
 
   const deleteClip = (id) => {

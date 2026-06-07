@@ -258,16 +258,18 @@ export default function Camera() {
         const ext = isMP4 ? 'mp4' : 'webm';
         const file = new File([blob], `vid-loop-${timestamp}.${ext}`, { type: mimeType });
         const { file_url } = await base44.integrations.Core.UploadFile({ file });
-        await base44.entities.Clip.create({
+        const clip = await base44.entities.Clip.create({
           file_url,
           duration: recordingTimerRef._lastTime || null,
           title: `Clip ${new Date().toLocaleTimeString()}`
         });
         setUploadStatus(null);
         setSavedClip({ url: file_url });
+        // Notify gallery to prepend this clip immediately
+        window.dispatchEvent(new CustomEvent('clip-saved', { detail: clip }));
         setTimeout(() => setSavedClip(null), 5000);
       } catch (e) {
-        console.error('Upload failed:', e);
+        console.error('Gallery save failed:', e);
         setUploadStatus('error');
         setTimeout(() => setUploadStatus(null), 4000);
       }
