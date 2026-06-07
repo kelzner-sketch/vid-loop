@@ -294,11 +294,13 @@ export default function Camera() {
         setTimeout(() => setSavedClip(null), 5000);
       } catch (e) {
         console.error('Gallery save failed:', e);
-        console.error('Error details:', { status: e?.response?.status, data: e?.response?.data, message: e?.message });
-        const msg = e?.response?.data?.message || e?.message || 'Network error uploading video';
+        const statusCode = e?.response?.status;
+        const errorMsg = e?.response?.data?.message || e?.message;
+        const details = `Error: ${statusCode ? `HTTP ${statusCode}` : 'Network'} — ${errorMsg || 'Check connection'}`;
+        console.error('Upload error details:', details);
         setUploadStatus('error');
-        setUploadError(msg);
-        setTimeout(() => setUploadStatus(null), 4000);
+        setUploadError(details);
+        setTimeout(() => setUploadStatus(null), 5000);
       }
       URL.revokeObjectURL(localUrl);
     };
@@ -572,20 +574,20 @@ export default function Camera() {
           style={{ background: 'linear-gradient(to left, rgba(0,0,0,0.82) 0%, transparent 100%)', width: '158px' }}>
               <div className="h-full px-3 space-y-2 overflow-y-auto overscroll-contain pointer-events-none"
             style={{ paddingTop: 'calc(0.75rem + env(safe-area-inset-top))', paddingBottom: '0.75rem' }}>
-                <div className="space-y-1">
+                <div className="space-y-1 pointer-events-auto">
                   <div className="flex items-center justify-between">
                     <span className="text-[7px] font-mono uppercase tracking-widest text-white/40">Scrub</span>
                     <div className="flex items-center gap-1">
                       {isDelayed &&
                     <button onClick={() => setDelayOffset(0)}
-                    className="flex items-center gap-0.5 px-1 py-0.5 rounded bg-accent/20 border border-accent/30 text-accent text-[7px] font-mono">
+                    className="flex items-center gap-0.5 px-1 py-0.5 rounded bg-accent/20 border border-accent/30 text-accent text-[7px] font-mono pointer-events-auto">
                           <Play className="w-1.5 h-1.5" />L
                         </button>
                     }
                       <span className="text-[7px] font-mono text-white tabular-nums">{isDelayed ? `−${delaySeconds}s` : 'live'}</span>
                     </div>
                   </div>
-                  <ScrubBar value={delayOffset} max={Math.max(1, bufferFill - 1)} onChange={setDelayOffset} bufferFill={bufferFill} maxBufferSize={maxBufferSize} />
+                  <div className="pointer-events-auto"><ScrubBar value={delayOffset} max={Math.max(1, bufferFill - 1)} onChange={setDelayOffset} bufferFill={bufferFill} maxBufferSize={maxBufferSize} /></div>
                 </div>
                 <button onClick={toggleLoop}
               className={`w-full flex items-center gap-1.5 px-2 py-1 rounded-lg border text-[8px] font-mono transition-all pointer-events-auto ${loopEnabled ? 'bg-accent/30 border-accent/50 text-white' : 'bg-white/5 border-white/10 text-white/40'}`}>
