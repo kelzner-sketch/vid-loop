@@ -351,10 +351,10 @@ export default function Camera() {
       return;
     }
     try {
-      if (!isPro) { 
+      if (!isPro) {
         console.log('Showing Pro modal (free tier)');
-        setShowProModal(true); 
-        return; 
+        setShowProModal(true);
+        return;
       }
       console.log('Starting recording (pro)');
       startRecording();
@@ -374,7 +374,7 @@ export default function Camera() {
   const isDelayed = delayOffset > 0;
 
   return (
-    <div className="fixed inset-0 flex flex-col overflow-hidden bg-[hsl(var(--popover))]">
+    <div className="fixed inset-0 flex flex-col overflow-hidden bg-[#233c5c]">
 
       {/* ── IDLE SCREEN ── */}
       <AnimatePresence>
@@ -399,8 +399,8 @@ export default function Camera() {
 
               <div className="w-full max-w-xs space-y-3">
                 {error &&
-                  <p className="text-sm text-destructive bg-destructive/10 border border-destructive/20 px-4 py-3 rounded-xl text-center">{error}</p>
-                }
+              <p className="text-sm text-destructive bg-destructive/10 border border-destructive/20 px-4 py-3 rounded-xl text-center">{error}</p>
+              }
                 <Button onClick={handleStart} size="lg" className="w-full gap-2 h-14 rounded-2xl lowercase text-center text-xl bg-[hsl(var(--primary))]">
                   <CameraIcon className="w-8 h-8" />
                   Enable Camera
@@ -641,7 +641,7 @@ export default function Camera() {
                     <CompactSlider label="O" valueLabel={`${Math.round(ghostOpacity * 100)}%`} value={ghostOpacity} min={0.05} max={1} step={0.05} onChange={setGhostOpacity} />
                   </div>
               }
-                <button onClick={() => {if (isRecording) {alert('Stop recording before viewing gallery'); return;} switchTab('/gallery');navigate('/gallery');}}
+                <button onClick={() => {if (isRecording) {alert('Stop recording before viewing gallery');return;}switchTab('/gallery');navigate('/gallery');}}
               className="w-full flex items-center gap-1.5 px-2 py-1 rounded-lg border bg-white/5 border-white/10 text-white/40 text-[8px] font-mono pointer-events-auto">
                   <Film className="w-2.5 h-2.5" />Gallery
                 </button>
