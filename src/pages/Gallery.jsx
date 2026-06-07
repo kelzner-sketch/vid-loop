@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Trash2, Download, Film, Pencil, Check, X, CheckSquare, RefreshCw, Share2, Loader2, Scissors } from 'lucide-react';
+import { Trash2, Download, Film, Pencil, Check, X, CheckSquare, RefreshCw, Share2, Loader2, Scissors, Apple, LogIn } from 'lucide-react';
+import GoogleIcon from '@/components/GoogleIcon';
 import { useNavigate } from 'react-router-dom';
 import MobileHeader from '@/components/MobileHeader';
 import UserProfile from '@/components/UserProfile';
@@ -305,6 +306,34 @@ export default function Gallery() {
         style={{ paddingBottom: 'calc(1rem + env(safe-area-inset-bottom) + 56px)' }}>
         
         {user && <UserProfile />}
+
+        {!user && (
+          <div className="rounded-2xl bg-card border border-border px-5 py-5 space-y-3">
+            <div className="flex items-center gap-2 mb-1">
+              <LogIn className="w-4 h-4 text-primary" />
+              <p className="text-sm font-medium text-foreground">Sign in to save clips</p>
+            </div>
+            <p className="text-xs text-muted-foreground">Create a free account to record and store your clips to the gallery.</p>
+            <button
+              onClick={() => base44.auth.loginWithProvider('google', '/gallery')}
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-card border border-border text-sm font-medium text-foreground hover:bg-muted transition-colors"
+            >
+              <GoogleIcon className="w-4 h-4" />
+              Continue with Google
+            </button>
+            <button
+              onClick={() => base44.auth.loginWithProvider('apple', '/gallery')}
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-card border border-border text-sm font-medium text-foreground hover:bg-muted transition-colors"
+            >
+              <Apple className="w-4 h-4" />
+              Continue with Apple
+            </button>
+            <div className="flex gap-2 pt-1">
+              <a href="/login" className="flex-1 px-3 py-2 rounded-xl border border-border bg-muted text-center text-xs text-muted-foreground hover:bg-muted/80 transition-colors">Email Sign In</a>
+              <a href="/register" className="flex-1 px-3 py-2 rounded-xl border border-primary/30 bg-primary/10 text-center text-xs text-primary hover:bg-primary/20 transition-colors">Sign Up</a>
+            </div>
+          </div>
+        )}
 
         {loading ?
         <div className="flex items-center justify-center h-40">
