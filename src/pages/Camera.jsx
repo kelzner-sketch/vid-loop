@@ -64,6 +64,7 @@ export default function Camera() {
   const recordingChunksRef = useRef([]);
   const recordingTimerRef = useRef(null);
   const canvasRef = useRef(null); // forwarded from RenderCanvas
+  const mirrorRafRef = useRef(null);
 
   // Load settings from database if authenticated
   useEffect(() => {
@@ -241,7 +242,25 @@ export default function Camera() {
   const startRecording = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const stream = canvas.captureStream(30);
+
+    // Free tier: record at 360×640 max via an offscreen canvas
+    let recordCanvas = canvas;
+    if (!isPro) {
+      const scale = Math.min(1, 360 / canvas.width, 640 / canvas.height);
+      const oc = document.createElement('canvas');
+      oc.width = Math.round(canvas.width * scale);
+      oc.height = Math.round(canvas.height * scale);
+      const octx = oc.getContext('2d');
+      // Mirror the main canvas into offscreen at capped size each frame
+      const mirrorLoop = () => {
+        octx.drawImage(canvas, 0, 0, oc.width, oc.height);
+        mirrorRafRef.current = requestAnimationFrame(mirrorLoop);
+      };
+      mirrorRafRef.current = requestAnimationFrame(mirrorLoop);
+      recordCanvas = oc;
+    }
+
+    const stream = recordCanvas.captureStream(30);
     const mimeType =
     MediaRecorder.isTypeSupported('video/webm;codecs=vp9') ? 'video/webm;codecs=vp9' :
     MediaRecorder.isTypeSupported('video/webm;codecs=vp8') ? 'video/webm;codecs=vp8' :
@@ -309,6 +328,7 @@ export default function Camera() {
   const stopRecording = useCallback(() => {
     mediaRecorderRef.current?.stop();
     clearInterval(recordingTimerRef.current);
+    if (mirrorRafRef.current) cancelAnimationFrame(mirrorRafRef.current);
     setIsRecording(false);
     setRecordingTime(0);
   }, []);

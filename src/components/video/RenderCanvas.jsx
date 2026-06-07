@@ -29,23 +29,16 @@ export default function RenderCanvas({ videoRef, getFrame, delayOffset, ghostEna
 
     const ctx = canvas.getContext('2d');
 
-    // Resize canvas to match its CSS container — survives orientation changes
-    // Free tier: cap at 360×640 pixels for the recording output
+    // Resize canvas to always fill the screen (display resolution)
     const container = containerRef.current;
     if (container) {
       const dpr = window.devicePixelRatio || 1;
-      let targetW = Math.round(container.clientWidth * dpr);
-      let targetH = Math.round(container.clientHeight * dpr);
-      if (!isPro) {
-        const scale = Math.min(1, FREE_MAX_W / targetW, FREE_MAX_H / targetH);
-        targetW = Math.round(targetW * scale);
-        targetH = Math.round(targetH * scale);
-      }
+      const targetW = Math.round(container.clientWidth * dpr);
+      const targetH = Math.round(container.clientHeight * dpr);
       if (canvas.width !== targetW || canvas.height !== targetH) {
         canvas.width = targetW;
         canvas.height = targetH;
-        const cssScale = isPro ? dpr : dpr * Math.min(1, FREE_MAX_W / Math.round(container.clientWidth * dpr), FREE_MAX_H / Math.round(container.clientHeight * dpr));
-        ctx.setTransform(cssScale, 0, 0, cssScale, 0, 0);
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       }
     }
 
