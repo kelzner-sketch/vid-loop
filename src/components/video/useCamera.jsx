@@ -8,12 +8,27 @@ export default function useCamera() {
 
   const start = useCallback(async (facingMode = 'user') => {
     setError(null);
+    // Stop any existing stream first
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(t => t.stop());
+      streamRef.current = null;
+    }
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { width: { ideal: 1280 }, height: { ideal: 720 }, aspectRatio: { ideal: 16/9 }, facingMode },
+        video: { facingMode },
         audio: false
       });
       streamRef.current = stream;
+
+      // Detect when iOS kills the stream (e.g. on rotation or background)
+      stream.getTracks().forEach(track => {
+        track.addEventListener('ended', () => {
+          setIsActive(false);
+          streamRef.current = null;
+          if (videoRef.current) videoRef.current.srcObject = null;
+        });
+      });
+
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         await videoRef.current.play();
