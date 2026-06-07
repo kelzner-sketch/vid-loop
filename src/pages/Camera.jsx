@@ -603,7 +603,7 @@ export default function Camera() {
             <div className="absolute right-0 top-0 bottom-0 z-30"
           style={{ background: 'linear-gradient(to left, rgba(0,0,0,0.82) 0%, transparent 100%)', width: '158px' }}>
               <div className="h-full px-3 space-y-2 overflow-y-auto overscroll-contain"
-            style={{ paddingTop: 'calc(0.75rem + env(safe-area-inset-top))', paddingBottom: '0.75rem' }}>
+            style={{ paddingTop: '0.75rem', paddingBottom: '0.75rem' }}>
                 <div className="space-y-1 pointer-events-auto">
                   <div className="flex items-center justify-between">
                     <span className="text-[7px] font-mono uppercase tracking-widest text-white/40">Scrub</span>
