@@ -125,7 +125,8 @@ export default function Gallery() {
   };
 
   const loadClips = async () => {
-    const data = await base44.entities.Clip.list('-created_date');
+    if (!user) { setLoading(false); return; }
+    const data = await base44.entities.Clip.filter({ created_by_id: user.id }, '-created_date');
     setClips(data);
     setLoading(false);
   };
