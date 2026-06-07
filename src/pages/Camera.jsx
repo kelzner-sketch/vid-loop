@@ -293,9 +293,10 @@ export default function Camera() {
         window.dispatchEvent(new CustomEvent('clip-saved', { detail: clip }));
         setTimeout(() => setSavedClip(null), 5000);
       } catch (e) {
-        console.error('Gallery save failed:', e?.message || e);
+        console.error('Gallery save failed:', e);
+        const msg = e?.response?.data?.message || e?.message || 'Upload failed';
         setUploadStatus('error');
-        setUploadError(e?.message || 'Upload failed');
+        setUploadError(msg);
         setTimeout(() => setUploadStatus(null), 4000);
       }
       URL.revokeObjectURL(localUrl);
