@@ -83,13 +83,14 @@ export default function Gallery() {
         const binaryStr = atob(base64);
         const bytes = new Uint8Array(binaryStr.length);
         for (let i = 0; i < binaryStr.length; i++) bytes[i] = binaryStr.charCodeAt(i);
-        const blob = new Blob([bytes], { type: 'application/octet-stream' });
-        const blobUrl = URL.createObjectURL(blob);
+        const blob = new Blob([bytes], { type: 'video/mp4' });
         const a = document.createElement('a');
-        a.href = blobUrl;
+        a.href = URL.createObjectURL(blob);
         a.download = filename;
+        document.body.appendChild(a);
         a.click();
-        setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
+        document.body.removeChild(a);
+        URL.revokeObjectURL(a.href);
         // Small delay between downloads
         await new Promise((r) => setTimeout(r, 400));
       } catch (e) {
@@ -362,7 +363,7 @@ export default function Gallery() {
               }
                   <video
                 src={clip.file_url}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover pointer-events-none"
                 muted
                 playsInline
                 preload="metadata"
