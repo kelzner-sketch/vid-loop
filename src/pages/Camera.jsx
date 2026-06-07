@@ -266,32 +266,27 @@ export default function Camera() {
     rctx.fillStyle = '#000000';
     rctx.fillRect(0, 0, recordCanvas.width, recordCanvas.height);
 
-    // Mirror the main canvas into recording canvas with letterboxing each frame
+    // Mirror the main canvas into recording canvas with crop-to-fill (no black bars)
     const mirrorLoop = () => {
-      // Fill background
-      rctx.fillStyle = '#000000';
-      rctx.fillRect(0, 0, recordCanvas.width, recordCanvas.height);
-
-      // Calculate letterbox position to center the source
       const srcAspect = canvas.width / canvas.height;
       const destAspect = recordCanvas.width / recordCanvas.height;
-      let dw, dh, dx, dy;
+      let sx, sy, sw, sh;
 
       if (srcAspect > destAspect) {
-        // Source is wider: fit by width, letterbox top/bottom
-        dw = recordCanvas.width;
-        dh = recordCanvas.width / srcAspect;
-        dx = 0;
-        dy = (recordCanvas.height - dh) / 2;
+        // Source is wider: crop left/right
+        sw = canvas.height * destAspect;
+        sh = canvas.height;
+        sx = (canvas.width - sw) / 2;
+        sy = 0;
       } else {
-        // Source is taller: fit by height, letterbox left/right
-        dh = recordCanvas.height;
-        dw = recordCanvas.height * srcAspect;
-        dy = 0;
-        dx = (recordCanvas.width - dw) / 2;
+        // Source is taller: crop top/bottom
+        sw = canvas.width;
+        sh = canvas.width / destAspect;
+        sx = 0;
+        sy = (canvas.height - sh) / 2;
       }
 
-      rctx.drawImage(canvas, dx, dy, dw, dh);
+      rctx.drawImage(canvas, sx, sy, sw, sh, 0, 0, recordCanvas.width, recordCanvas.height);
       mirrorRafRef.current = requestAnimationFrame(mirrorLoop);
     };
     mirrorRafRef.current = requestAnimationFrame(mirrorLoop);
