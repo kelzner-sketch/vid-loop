@@ -16,7 +16,6 @@ import { useRecording } from '@/lib/RecordingContext';
 import { usePro } from '@/lib/ProContext';
 import ProModal from '@/components/ProModal';
 import { useFFmpegConvert } from '@/components/video/useFFmpegConvert';
-import { appParams } from '@/lib/app-params';
 
 
 export default function Camera() {
@@ -333,35 +332,32 @@ export default function Camera() {
         URL.revokeObjectURL(localUrl);
       }, 5000);
 
-      // Upload via uploadClip backend function using raw multipart FormData
+      // Upload via uploadClip backend function (base64 JSON — works with SDK invoke)
       try {
         setUploadStatus('uploading');
         const timestamp = Date.now();
         const fileName = `vid-loop-${timestamp}.${finalExt}`;
-        const uploadFile = new File([finalBlob], fileName, { type: finalType });
-        console.log('Uploading file:', { name: fileName, size: uploadFile.size, type: finalType });
+        console.log('Encoding file for upload:', { name: fileName, size: finalBlob.size, type: finalType });
 
-        const fd = new FormData();
-        fd.append('file', uploadFile);
-        fd.append('duration', String(recordingTimerRef._lastTime || 0));
-        fd.append('title', `Clip ${new Date().toLocaleTimeString()}`);
+        // Convert blob to base64
+        const arrayBuffer = await finalBlob.arrayBuffer();
+        const uint8 = new Uint8Array(arrayBuffer);
+        let binary = '';
+        const chunkSize = 8192;
+        for (let i = 0; i < uint8.length; i += chunkSize) {
+          binary += String.fromCharCode(...uint8.subarray(i, i + chunkSize));
+        }
+        const fileBase64 = btoa(binary);
 
-        const token = localStorage.getItem('base44_access_token') || localStorage.getItem('token') || '';
-        const baseUrl = (appParams.appBaseUrl || window.location.origin).replace(/\/$/, '');
-        const url = `${baseUrl}/api/apps/${appParams.appId}/functions/uploadClip`;
-
-        const resp = await fetch(url, {
-          method: 'POST',
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-          body: fd,
+        const res = await base44.functions.invoke('uploadClip', {
+          fileBase64,
+          fileName,
+          fileType: finalType,
+          duration: recordingTimerRef._lastTime || 0,
+          title: `Clip ${new Date().toLocaleTimeString()}`,
         });
 
-        if (!resp.ok) {
-          const errText = await resp.text();
-          throw new Error(`Upload failed (${resp.status}): ${errText}`);
-        }
-
-        const { clip, file_url } = await resp.json();
+        const { clip, file_url } = res.data;
         console.log('Clip saved:', clip?.id, file_url);
         setUploadStatus(null);
         setSavedClip({ url: file_url });
