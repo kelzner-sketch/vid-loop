@@ -15,7 +15,7 @@ import ScrubBar from '@/components/video/ScrubBar';
 import { useRecording } from '@/lib/RecordingContext';
 import { usePro } from '@/lib/ProContext';
 import ProModal from '@/components/ProModal';
-import { AnimatePresence as AP } from 'framer-motion';
+
 
 export default function Camera() {
   const navigate = useNavigate();
@@ -454,21 +454,8 @@ export default function Camera() {
             }
             </div>
 
-            {/* Right: ghost badge + record + stop */}
-            <div className="flex items-center gap-3">
-              {ghostEnabled &&
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg backdrop-blur-md border ${ghostActive ? 'bg-primary/50 border-primary/30' : 'bg-yellow-500/40 border-yellow-400/40'}`}>
-              
-                  <Layers className="w-3 h-3 text-white" />
-                  <span className="text-xs font-mono text-white">
-                    {ghostCountdown !== null ? `GHOST ${ghostCountdown}` : 'GHOST'}
-                  </span>
-                </motion.div>
-            }
-
+            {/* Right: record + flip + stop */}
+            <div className="flex items-center gap-2">
               {/* Record button */}
               <button
               onClick={isRecording ? stopRecording : handleRecordPress}
@@ -477,7 +464,6 @@ export default function Camera() {
               'bg-red-500/80 border-red-400/60 text-white' :
               'bg-white/10 border-white/20 text-white/80'}`
               }>
-              
                 {isRecording ?
               <>
                     <Square className="w-3 h-3 fill-white" />
@@ -485,7 +471,6 @@ export default function Camera() {
                       {String(Math.floor(recordingTime / 60)).padStart(2, '0')}:{String(recordingTime % 60).padStart(2, '0')}
                     </span>
                   </> :
-
               <>
                     <Circle className="w-3 h-3 fill-red-400 text-red-400" />
                     REC
@@ -493,18 +478,16 @@ export default function Camera() {
               }
               </button>
 
-              {/* Switch camera toggle */}
+              {/* Switch camera — compact icon */}
               <button
               onClick={handleSwitchCamera}
-              className="flex items-center gap-0 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-xs font-mono overflow-hidden active:scale-95 transition-all">
-                <span className={`px-3 py-1.5 transition-colors ${facingMode === 'environment' ? 'bg-white text-black' : 'text-white/50'}`}>REAR</span>
-                <span className={`px-3 py-1.5 transition-colors ${facingMode === 'user' ? 'bg-white text-black' : 'text-white/50'}`}>FRONT</span>
+              className="w-9 h-9 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center active:scale-95 transition-all">
+                <SwitchCamera className="w-4 h-4 text-white" />
               </button>
 
               <button
               onClick={handleStop}
               className="w-9 h-9 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center active:scale-95 transition-transform">
-              
                 <CameraOff className="w-4 h-4 text-white" />
               </button>
             </div>
