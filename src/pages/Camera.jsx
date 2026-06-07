@@ -428,7 +428,7 @@ export default function Camera() {
   const isDelayed = delayOffset > 0;
 
   return (
-    <div className="fixed inset-0 flex flex-col overflow-hidden bg-[#233c5c]">
+    <div className="fixed inset-0 flex flex-col overflow-hidden bg-[#233c5c]" style={isLandscape ? { height: '100dvh' } : {}}>
 
       {/* ── IDLE SCREEN ── */}
       <AnimatePresence>
