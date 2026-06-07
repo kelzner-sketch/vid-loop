@@ -414,7 +414,11 @@ export default function Gallery() {
                                 file_url: clip.file_url,
                                 filename
                               });
-                              const blob = res.data;
+                              const { base64 } = res.data;
+                              const binaryStr = atob(base64);
+                              const bytes = new Uint8Array(binaryStr.length);
+                              for (let i = 0; i < binaryStr.length; i++) bytes[i] = binaryStr.charCodeAt(i);
+                              const blob = new Blob([bytes], { type: 'application/octet-stream' });
                               const blobUrl = URL.createObjectURL(blob);
                               const a = document.createElement('a');
                               a.href = blobUrl;

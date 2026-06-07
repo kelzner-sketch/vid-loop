@@ -13,16 +13,10 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Failed to fetch file' }, { status: 500 });
     }
 
-    const blob = await res.blob();
+    const buffer = await res.arrayBuffer();
+    const base64 = btoa(String.fromCharCode(...new Uint8Array(buffer)));
 
-    return new Response(blob, {
-      status: 200,
-      headers: {
-        'Content-Type': blob.type,
-        'Content-Disposition': `attachment; filename="${filename}"`,
-        'Content-Length': blob.size,
-      },
-    });
+    return Response.json({ base64, filename });
   } catch (error) {
     console.error('Download error:', error);
     return Response.json({ error: error.message }, { status: 500 });
