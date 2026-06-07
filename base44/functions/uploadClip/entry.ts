@@ -14,8 +14,8 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Missing file' }, { status: 400 });
     }
 
-    // Upload to Base44 storage
-    const { file_url } = await base44.integrations.Core.UploadFile({ file });
+    // Upload to Base44 storage (use service role for reliable upload)
+    const { file_url } = await base44.asServiceRole.integrations.Core.UploadFile({ file });
     console.log('Upload successful:', file_url);
 
     // Save Clip entity

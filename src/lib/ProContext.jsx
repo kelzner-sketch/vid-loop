@@ -21,12 +21,12 @@ export function ProProvider({ children }) {
   useEffect(() => {
     refresh();
 
-    // Check if returning from successful checkout (same-tab flow)
+    // Check if returning from successful checkout (same-tab flow via location.href)
     const params = new URLSearchParams(window.location.search);
     if (params.get('pro') === 'success') {
-      setTimeout(refresh, 2000);
-      setTimeout(refresh, 5000);
       window.history.replaceState({}, '', window.location.pathname);
+      // Poll aggressively — webhook may take a few seconds to arrive
+      [2000, 4000, 7000, 12000, 20000].forEach(ms => setTimeout(refresh, ms));
     }
 
     // Re-check when user returns to this tab after completing checkout in new tab
