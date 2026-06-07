@@ -34,20 +34,14 @@ export default function ProModal({ onClose, context = 'settings' }) {
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 backdrop-blur-sm"
-      onClick={onClose}
+    <div
+      className="fixed inset-0 z-50 flex items-end justify-center"
+      style={{ backgroundColor: 'rgba(0,0,0,0.7)' }}
+      onTouchStart={(e) => e.stopPropagation()}
     >
-      <motion.div
-        initial={{ y: 100, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        exit={{ y: 100, opacity: 0 }}
-        transition={{ type: 'spring', damping: 25 }}
-        className="w-full max-w-md bg-card border border-border rounded-t-3xl p-6 pb-10 space-y-5"
-        onClick={(e) => e.stopPropagation()}
+      <div
+        className="w-full max-w-md bg-card border border-border rounded-t-3xl p-6 space-y-5"
+        style={{ paddingBottom: 'calc(2rem + env(safe-area-inset-bottom))' }}
       >
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -64,7 +58,11 @@ export default function ProModal({ onClose, context = 'settings' }) {
               </p>
             </div>
           </div>
-          <button onClick={onClose} className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
+          <button
+            onTouchEnd={(e) => { e.preventDefault(); onClose('dismiss'); }}
+            onClick={() => onClose('dismiss')}
+            className="w-8 h-8 rounded-full bg-muted flex items-center justify-center"
+          >
             <X className="w-4 h-4 text-muted-foreground" />
           </button>
         </div>
@@ -85,9 +83,10 @@ export default function ProModal({ onClose, context = 'settings' }) {
         <div className="space-y-3 pt-1">
           {error && <p className="text-xs text-destructive text-center">{error}</p>}
           <button
+            onTouchEnd={(e) => { e.preventDefault(); handleUpgrade(); }}
             onClick={handleUpgrade}
             disabled={loading}
-            className="w-full h-12 rounded-2xl bg-primary text-primary-foreground font-semibold text-sm flex items-center justify-center gap-2 disabled:opacity-60 transition-opacity active:scale-95"
+            className="w-full h-12 rounded-2xl bg-primary text-primary-foreground font-semibold text-sm flex items-center justify-center gap-2 disabled:opacity-60 active:scale-95"
           >
             {loading ? (
               <div className="w-4 h-4 border-2 border-primary-foreground/40 border-t-primary-foreground rounded-full animate-spin" />
@@ -98,9 +97,18 @@ export default function ProModal({ onClose, context = 'settings' }) {
               </>
             )}
           </button>
+          {context === 'record' && (
+            <button
+              onTouchEnd={(e) => { e.preventDefault(); onClose('record'); }}
+              onClick={() => onClose('record')}
+              className="w-full h-10 rounded-2xl border border-border text-muted-foreground text-sm flex items-center justify-center"
+            >
+              Record free (SD, WebM)
+            </button>
+          )}
           <p className="text-xs text-muted-foreground text-center">One-time purchase · Lifetime access</p>
         </div>
-      </motion.div>
-    </motion.div>
+      </div>
+    </div>
   );
 }

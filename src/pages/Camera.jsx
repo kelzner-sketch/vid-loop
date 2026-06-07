@@ -329,10 +329,10 @@ export default function Camera() {
       try {
         setUploadStatus('uploading');
         const timestamp = Date.now();
-        const uploadBlob = new Blob([finalBlob], { type: finalType });
-        console.log('Uploading blob:', { size: uploadBlob.size, type: uploadBlob.type });
-        const response = await base44.integrations.Core.UploadFile({ file: uploadBlob });
-        const { file_url } = response;
+        const fileName = `vid-loop-${timestamp}.${finalExt}`;
+        const uploadFile = new File([finalBlob], fileName, { type: finalType });
+        console.log('Uploading:', { name: fileName, size: uploadFile.size, type: finalType });
+        const { file_url } = await base44.integrations.Core.UploadFile({ file: uploadFile });
         console.log('Upload successful:', file_url);
         const clip = await base44.entities.Clip.create({
           file_url,
@@ -401,10 +401,10 @@ export default function Camera() {
     }
   }, [isPro, startRecording, isRecording, stopRecording]);
 
-  // When free user dismisses the Pro modal, start recording at capped resolution
-  const handleProModalClose = useCallback(() => {
+  // Pro modal close: 'record' = record free, 'dismiss' or undefined = just close
+  const handleProModalClose = useCallback((action) => {
     setShowProModal(false);
-    startRecording();
+    if (action === 'record') startRecording();
   }, [startRecording]);
 
   const delaySeconds = (delayOffset / 30).toFixed(2);
