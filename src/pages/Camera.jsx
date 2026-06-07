@@ -369,6 +369,7 @@ export default function Camera() {
         }
       };
       reader.readAsDataURL(finalBlob);
+    };
     recorder.start();
     mediaRecorderRef.current = recorder;
     setIsRecording(true);
