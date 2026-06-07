@@ -308,7 +308,7 @@ export default function Camera() {
   const isDelayed = delayOffset > 0;
 
   return (
-    <div className="fixed inset-0 bg-black flex flex-col overflow-hidden">
+    <div className="fixed inset-0 flex flex-col overflow-hidden bg-[hsl(var(--popover))]">
 
       {/* ── IDLE SCREEN ── */}
       <AnimatePresence>
