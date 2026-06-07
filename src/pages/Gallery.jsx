@@ -404,24 +404,14 @@ export default function Gallery() {
                         <Loader2 className="w-3 h-3 text-primary animate-spin" /> :
                         <Share2 className="w-3 h-3 text-muted-foreground" />}
                           </button>
-                          <button onClick={async (e) => {
+                          <button onClick={(e) => {
+                            e.preventDefault();
                             e.stopPropagation();
-                            try {
-                              const ext = clip.file_url.includes('mp4') ? 'mp4' : 'webm';
-                              const res = await fetch(clip.file_url);
-                              const blob = await res.blob();
-                              const blobUrl = URL.createObjectURL(blob);
-                              const a = document.createElement('a');
-                              a.href = blobUrl;
-                              a.download = `${clip.title || `vidloop-${clip.id}`}.${ext}`;
-                              document.body.appendChild(a);
-                              a.click();
-                              document.body.removeChild(a);
-                              URL.revokeObjectURL(blobUrl);
-                            } catch (err) {
-                              console.error('Download failed:', err);
-                              alert('Download failed. Try again.');
-                            }
+                            const ext = clip.file_url.includes('mp4') ? 'mp4' : 'webm';
+                            const a = document.createElement('a');
+                            a.href = clip.file_url;
+                            a.download = `${clip.title || `vidloop-${clip.id}`}.${ext}`;
+                            a.click();
                           }}
                         className="w-6 h-6 rounded bg-muted flex items-center justify-center hover:bg-primary/20 transition-colors">
                             <Download className="w-3 h-3 text-muted-foreground" />
