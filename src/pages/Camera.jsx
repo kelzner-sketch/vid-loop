@@ -778,14 +778,14 @@ export default function Camera() {
                      <Repeat2 className="w-3.5 h-3.5" />
                      Loop
                    </button>
-                   <motion.div key="loop-panel" initial={{ opacity: 0, height: 0 }} animate={{ opacity: loopEnabled ? 1 : 0, height: loopEnabled ? 'auto' : 0 }} transition={{ duration: 0.3 }} className="overflow-hidden">
-                     {loopEnabled &&
+                   {loopEnabled &&
+                   <motion.div key="loop-panel" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.3 }} className="overflow-hidden pointer-events-auto">
                          <div className="space-y-3 pt-1">
                            <GhostSliderRow label="Depth" valueLabel={`${(loopDepth / 30).toFixed(1)}s`} value={loopDepth} min={5} max={Math.max(5, bufferFill - 1)} step={1} onChange={setLoopDepth} />
                            <GhostSliderRow label="Speed" valueLabel={`${loopSpeed}x`} value={loopSpeed} min={0.25} max={4} step={0.25} onChange={setLoopSpeed} />
                          </div>
-                     }
                    </motion.div>
+                   }
                  </div>
 
                  {/* Ghost controls */}
@@ -801,16 +801,16 @@ export default function Camera() {
                         <CameraOff className="w-4 h-4 text-white/70" />
                       </button>
                     </div>
-                    <motion.div key="ghost-panel" initial={{ opacity: 0, height: 0 }} animate={{ opacity: ghostEnabled ? 1 : 0, height: ghostEnabled ? 'auto' : 0 }} transition={{ duration: 0.3 }} className="overflow-hidden">
-                      {ghostEnabled &&
+                    {ghostEnabled &&
+                    <motion.div key="ghost-panel" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.3 }} className="overflow-hidden pointer-events-auto">
                           <div className="space-y-3 pt-1">
                             <GhostSliderRow label="Delay" valueLabel={ghostDelay === 0 ? 'off' : `${ghostDelay}s`} value={ghostDelay} min={0} max={10} step={1} onChange={setGhostDelay} />
                             <GhostSliderRow label="Interval" valueLabel={`${ghostInterval}f`} value={ghostInterval} min={1} max={30} step={1} onChange={setGhostInterval} />
                             <GhostSliderRow label="Layers" valueLabel={`${ghostCount}`} value={ghostCount} min={2} max={4} step={1} onChange={setGhostCount} />
                             <GhostSliderRow label="Opacity" valueLabel={`${Math.round(ghostOpacity * 100)}%`} value={ghostOpacity} min={0.05} max={1} step={0.05} onChange={setGhostOpacity} />
                           </div>
-                      }
                     </motion.div>
+                    }
                   </div>
               </div>
             </div>)
