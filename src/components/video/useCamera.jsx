@@ -10,7 +10,7 @@ export default function useCamera() {
     setError(null);
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode },
+        video: { width: { ideal: 1280 }, height: { ideal: 720 }, aspectRatio: { ideal: 16/9 }, facingMode },
         audio: false
       });
       streamRef.current = stream;
