@@ -14,7 +14,13 @@ Deno.serve(async (req) => {
     }
 
     const buffer = await res.arrayBuffer();
-    const base64 = btoa(String.fromCharCode(...new Uint8Array(buffer)));
+    const bytes = new Uint8Array(buffer);
+    
+    let base64 = '';
+    for (let i = 0; i < bytes.length; i += 8192) {
+      base64 += String.fromCharCode.apply(null, bytes.slice(i, i + 8192));
+    }
+    base64 = btoa(base64);
 
     return Response.json({ base64, filename });
   } catch (error) {
