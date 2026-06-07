@@ -632,12 +632,12 @@ export default function Camera() {
                 </span>
               </div>
               <button
-              onClick={handleRecordPress}
-              disabled={uploadStatus === 'uploading'}
-              type="button"
-              className={`flex flex-col items-center justify-center w-12 h-12 rounded-full backdrop-blur-md border font-mono transition-all active:scale-95 disabled:opacity-50 pointer-events-auto ${
-              isRecording ? 'bg-red-500/80 border-red-400/60 text-white' : 'bg-white/15 border-white/30 text-white/80'}`
-              }>
+               onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleRecordPress(e); }}
+               disabled={uploadStatus === 'uploading'}
+               type="button"
+               className={`flex flex-col items-center justify-center w-12 h-12 rounded-full backdrop-blur-md border font-mono transition-all active:scale-95 disabled:opacity-50 pointer-events-auto ${
+               isRecording ? 'bg-red-500/80 border-red-400/60 text-white' : 'bg-white/15 border-white/30 text-white/80'}`
+               }>
               
                 {isRecording ?
               <>
@@ -667,7 +667,7 @@ export default function Camera() {
 
             {/* ── LANDSCAPE RIGHT: Sliders ── */}
             <div className="absolute right-0 top-0 bottom-0 z-30"
-          style={{ background: 'linear-gradient(to left, rgba(0,0,0,0.82) 0%, transparent 100%)', width: '280px' }}>
+          style={{ background: 'linear-gradient(to left, rgba(0,0,0,0.82) 0%, transparent 100%)', width: '240px' }}>
               <div className="h-full px-4 space-y-3 overflow-y-auto overscroll-contain"
             style={{ paddingTop: '1rem', paddingBottom: '1rem' }}>
                 <div className="space-y-2 pointer-events-auto">

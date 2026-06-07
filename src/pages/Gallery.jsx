@@ -73,14 +73,18 @@ export default function Gallery() {
     
     // Download directly without fetching (avoids CORS issues)
     for (const clip of selectedClips) {
-      const title = clip.title || `vidloop-${clip.id}`;
-      const ext = clip.file_url.includes('mp4') ? 'mp4' : 'webm';
-      const a = document.createElement('a');
-      a.href = clip.file_url;
-      a.download = `${title}.${ext}`;
-      a.click();
-      // Small delay between downloads so browser doesn't block them
-      await new Promise((r) => setTimeout(r, 400));
+      try {
+        const title = clip.title || `vidloop-${clip.id}`;
+        const ext = clip.file_url.includes('mp4') ? 'mp4' : 'webm';
+        const a = document.createElement('a');
+        a.href = clip.file_url;
+        a.download = `${title}.${ext}`;
+        a.click();
+        // Small delay between downloads so browser doesn't block them
+        await new Promise((r) => setTimeout(r, 400));
+      } catch (e) {
+        console.error('Download error:', e);
+      }
     }
     setExporting(false);
     exitSelectMode();
@@ -153,15 +157,21 @@ export default function Gallery() {
     const title = clip.title || 'VidLoop clip';
     try {
       if (navigator.share) {
-        await navigator.share({ title, url: clip.file_url });
+        try {
+          await navigator.share({ title, url: clip.file_url });
+        } catch (e) {
+          if (e.name !== 'AbortError') throw e;
+        }
       } else {
         await navigator.clipboard.writeText(clip.file_url);
         alert('Link copied to clipboard!');
       }
     } catch (e) {
-      if (e.name !== 'AbortError') {
+      try {
         await navigator.clipboard.writeText(clip.file_url);
         alert('Link copied to clipboard!');
+      } catch (clipboardError) {
+        console.error('Share error:', clipboardError);
       }
     } finally {
       setSharingId(null);
