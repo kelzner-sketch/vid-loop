@@ -13,11 +13,16 @@ import RenderCanvas from '@/components/video/RenderCanvas';
 import ControlSlider from '@/components/video/ControlSlider';
 import ScrubBar from '@/components/video/ScrubBar';
 import { useRecording } from '@/lib/RecordingContext';
+import { usePro } from '@/lib/ProContext';
+import ProModal from '@/components/ProModal';
+import { AnimatePresence as AP } from 'framer-motion';
 
 export default function Camera() {
   const navigate = useNavigate();
   const { switchTab } = useTabNav();
   const { isRecording, setIsRecording } = useRecording();
+  const { isPro } = usePro();
+  const [showProModal, setShowProModal] = useState(false);
   const { videoRef, isActive, error, start, stop } = useCamera();
   const { pushFrame, getFrame, getBufferLength, clearBuffer, maxBufferSize } = useFrameBuffer();
 
@@ -228,6 +233,11 @@ export default function Camera() {
     setDelayOffset(0);
   };
 
+  const handleRecordPress = useCallback(() => {
+    if (!isPro) { setShowProModal(true); return; }
+    startRecording();
+  }, [isPro]);
+
   const startRecording = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -352,6 +362,11 @@ export default function Camera() {
         }
       </AnimatePresence>
 
+      {/* Pro modal */}
+      <AnimatePresence>
+        {showProModal && <ProModal onClose={() => setShowProModal(false)} context="record" />}
+      </AnimatePresence>
+
       {/* ── LIVE VIEW ── */}
       {isActive &&
       <>
@@ -456,7 +471,7 @@ export default function Camera() {
 
               {/* Record button */}
               <button
-              onClick={isRecording ? stopRecording : startRecording}
+              onClick={isRecording ? stopRecording : handleRecordPress}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full backdrop-blur-md border font-mono text-xs transition-all active:scale-95 ${
               isRecording ?
               'bg-red-500/80 border-red-400/60 text-white' :
@@ -516,7 +531,7 @@ export default function Camera() {
                 </span>
               </div>
               <button
-              onClick={isRecording ? stopRecording : startRecording}
+              onClick={isRecording ? stopRecording : handleRecordPress}
               className={`flex flex-col items-center justify-center w-12 h-12 rounded-full backdrop-blur-md border font-mono transition-all active:scale-95 ${
               isRecording ? 'bg-red-500/80 border-red-400/60 text-white' : 'bg-white/15 border-white/30 text-white/80'}`
               }>

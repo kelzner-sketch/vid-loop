@@ -9,7 +9,7 @@ const FEATURES = [
   { icon: Clock, label: '30s scrub buffer (vs 5s free)' },
 ];
 
-export default function ProModal({ onClose }) {
+export default function ProModal({ onClose, context = 'settings' }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -60,8 +60,12 @@ export default function ProModal({ onClose }) {
               <Zap className="w-4 h-4 text-primary" />
             </div>
             <div>
-              <h2 className="font-heading font-semibold text-foreground">VidLoop Pro</h2>
-              <p className="text-xs text-muted-foreground">Unlock the full experience</p>
+              <h2 className="font-heading font-semibold text-foreground">
+                {context === 'record' ? 'Unlock HD Recording' : 'VidLoop Pro'}
+              </h2>
+              <p className="text-xs text-muted-foreground">
+                {context === 'record' ? 'HD 1080p · MP4 export · 30s buffer' : 'Unlock the full experience'}
+              </p>
             </div>
           </div>
           <button onClick={onClose} className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
