@@ -29,10 +29,10 @@ Deno.serve(async (req) => {
     }
 
     console.log('Uploading:', fileBlob.name, fileBlob.size, fileBlob.type);
-    const { file_url } = await base44.asServiceRole.integrations.Core.UploadFile({ file: fileBlob });
+    const { file_url } = await base44.integrations.Core.UploadFile({ file: fileBlob });
     console.log('Upload successful:', file_url);
 
-    const clip = await base44.asServiceRole.entities.Clip.create({ file_url, duration, title });
+    const clip = await base44.entities.Clip.create({ file_url, duration, title });
     return Response.json({ file_url, clip });
   } catch (error) {
     console.error('uploadClip error:', error.message, error.stack);
