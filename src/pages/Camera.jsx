@@ -256,22 +256,45 @@ export default function Camera() {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    // Free tier: record at 360×640 max via an offscreen canvas
-    let recordCanvas = canvas;
-    if (!isPro) {
-      const scale = Math.min(1, 360 / canvas.width, 640 / canvas.height);
-      const oc = document.createElement('canvas');
-      oc.width = Math.round(canvas.width * scale);
-      oc.height = Math.round(canvas.height * scale);
-      const octx = oc.getContext('2d');
-      // Mirror the main canvas into offscreen at capped size each frame
-      const mirrorLoop = () => {
-        octx.drawImage(canvas, 0, 0, oc.width, oc.height);
-        mirrorRafRef.current = requestAnimationFrame(mirrorLoop);
-      };
+    // Create recording canvas: 16:9 aspect ratio
+    const recordCanvas = document.createElement('canvas');
+    recordCanvas.width = isPro ? 1280 : 640;  // HD vs SD
+    recordCanvas.height = isPro ? 720 : 360;  // 16:9 aspect ratio
+    const rctx = recordCanvas.getContext('2d');
+
+    // Fill with black (for letterboxing)
+    rctx.fillStyle = '#000000';
+    rctx.fillRect(0, 0, recordCanvas.width, recordCanvas.height);
+
+    // Mirror the main canvas into recording canvas with letterboxing each frame
+    const mirrorLoop = () => {
+      // Fill background
+      rctx.fillStyle = '#000000';
+      rctx.fillRect(0, 0, recordCanvas.width, recordCanvas.height);
+
+      // Calculate letterbox position to center the source
+      const srcAspect = canvas.width / canvas.height;
+      const destAspect = recordCanvas.width / recordCanvas.height;
+      let dw, dh, dx, dy;
+
+      if (srcAspect > destAspect) {
+        // Source is wider: fit by width, letterbox top/bottom
+        dw = recordCanvas.width;
+        dh = recordCanvas.width / srcAspect;
+        dx = 0;
+        dy = (recordCanvas.height - dh) / 2;
+      } else {
+        // Source is taller: fit by height, letterbox left/right
+        dh = recordCanvas.height;
+        dw = recordCanvas.height * srcAspect;
+        dy = 0;
+        dx = (recordCanvas.width - dw) / 2;
+      }
+
+      rctx.drawImage(canvas, dx, dy, dw, dh);
       mirrorRafRef.current = requestAnimationFrame(mirrorLoop);
-      recordCanvas = oc;
-    }
+    };
+    mirrorRafRef.current = requestAnimationFrame(mirrorLoop);
 
     if (!recordCanvas) {
       console.error('Canvas not available for recording');
