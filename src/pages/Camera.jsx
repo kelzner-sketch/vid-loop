@@ -597,7 +597,7 @@ export default function Camera() {
                   </div>
               }
                 <button onClick={toggleGhost}
-              className={`w-full flex items-center gap-1.5 px-2 py-1 rounded-lg border text-[8px] font-mono transition-all ${ghostEnabled ? 'bg-primary/30 border-primary/50 text-white' : 'bg-white/5 border-white/10 text-white/40'}`}>
+              className={`w-full flex items-center gap-1.5 px-2 py-1 rounded-lg border text-[8px] font-mono transition-all pointer-events-auto ${ghostEnabled ? 'bg-primary/30 border-primary/50 text-white' : 'bg-white/5 border-white/10 text-white/40'}`}>
                   <Layers className="w-2.5 h-2.5" />
                   {ghostCountdown !== null ? `Ghost ${ghostCountdown}s` : 'Ghost'}
                 </button>
@@ -608,7 +608,7 @@ export default function Camera() {
                     <CompactSlider label="O" valueLabel={`${Math.round(ghostOpacity * 100)}%`} value={ghostOpacity} min={0.05} max={1} step={0.05} onChange={setGhostOpacity} />
                   </div>
               }
-                <button onClick={() => {switchTab('/gallery');navigate('/gallery');}}
+                <button onClick={() => {if (isRecording) {alert('Stop recording before viewing gallery'); return;} switchTab('/gallery');navigate('/gallery');}}
               className="w-full flex items-center gap-1.5 px-2 py-1 rounded-lg border bg-white/5 border-white/10 text-white/40 text-[8px] font-mono">
                   <Film className="w-2.5 h-2.5" />Gallery
                 </button>
