@@ -278,13 +278,6 @@ export default function Camera() {
 
       // Upload to storage and save to gallery
       try {
-        const currentUser = await base44.auth.me().catch(() => null);
-        if (!currentUser) {
-          setUploadStatus('error');
-          setUploadError('Sign in to save clips to gallery');
-          setTimeout(() => setUploadStatus(null), 4000);
-          return;
-        }
         setUploadStatus('uploading');
         const timestamp = Date.now();
         const file = new File([blob], `vid-loop-${timestamp}.${ext}`, { type: mimeType });
@@ -302,7 +295,7 @@ export default function Camera() {
       } catch (e) {
         console.error('Gallery save failed:', e?.message || e);
         setUploadStatus('error');
-        setUploadError(e?.message || 'Unknown error');
+        setUploadError(e?.message || 'Upload failed');
         setTimeout(() => setUploadStatus(null), 4000);
       }
       URL.revokeObjectURL(localUrl);
