@@ -149,20 +149,15 @@ export default function Camera() {
     });
   };
 
-  // Track orientation changes — restart camera if active (iOS kills stream on rotation)
+  // Track orientation changes — only update layout flag, don't restart camera
+  // (iOS kills the stream itself; track.ended in useCamera sets isActive=false)
   useEffect(() => {
     let timer;
     const update = () => {
       clearTimeout(timer);
-      timer = setTimeout(async () => {
-        const landscape = window.innerWidth > window.innerHeight;
-        setIsLandscape(landscape);
-        if (isActive) {
-          clearBuffer();
-          setBufferFill(0);
-          await start(facingMode);
-        }
-      }, 300);
+      timer = setTimeout(() => {
+        setIsLandscape(window.innerWidth > window.innerHeight);
+      }, 200);
     };
     window.addEventListener('resize', update);
     window.addEventListener('orientationchange', update);
@@ -171,7 +166,7 @@ export default function Camera() {
       window.removeEventListener('orientationchange', update);
       clearTimeout(timer);
     };
-  }, [isActive, facingMode, start, clearBuffer]);
+  }, []);
 
   // Capture frames into the ring buffer at ~30fps
   const captureLoop = useCallback(() => {
@@ -334,9 +329,9 @@ export default function Camera() {
       try {
         setUploadStatus('uploading');
         const timestamp = Date.now();
-        const file = new File([finalBlob], `vid-loop-${timestamp}.${finalExt}`, { type: finalType });
-        console.log('Uploading file:', { name: file.name, size: file.size, type: file.type });
-        const response = await base44.integrations.Core.UploadFile({ file });
+        const uploadBlob = new Blob([finalBlob], { type: finalType });
+        console.log('Uploading blob:', { size: uploadBlob.size, type: uploadBlob.type });
+        const response = await base44.integrations.Core.UploadFile({ file: uploadBlob });
         const { file_url } = response;
         console.log('Upload successful:', file_url);
         const clip = await base44.entities.Clip.create({
