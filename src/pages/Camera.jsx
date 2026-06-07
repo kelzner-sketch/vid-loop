@@ -294,7 +294,8 @@ export default function Camera() {
         setTimeout(() => setSavedClip(null), 5000);
       } catch (e) {
         console.error('Gallery save failed:', e);
-        const msg = e?.response?.data?.message || e?.message || 'Upload failed';
+        console.error('Error details:', { status: e?.response?.status, data: e?.response?.data, message: e?.message });
+        const msg = e?.response?.data?.message || e?.message || 'Network error uploading video';
         setUploadStatus('error');
         setUploadError(msg);
         setTimeout(() => setUploadStatus(null), 4000);
@@ -569,7 +570,7 @@ export default function Camera() {
             {/* ── LANDSCAPE RIGHT: Sliders ── */}
             <div className="absolute right-0 top-0 bottom-0 z-30"
           style={{ background: 'linear-gradient(to left, rgba(0,0,0,0.82) 0%, transparent 100%)', width: '158px' }}>
-              <div className="h-full px-3 space-y-2 overflow-y-auto overscroll-contain"
+              <div className="h-full px-3 space-y-2 overflow-y-auto overscroll-contain pointer-events-none"
             style={{ paddingTop: 'calc(0.75rem + env(safe-area-inset-top))', paddingBottom: '0.75rem' }}>
                 <div className="space-y-1">
                   <div className="flex items-center justify-between">
@@ -587,13 +588,15 @@ export default function Camera() {
                   <ScrubBar value={delayOffset} max={Math.max(1, bufferFill - 1)} onChange={setDelayOffset} bufferFill={bufferFill} maxBufferSize={maxBufferSize} />
                 </div>
                 <button onClick={toggleLoop}
-              className={`w-full flex items-center gap-1.5 px-2 py-1 rounded-lg border text-[8px] font-mono transition-all ${loopEnabled ? 'bg-accent/30 border-accent/50 text-white' : 'bg-white/5 border-white/10 text-white/40'}`}>
+              className={`w-full flex items-center gap-1.5 px-2 py-1 rounded-lg border text-[8px] font-mono transition-all pointer-events-auto ${loopEnabled ? 'bg-accent/30 border-accent/50 text-white' : 'bg-white/5 border-white/10 text-white/40'}`}>
                   <Repeat2 className="w-2.5 h-2.5" />Loop
                 </button>
                 {loopEnabled &&
               <div className="space-y-1.5">
-                    <CompactSlider label="D" valueLabel={`${(loopDepth / 30).toFixed(1)}s`} value={loopDepth} min={5} max={Math.max(5, bufferFill - 1)} step={1} onChange={setLoopDepth} />
-                    <CompactSlider label="S" valueLabel={`${loopSpeed}x`} value={loopSpeed} min={0.25} max={4} step={0.25} onChange={setLoopSpeed} />
+                    <div className="pointer-events-auto">
+                      <CompactSlider label="D" valueLabel={`${(loopDepth / 30).toFixed(1)}s`} value={loopDepth} min={5} max={Math.max(5, bufferFill - 1)} step={1} onChange={setLoopDepth} />
+                      <CompactSlider label="S" valueLabel={`${loopSpeed}x`} value={loopSpeed} min={0.25} max={4} step={0.25} onChange={setLoopSpeed} />
+                    </div>
                   </div>
               }
                 <button onClick={toggleGhost}
@@ -609,7 +612,7 @@ export default function Camera() {
                   </div>
               }
                 <button onClick={() => {if (isRecording) {alert('Stop recording before viewing gallery'); return;} switchTab('/gallery');navigate('/gallery');}}
-              className="w-full flex items-center gap-1.5 px-2 py-1 rounded-lg border bg-white/5 border-white/10 text-white/40 text-[8px] font-mono">
+              className="w-full flex items-center gap-1.5 px-2 py-1 rounded-lg border bg-white/5 border-white/10 text-white/40 text-[8px] font-mono pointer-events-auto">
                   <Film className="w-2.5 h-2.5" />Gallery
                 </button>
               </div>
