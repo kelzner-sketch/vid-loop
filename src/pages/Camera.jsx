@@ -16,6 +16,7 @@ import { useRecording } from '@/lib/RecordingContext';
 import { usePro } from '@/lib/ProContext';
 import ProModal from '@/components/ProModal';
 import { useFFmpegConvert } from '@/components/video/useFFmpegConvert';
+import { appParams } from '@/lib/app-params';
 
 
 export default function Camera() {
@@ -332,7 +333,7 @@ export default function Camera() {
         URL.revokeObjectURL(localUrl);
       }, 5000);
 
-      // Upload: use UploadFile integration directly, then save entity
+      // Upload via uploadClip backend function using raw multipart FormData
       try {
         setUploadStatus('uploading');
         const timestamp = Date.now();
@@ -340,16 +341,28 @@ export default function Camera() {
         const uploadFile = new File([finalBlob], fileName, { type: finalType });
         console.log('Uploading file:', { name: fileName, size: uploadFile.size, type: finalType });
 
-        const { file_url } = await base44.integrations.Core.UploadFile({ file: uploadFile });
-        console.log('File uploaded:', file_url);
+        const fd = new FormData();
+        fd.append('file', uploadFile);
+        fd.append('duration', String(recordingTimerRef._lastTime || 0));
+        fd.append('title', `Clip ${new Date().toLocaleTimeString()}`);
 
-        const clip = await base44.entities.Clip.create({
-          file_url,
-          duration: recordingTimerRef._lastTime || 0,
-          title: `Clip ${new Date().toLocaleTimeString()}`,
+        const token = localStorage.getItem('base44_access_token') || localStorage.getItem('token') || '';
+        const baseUrl = (appParams.appBaseUrl || window.location.origin).replace(/\/$/, '');
+        const url = `${baseUrl}/api/apps/${appParams.appId}/functions/uploadClip`;
+
+        const resp = await fetch(url, {
+          method: 'POST',
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+          body: fd,
         });
 
-        console.log('Clip saved:', clip.id);
+        if (!resp.ok) {
+          const errText = await resp.text();
+          throw new Error(`Upload failed (${resp.status}): ${errText}`);
+        }
+
+        const { clip, file_url } = await resp.json();
+        console.log('Clip saved:', clip?.id, file_url);
         setUploadStatus(null);
         setSavedClip({ url: file_url });
         window.dispatchEvent(new CustomEvent('clip-saved', { detail: clip }));
