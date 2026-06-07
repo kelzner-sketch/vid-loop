@@ -71,16 +71,26 @@ export default function Gallery() {
     setExporting(true);
     const selectedClips = clips.filter((c) => selected.has(c.id));
     
-    // Download directly without fetching (avoids CORS issues)
     for (const clip of selectedClips) {
       try {
-        const title = clip.title || `vidloop-${clip.id}`;
         const ext = clip.file_url.includes('mp4') ? 'mp4' : 'webm';
+        const filename = `${clip.title || `vidloop-${clip.id}`}.${ext}`;
+        const res = await base44.functions.invoke('downloadClip', {
+          file_url: clip.file_url,
+          filename
+        });
+        const { base64 } = res.data;
+        const binaryStr = atob(base64);
+        const bytes = new Uint8Array(binaryStr.length);
+        for (let i = 0; i < binaryStr.length; i++) bytes[i] = binaryStr.charCodeAt(i);
+        const blob = new Blob([bytes], { type: 'application/octet-stream' });
+        const blobUrl = URL.createObjectURL(blob);
         const a = document.createElement('a');
-        a.href = clip.file_url;
-        a.download = `${title}.${ext}`;
+        a.href = blobUrl;
+        a.download = filename;
         a.click();
-        // Small delay between downloads so browser doesn't block them
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
+        // Small delay between downloads
         await new Promise((r) => setTimeout(r, 400));
       } catch (e) {
         console.error('Download error:', e);
