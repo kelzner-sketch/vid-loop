@@ -98,7 +98,7 @@ export default function ProModal({ onClose, context = 'settings' }) {
             ) : (
               <>
                 <Zap className="w-4 h-4" />
-                Upgrade — $9.99 one-time
+                Upgrade — $2.99 one-time
               </>
             )}
           </button>
