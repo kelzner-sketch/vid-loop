@@ -318,12 +318,19 @@ export default function Camera() {
         finalType = 'video/mp4';
       }
 
-      // Trigger browser download
+      // Trigger browser download (iOS Safari requires element in DOM)
       const localUrl = URL.createObjectURL(finalBlob);
       const a = document.createElement('a');
       a.href = localUrl;
       a.download = `vid-loop-${Date.now()}.${finalExt}`;
+      a.style.display = 'none';
+      document.body.appendChild(a);
       a.click();
+      // Delay revoke so iOS has time to start the download
+      setTimeout(() => {
+        document.body.removeChild(a);
+        URL.revokeObjectURL(localUrl);
+      }, 5000);
 
       // Upload to storage and save to gallery
       try {
@@ -354,7 +361,6 @@ export default function Camera() {
         setUploadError(details);
         setTimeout(() => setUploadStatus(null), 5000);
       }
-      URL.revokeObjectURL(localUrl);
     };
     recorder.start();
     mediaRecorderRef.current = recorder;
