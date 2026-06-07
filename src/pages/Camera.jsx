@@ -149,25 +149,13 @@ export default function Camera() {
     });
   };
 
-  // Track orientation changes — restart camera if stream was killed
+  // Track orientation changes — just update layout flag
   useEffect(() => {
     let timer;
-    const update = async () => {
+    const update = () => {
       clearTimeout(timer);
-      timer = setTimeout(async () => {
-        const wasLandscape = isLandscape;
-        const nowLandscape = window.innerWidth > window.innerHeight;
-        setIsLandscape(nowLandscape);
-        
-        // If orientation changed and camera was active, it likely got killed by iOS
-        // Give it a moment then restart
-        if (wasLandscape !== nowLandscape && isActive) {
-          await new Promise(r => setTimeout(r, 300));
-          if (!isActive) {
-            // Stream was killed, restart it
-            await start(facingMode);
-          }
-        }
+      timer = setTimeout(() => {
+        setIsLandscape(window.innerWidth > window.innerHeight);
       }, 200);
     };
     window.addEventListener('resize', update);
@@ -177,7 +165,7 @@ export default function Camera() {
       window.removeEventListener('orientationchange', update);
       clearTimeout(timer);
     };
-  }, [isActive, facingMode, start]);
+  }, []);
 
   // Capture frames into the ring buffer at ~30fps
   const captureLoop = useCallback(() => {
