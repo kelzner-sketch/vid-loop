@@ -53,6 +53,7 @@ export default function Camera() {
   const [recordingTime, setRecordingTime] = useState(0);
   const [savedClip, setSavedClip] = useState(null); // {url, duration} shown after save
   const [uploadStatus, setUploadStatus] = useState(null); // 'uploading' | 'error'
+  const [uploadError, setUploadError] = useState('');
   const captureRef = useRef(null);
   const mediaRecorderRef = useRef(null);
   const recordingChunksRef = useRef([]);
@@ -253,6 +254,13 @@ export default function Camera() {
 
       // Upload to storage and save to gallery
       try {
+        const isAuthed = await base44.auth.isAuthenticated();
+        if (!isAuthed) {
+          setUploadStatus('error');
+          setUploadError('Sign in to save clips to gallery');
+          setTimeout(() => setUploadStatus(null), 4000);
+          return;
+        }
         setUploadStatus('uploading');
         const timestamp = Date.now();
         const file = new File([blob], `vid-loop-${timestamp}.${ext}`, { type: mimeType });
@@ -268,8 +276,9 @@ export default function Camera() {
         window.dispatchEvent(new CustomEvent('clip-saved', { detail: clip }));
         setTimeout(() => setSavedClip(null), 5000);
       } catch (e) {
-        console.error('Gallery save failed:', e);
+        console.error('Gallery save failed:', e?.message || e);
         setUploadStatus('error');
+        setUploadError(e?.message || 'Unknown error');
         setTimeout(() => setUploadStatus(null), 4000);
       }
       URL.revokeObjectURL(localUrl);
@@ -397,8 +406,8 @@ export default function Camera() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 20 }}
-                className="absolute bottom-32 left-1/2 -translate-x-1/2 z-30 flex items-center gap-3 px-4 py-3 rounded-2xl bg-red-900/80 backdrop-blur-md border border-red-500/40 text-white text-sm font-mono whitespace-nowrap">
-                ⚠ Gallery save failed — check you're signed in
+                className="absolute bottom-32 left-1/2 -translate-x-1/2 z-30 flex items-center gap-3 px-4 py-3 rounded-2xl bg-red-900/80 backdrop-blur-md border border-red-500/40 text-white text-sm font-mono">
+                ⚠ Gallery save failed: {uploadError || 'check you are signed in'}
               </motion.div>
             )}
           </AnimatePresence>
