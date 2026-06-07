@@ -14,19 +14,15 @@ export default function ProModal({ onClose, context = 'settings' }) {
   const [error, setError] = useState(null);
 
   const handleUpgrade = async () => {
-    if (window.self !== window.top) {
-      alert('Checkout only works from the published app, not the preview.');
-      return;
-    }
-
     setLoading(true);
     setError(null);
     try {
-      const res = await base44.functions.invoke('createCheckout', {
-        returnUrl: window.location.origin,
-      });
+      const returnUrl = window.self !== window.top
+        ? window.location.ancestorOrigins?.[0] || document.referrer || window.location.origin
+        : window.location.origin;
+      const res = await base44.functions.invoke('createCheckout', { returnUrl });
       if (res.data?.url) {
-        window.location.href = res.data.url;
+        window.open(res.data.url, '_blank');
       } else {
         setError('Could not start checkout. Please try again.');
       }
