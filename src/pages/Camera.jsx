@@ -287,21 +287,24 @@ export default function Camera() {
       return;
     }
     const mimeType =
+    MediaRecorder.isTypeSupported('video/mp4') ? 'video/mp4' :
     MediaRecorder.isTypeSupported('video/webm;codecs=vp9') ? 'video/webm;codecs=vp9' :
     MediaRecorder.isTypeSupported('video/webm;codecs=vp8') ? 'video/webm;codecs=vp8' :
     MediaRecorder.isTypeSupported('video/webm') ? 'video/webm' :
-    MediaRecorder.isTypeSupported('video/mp4') ? 'video/mp4' :
-    'video/webm';
-    const recorder = new MediaRecorder(stream, { mimeType });
+    '';
+    console.log('[Record] mimeType selected:', mimeType || '(empty - browser default)');
+    const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : {});
     recordingChunksRef.current = [];
     recorder.ondataavailable = (e) => {if (e.data.size > 0) recordingChunksRef.current.push(e.data);};
     recorder.onstop = async () => {
-      let finalBlob = new Blob(recordingChunksRef.current, { type: mimeType });
-      let finalType = mimeType;
+      const actualMimeType = recorder.mimeType || mimeType || 'video/webm';
+      console.log('[Record] actual recorder mimeType:', actualMimeType);
+      let finalBlob = new Blob(recordingChunksRef.current, { type: actualMimeType });
+      let finalType = actualMimeType;
       let finalExt = isPro ? 'mp4' : 'webm';
 
       // Convert WebM → MP4 for Pro users (skip if already MP4, e.g. iOS Safari)
-      if (isPro && !mimeType.includes('mp4')) {
+      if (isPro && !actualMimeType.includes('mp4')) {
         try {
           setUploadStatus('converting');
           finalBlob = await convert(finalBlob);
@@ -314,7 +317,7 @@ export default function Camera() {
           finalType = mimeType;
           setTimeout(() => setUploadStatus(null), 5000);
         }
-      } else if (isPro && mimeType.includes('mp4')) {
+      } else if (isPro && actualMimeType.includes('mp4')) {
         // Already MP4 (iOS Safari records natively in MP4)
         finalType = 'video/mp4';
       }
