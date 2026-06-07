@@ -667,49 +667,79 @@ export default function Camera() {
 
             {/* ── LANDSCAPE RIGHT: Sliders ── */}
             <div className="absolute right-0 top-0 bottom-0 z-30"
-          style={{ background: 'linear-gradient(to left, rgba(0,0,0,0.82) 0%, transparent 100%)', width: '158px' }}>
-              <div className="h-full px-3 space-y-2 overflow-y-auto overscroll-contain"
-            style={{ paddingTop: '0.75rem', paddingBottom: '0.75rem' }}>
-                <div className="space-y-1 pointer-events-auto">
+          style={{ background: 'linear-gradient(to left, rgba(0,0,0,0.82) 0%, transparent 100%)', width: '220px' }}>
+              <div className="h-full px-4 space-y-3 overflow-y-auto overscroll-contain"
+            style={{ paddingTop: '1rem', paddingBottom: '1rem' }}>
+                <div className="space-y-2 pointer-events-auto">
                   <div className="flex items-center justify-between">
-                    <span className="text-[7px] font-mono uppercase tracking-widest text-white/40">Scrub</span>
-                    <div className="flex items-center gap-1">
+                    <span className="text-xs font-mono uppercase tracking-widest text-white/40">Scrub</span>
+                    <div className="flex items-center gap-1.5">
                       {isDelayed &&
                     <button onClick={() => setDelay(0)}
-                    className="flex items-center gap-0.5 px-1 py-0.5 rounded bg-accent/20 border border-accent/30 text-accent text-[7px] font-mono pointer-events-auto">
-                          <Play className="w-1.5 h-1.5" />L
+                    className="flex items-center gap-1 px-2 py-1 rounded bg-accent/20 border border-accent/30 text-accent text-xs font-mono pointer-events-auto">
+                          <Play className="w-2 h-2" />L
                         </button>
                     }
-                      <span className="text-[7px] font-mono text-white tabular-nums">{isDelayed ? `−${delaySeconds}s` : 'live'}</span>
+                      <span className="text-xs font-mono text-white tabular-nums">{isDelayed ? `−${delaySeconds}s` : 'live'}</span>
                     </div>
                   </div>
                   <ScrubBar value={delayOffset} max={Math.max(1, bufferFill - 1)} onChange={setDelay} bufferFill={bufferFill} maxBufferSize={maxBufferSize} />
                 </div>
                 <button onClick={toggleLoop}
-              className={`w-full flex items-center gap-1.5 px-2 py-1 rounded-lg border text-[8px] font-mono transition-all pointer-events-auto ${loopEnabled ? 'bg-accent/30 border-accent/50 text-white' : 'bg-white/5 border-white/10 text-white/40'}`}>
-                  <Repeat2 className="w-2.5 h-2.5" />Loop
+              className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg border text-xs font-mono transition-all pointer-events-auto ${loopEnabled ? 'bg-accent/30 border-accent/50 text-white' : 'bg-white/5 border-white/10 text-white/40'}`}>
+                  <Repeat2 className="w-3.5 h-3.5" />Loop
                 </button>
                 {loopEnabled &&
-              <div className="space-y-1.5">
-                    <CompactSlider label="D" valueLabel={`${(loopDepth / 30).toFixed(1)}s`} value={loopDepth} min={5} max={Math.max(5, bufferFill - 1)} step={1} onChange={setLoopDepth} />
-                    <CompactSlider label="S" valueLabel={`${loopSpeed}x`} value={loopSpeed} min={0.25} max={4} step={0.25} onChange={setLoopSpeed} />
+              <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-mono uppercase tracking-widest text-white/40 w-8 shrink-0">D</span>
+                      <div className="flex-1">
+                        <ControlSlider value={loopDepth} min={5} max={Math.max(5, bufferFill - 1)} step={1} onChange={setLoopDepth} />
+                      </div>
+                      <span className="text-xs font-mono text-white/60 w-12 text-right shrink-0 tabular-nums">{(loopDepth / 30).toFixed(1)}s</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-mono uppercase tracking-widest text-white/40 w-8 shrink-0">S</span>
+                      <div className="flex-1">
+                        <ControlSlider value={loopSpeed} min={0.25} max={4} step={0.25} onChange={setLoopSpeed} />
+                      </div>
+                      <span className="text-xs font-mono text-white/60 w-12 text-right shrink-0 tabular-nums">{loopSpeed}x</span>
+                    </div>
                   </div>
               }
                 <button onClick={toggleGhost}
-              className={`w-full flex items-center gap-1.5 px-2 py-1 rounded-lg border text-[8px] font-mono transition-all pointer-events-auto ${ghostEnabled ? 'bg-primary/30 border-primary/50 text-white' : 'bg-white/5 border-white/10 text-white/40'}`}>
-                  <Layers className="w-2.5 h-2.5" />
+              className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg border text-xs font-mono transition-all pointer-events-auto ${ghostEnabled ? 'bg-primary/30 border-primary/50 text-white' : 'bg-white/5 border-white/10 text-white/40'}`}>
+                  <Layers className="w-3.5 h-3.5" />
                   {ghostCountdown !== null ? `Ghost ${ghostCountdown}s` : 'Ghost'}
                 </button>
                 {ghostEnabled &&
-              <div className="space-y-1.5">
-                    <CompactSlider label="I" valueLabel={`${ghostInterval}f`} value={ghostInterval} min={1} max={30} step={1} onChange={setGhostInterval} />
-                    <CompactSlider label="L" valueLabel={`${ghostCount}`} value={ghostCount} min={2} max={4} step={1} onChange={setGhostCount} />
-                    <CompactSlider label="O" valueLabel={`${Math.round(ghostOpacity * 100)}%`} value={ghostOpacity} min={0.05} max={1} step={0.05} onChange={setGhostOpacity} />
+              <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-mono uppercase tracking-widest text-white/40 w-8 shrink-0">I</span>
+                      <div className="flex-1">
+                        <ControlSlider value={ghostInterval} min={1} max={30} step={1} onChange={setGhostInterval} />
+                      </div>
+                      <span className="text-xs font-mono text-white/60 w-12 text-right shrink-0 tabular-nums">{ghostInterval}f</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-mono uppercase tracking-widest text-white/40 w-8 shrink-0">L</span>
+                      <div className="flex-1">
+                        <ControlSlider value={ghostCount} min={2} max={4} step={1} onChange={setGhostCount} />
+                      </div>
+                      <span className="text-xs font-mono text-white/60 w-12 text-right shrink-0 tabular-nums">{ghostCount}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-mono uppercase tracking-widest text-white/40 w-8 shrink-0">O</span>
+                      <div className="flex-1">
+                        <ControlSlider value={ghostOpacity} min={0.05} max={1} step={0.05} onChange={setGhostOpacity} />
+                      </div>
+                      <span className="text-xs font-mono text-white/60 w-12 text-right shrink-0 tabular-nums">{Math.round(ghostOpacity * 100)}%</span>
+                    </div>
                   </div>
               }
                 <button onClick={() => {if (isRecording) {alert('Stop recording before viewing gallery');return;}switchTab('/gallery');navigate('/gallery');}}
-              className="w-full flex items-center gap-1.5 px-2 py-1 rounded-lg border bg-white/5 border-white/10 text-white/40 text-[8px] font-mono pointer-events-auto">
-                  <Film className="w-2.5 h-2.5" />Gallery
+              className="w-full flex items-center gap-2 px-3 py-2 rounded-lg border bg-white/5 border-white/10 text-white/40 text-xs font-mono pointer-events-auto">
+                  <Film className="w-3.5 h-3.5" />Gallery
                 </button>
               </div>
             </div>
