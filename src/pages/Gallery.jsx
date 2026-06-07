@@ -244,11 +244,11 @@ export default function Gallery() {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={() => setFullscreenClip(null)}
-          className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center"
+          className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center pointer-events-none"
         >
           <button
             onClick={() => setFullscreenClip(null)}
-            className="absolute top-4 right-4 z-10 text-white/60 hover:text-white"
+            className="absolute top-4 right-4 z-10 text-white/60 hover:text-white pointer-events-auto"
           >
             <X className="w-6 h-6" />
           </button>
@@ -257,7 +257,8 @@ export default function Gallery() {
             controls
             autoPlay
             playsInline
-            className="w-full h-full max-w-4xl max-h-[90vh] object-contain"
+            className="w-full h-full max-w-4xl max-h-[90vh] object-contain pointer-events-auto"
+            onClick={(e) => e.stopPropagation()}
           />
         </motion.div>
         }
@@ -403,10 +404,16 @@ export default function Gallery() {
                         <Loader2 className="w-3 h-3 text-primary animate-spin" /> :
                         <Share2 className="w-3 h-3 text-muted-foreground" />}
                           </button>
-                          <a href={clip.file_url} download
+                          <button onClick={() => {
+                            const ext = clip.file_url.includes('mp4') ? 'mp4' : 'webm';
+                            const a = document.createElement('a');
+                            a.href = clip.file_url;
+                            a.download = `${clip.title || `vidloop-${clip.id}`}.${ext}`;
+                            a.click();
+                          }}
                         className="w-6 h-6 rounded bg-muted flex items-center justify-center hover:bg-primary/20 transition-colors">
                             <Download className="w-3 h-3 text-muted-foreground" />
-                          </a>
+                          </button>
                           <button onClick={() => deleteClip(clip.id)}
                         className="w-6 h-6 rounded bg-muted flex items-center justify-center hover:bg-destructive/20 transition-colors">
                             <Trash2 className="w-3 h-3 text-muted-foreground" />
