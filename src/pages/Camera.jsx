@@ -310,6 +310,7 @@ export default function Camera() {
     const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : {});
     recordingChunksRef.current = [];
     recorder.ondataavailable = (e) => {if (e.data.size > 0) recordingChunksRef.current.push(e.data);};
+    
     recorder.onstop = async () => {
       const actualMimeType = recorder.mimeType || mimeType || 'video/webm';
       console.log('[Record] actual recorder mimeType:', actualMimeType);
@@ -370,6 +371,7 @@ export default function Camera() {
       };
       reader.readAsDataURL(finalBlob);
     };
+    
     recorder.start();
     mediaRecorderRef.current = recorder;
     setIsRecording(true);
@@ -381,7 +383,7 @@ export default function Camera() {
         return t + 1;
       });
     }, 1000);
-  }, [isPro]);
+  }, [isPro, base44]);
 
   const stopRecording = useCallback(() => {
     mediaRecorderRef.current?.stop();
