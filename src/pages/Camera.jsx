@@ -429,7 +429,7 @@ export default function Camera() {
             <div className="flex flex-col items-center gap-6 px-8 py-10 w-full min-h-full justify-center">
               {/* Logo mark */}
               <div className="relative">
-                <img src="https://media.base44.com/images/public/6a2067de3230ec7bd237c422/26d8fea39_vid-loop-icon.png" alt="VidLoop" className="w-20 h-20 rounded-3xl" />
+                <img src="https://media.base44.com/images/public/6a2067de3230ec7bd237c422/80f561db9_vid-loop-icon.png" alt="VidLoop" className="w-20 h-20 rounded-3xl" />
               </div>
 
               <div className="text-center space-y-2">
