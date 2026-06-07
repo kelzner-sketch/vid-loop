@@ -332,34 +332,30 @@ export default function Camera() {
         URL.revokeObjectURL(localUrl);
       }, 5000);
 
-      // Upload to storage and save to gallery
+      // Upload to storage via backend function (File object triggers multipart automatically)
       try {
         setUploadStatus('uploading');
         const timestamp = Date.now();
         const fileName = `vid-loop-${timestamp}.${finalExt}`;
         const uploadFile = new File([finalBlob], fileName, { type: finalType });
-        console.log('Uploading:', { name: fileName, size: uploadFile.size, type: finalType });
-        const { file_url } = await base44.integrations.Core.UploadFile({ file: uploadFile });
-        console.log('Upload successful:', file_url);
-        const clip = await base44.entities.Clip.create({
-          file_url,
-          duration: recordingTimerRef._lastTime || null,
+        console.log('Uploading via backend:', { name: fileName, size: uploadFile.size, type: finalType });
+        const res = await base44.functions.invoke('uploadClip', {
+          file: uploadFile,
+          duration: String(recordingTimerRef._lastTime || 0),
           title: `Clip ${new Date().toLocaleTimeString()}`
         });
+        const { file_url, clip } = res.data;
+        console.log('Upload successful:', file_url);
         setUploadStatus(null);
         setSavedClip({ url: file_url });
-        // Notify gallery to prepend this clip immediately
         window.dispatchEvent(new CustomEvent('clip-saved', { detail: clip }));
         setTimeout(() => setSavedClip(null), 5000);
       } catch (e) {
         console.error('Gallery save failed:', e);
-        const statusCode = e?.response?.status;
-        const errorMsg = e?.response?.data?.message || e?.message || e?.toString();
-        const details = `Error: ${statusCode ? `HTTP ${statusCode}` : 'Network'} — ${errorMsg}`;
-        console.error('Upload error:', details);
+        const errorMsg = e?.response?.data?.error || e?.message || e?.toString();
         setUploadStatus('error');
-        setUploadError(details);
-        setTimeout(() => setUploadStatus(null), 5000);
+        setUploadError(errorMsg);
+        setTimeout(() => setUploadStatus(null), 8000);
       }
     };
     recorder.start();
