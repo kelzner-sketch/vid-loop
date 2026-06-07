@@ -281,7 +281,10 @@ export default function Camera() {
         setUploadStatus('uploading');
         const timestamp = Date.now();
         const file = new File([blob], `vid-loop-${timestamp}.${ext}`, { type: mimeType });
-        const { file_url } = await base44.integrations.Core.UploadFile({ file });
+        console.log('Uploading file:', { name: file.name, size: file.size, type: file.type });
+        const response = await base44.integrations.Core.UploadFile({ file });
+        const { file_url } = response;
+        console.log('Upload successful:', file_url);
         const clip = await base44.entities.Clip.create({
           file_url,
           duration: recordingTimerRef._lastTime || null,
@@ -295,9 +298,9 @@ export default function Camera() {
       } catch (e) {
         console.error('Gallery save failed:', e);
         const statusCode = e?.response?.status;
-        const errorMsg = e?.response?.data?.message || e?.message;
-        const details = `Error: ${statusCode ? `HTTP ${statusCode}` : 'Network'} — ${errorMsg || 'Check connection'}`;
-        console.error('Upload error details:', details);
+        const errorMsg = e?.response?.data?.message || e?.message || e?.toString();
+        const details = `Error: ${statusCode ? `HTTP ${statusCode}` : 'Network'} — ${errorMsg}`;
+        console.error('Upload error:', details);
         setUploadStatus('error');
         setUploadError(details);
         setTimeout(() => setUploadStatus(null), 5000);
@@ -529,7 +532,7 @@ export default function Camera() {
           {isLandscape ?
         <>
             {/* ── LANDSCAPE LEFT: Record + Camera + Stop ── */}
-            <div className="absolute left-0 top-0 bottom-0 z-30 flex flex-col items-center justify-center gap-4 px-2"
+            <div className="absolute left-0 top-0 bottom-0 z-30 flex flex-col items-center justify-center gap-4 px-2 pointer-events-auto"
           style={{ background: 'linear-gradient(to right, rgba(0,0,0,0.82) 0%, transparent 100%)', width: '70px' }}>
               <div className="flex flex-col items-center gap-0.5">
                 <div className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
@@ -539,7 +542,8 @@ export default function Camera() {
               </div>
               <button
               onClick={isRecording ? stopRecording : handleRecordPress}
-              className={`flex flex-col items-center justify-center w-12 h-12 rounded-full backdrop-blur-md border font-mono transition-all active:scale-95 ${
+              disabled={uploadStatus === 'uploading'}
+              className={`flex flex-col items-center justify-center w-12 h-12 rounded-full backdrop-blur-md border font-mono transition-all active:scale-95 disabled:opacity-50 pointer-events-auto ${
               isRecording ? 'bg-red-500/80 border-red-400/60 text-white' : 'bg-white/15 border-white/30 text-white/80'}`
               }>
               
@@ -556,14 +560,14 @@ export default function Camera() {
               </button>
               <button
               onClick={handleSwitchCamera}
-              className="flex flex-col items-center rounded-xl bg-white/10 backdrop-blur-md border border-white/20 text-[8px] font-mono overflow-hidden active:scale-95 transition-all">
+              className="flex flex-col items-center rounded-xl bg-white/10 backdrop-blur-md border border-white/20 text-[8px] font-mono overflow-hidden active:scale-95 transition-all pointer-events-auto">
               
                 <span className={`px-3 py-1 w-full text-center transition-colors ${facingMode === 'environment' ? 'bg-white text-black' : 'text-white/50'}`}>R</span>
                 <span className={`px-3 py-1 w-full text-center transition-colors ${facingMode === 'user' ? 'bg-white text-black' : 'text-white/50'}`}>F</span>
               </button>
               <button
               onClick={handleStop}
-              className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center active:scale-95 transition-transform">
+              className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center active:scale-95 transition-transform pointer-events-auto">
               
                 <CameraOff className="w-4 h-4 text-white/70" />
               </button>
