@@ -202,6 +202,13 @@ export default function Gallery() {
     <div className="fixed inset-0 bg-background flex flex-col overflow-hidden">
       <MobileHeader
         title="Saved Clips"
+        left={
+          <button onClick={() => { switchTab('/'); navigate('/'); }}
+            className="flex items-center gap-1 px-2 py-1 rounded-full bg-muted border border-border text-muted-foreground text-xs font-mono active:opacity-60">
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+            Camera
+          </button>
+        }
         right={
         selectMode ?
         <div className="flex items-center gap-1.5">
