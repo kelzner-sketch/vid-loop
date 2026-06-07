@@ -332,33 +332,32 @@ export default function Camera() {
         URL.revokeObjectURL(localUrl);
       }, 5000);
 
-      // Upload to storage: first upload file directly, then save entity via backend
+      // Upload: use UploadFile integration directly, then save entity
       try {
         setUploadStatus('uploading');
         const timestamp = Date.now();
         const fileName = `vid-loop-${timestamp}.${finalExt}`;
         const uploadFile = new File([finalBlob], fileName, { type: finalType });
-        console.log('Uploading file directly:', { name: fileName, size: uploadFile.size, type: finalType });
-        // Step 1: upload the file using the integration directly
+        console.log('Uploading file:', { name: fileName, size: uploadFile.size, type: finalType });
+
         const { file_url } = await base44.integrations.Core.UploadFile({ file: uploadFile });
         console.log('File uploaded:', file_url);
-        // Step 2: save the Clip entity record
-        const res = await base44.functions.invoke('uploadClip', {
+
+        const clip = await base44.entities.Clip.create({
           file_url,
-          duration: String(recordingTimerRef._lastTime || 0),
-          title: `Clip ${new Date().toLocaleTimeString()}`
+          duration: recordingTimerRef._lastTime || 0,
+          title: `Clip ${new Date().toLocaleTimeString()}`,
         });
-        const { clip } = res.data;
-        console.log('Upload successful:', file_url);
+
+        console.log('Clip saved:', clip.id);
         setUploadStatus(null);
         setSavedClip({ url: file_url });
         window.dispatchEvent(new CustomEvent('clip-saved', { detail: clip }));
         setTimeout(() => setSavedClip(null), 5000);
       } catch (e) {
         console.error('Gallery save failed:', e);
-        const errorMsg = e?.response?.data?.error || e?.message || e?.toString();
         setUploadStatus('error');
-        setUploadError(errorMsg);
+        setUploadError(e?.message || e?.toString());
         setTimeout(() => setUploadStatus(null), 8000);
       }
     };

@@ -10,9 +10,14 @@ export function ProProvider({ children }) {
   const refresh = async () => {
     try {
       const res = await base44.functions.invoke('getProStatus', {});
-      setIsPro(!!res.data?.is_pro);
+      const proResult = !!res.data?.is_pro;
+      setIsPro(prev => {
+        // Never downgrade pro status due to a transient result — only upgrade
+        if (prev === true && !proResult) return true;
+        return proResult;
+      });
     } catch {
-      setIsPro(false);
+      // Network error — don't change existing pro state
     } finally {
       setLoading(false);
     }
