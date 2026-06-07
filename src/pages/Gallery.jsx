@@ -71,37 +71,14 @@ export default function Gallery() {
     setExporting(true);
     const selectedClips = clips.filter((c) => selected.has(c.id));
     
-    // Try native share first if available (works on mobile for camera roll, messaging apps, etc.)
-    if (navigator.share && selectedClips.length === 1) {
-      try {
-        const clip = selectedClips[0];
-        const res = await fetch(clip.file_url);
-        const blob = await res.blob();
-        const ext = blob.type.includes('mp4') ? 'mp4' : 'webm';
-        const file = new File([blob], `${clip.title || 'vidloop'}.${ext}`, { type: blob.type });
-        if (navigator.canShare && navigator.canShare({ files: [file] })) {
-          await navigator.share({ files: [file], title: clip.title });
-          setExporting(false);
-          exitSelectMode();
-          return;
-        }
-      } catch (e) {
-        if (e.name !== 'AbortError') console.error(e);
-      }
-    }
-    
-    // Fall back to downloading all selected files
+    // Download directly without fetching (avoids CORS issues)
     for (const clip of selectedClips) {
       const title = clip.title || `vidloop-${clip.id}`;
-      const res = await fetch(clip.file_url);
-      const blob = await res.blob();
-      const ext = blob.type.includes('mp4') ? 'mp4' : 'webm';
-      const url = URL.createObjectURL(blob);
+      const ext = clip.file_url.includes('mp4') ? 'mp4' : 'webm';
       const a = document.createElement('a');
-      a.href = url;
+      a.href = clip.file_url;
       a.download = `${title}.${ext}`;
       a.click();
-      URL.revokeObjectURL(url);
       // Small delay between downloads so browser doesn't block them
       await new Promise((r) => setTimeout(r, 400));
     }
@@ -174,18 +151,9 @@ export default function Gallery() {
   const shareClip = async (clip) => {
     setSharingId(clip.id);
     const title = clip.title || 'VidLoop clip';
-    // Try native share with file (works on iOS/Android)
     try {
       if (navigator.share) {
-        const res = await fetch(clip.file_url);
-        const blob = await res.blob();
-        const ext = blob.type.includes('mp4') ? 'mp4' : 'webm';
-        const file = new File([blob], `${title}.${ext}`, { type: blob.type });
-        if (navigator.canShare && navigator.canShare({ files: [file] })) {
-          await navigator.share({ files: [file], title });
-        } else {
-          await navigator.share({ title, url: clip.file_url });
-        }
+        await navigator.share({ title, url: clip.file_url });
       } else {
         await navigator.clipboard.writeText(clip.file_url);
         alert('Link copied to clipboard!');

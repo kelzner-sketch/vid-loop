@@ -667,7 +667,7 @@ export default function Camera() {
 
             {/* ── LANDSCAPE RIGHT: Sliders ── */}
             <div className="absolute right-0 top-0 bottom-0 z-30"
-          style={{ background: 'linear-gradient(to left, rgba(0,0,0,0.82) 0%, transparent 100%)', width: '220px' }}>
+          style={{ background: 'linear-gradient(to left, rgba(0,0,0,0.82) 0%, transparent 100%)', width: '280px' }}>
               <div className="h-full px-4 space-y-3 overflow-y-auto overscroll-contain"
             style={{ paddingTop: '1rem', paddingBottom: '1rem' }}>
                 <div className="space-y-2 pointer-events-auto">
