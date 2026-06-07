@@ -22,7 +22,7 @@ export default function Camera() {
   const { pushFrame, getFrame, getBufferLength, clearBuffer, maxBufferSize } = useFrameBuffer();
 
   const { user } = useAuth();
-  
+
   // Load persisted prefs from localStorage or database
   const loadPrefs = () => {
     try {return JSON.parse(localStorage.getItem('vidloop_prefs') || '{}');} catch {return {};}
@@ -233,11 +233,11 @@ export default function Camera() {
     if (!canvas) return;
     const stream = canvas.captureStream(30);
     const mimeType =
-      MediaRecorder.isTypeSupported('video/webm;codecs=vp9') ? 'video/webm;codecs=vp9' :
-      MediaRecorder.isTypeSupported('video/webm;codecs=vp8') ? 'video/webm;codecs=vp8' :
-      MediaRecorder.isTypeSupported('video/webm') ? 'video/webm' :
-      MediaRecorder.isTypeSupported('video/mp4') ? 'video/mp4' :
-      'video/webm';
+    MediaRecorder.isTypeSupported('video/webm;codecs=vp9') ? 'video/webm;codecs=vp9' :
+    MediaRecorder.isTypeSupported('video/webm;codecs=vp8') ? 'video/webm;codecs=vp8' :
+    MediaRecorder.isTypeSupported('video/webm') ? 'video/webm' :
+    MediaRecorder.isTypeSupported('video/mp4') ? 'video/mp4' :
+    'video/webm';
     const recorder = new MediaRecorder(stream, { mimeType });
     recordingChunksRef.current = [];
     recorder.ondataavailable = (e) => {if (e.data.size > 0) recordingChunksRef.current.push(e.data);};
@@ -318,7 +318,7 @@ export default function Camera() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-8 px-8 bg-background">
+          className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-8 px-8 bg-[hsl(var(--chart-5))]">
           
             {/* Logo mark */}
             <div className="relative">
@@ -377,39 +377,39 @@ export default function Camera() {
 
           {/* ── TOASTS ── */}
           <AnimatePresence>
-            {savedClip && (
-              <motion.div
-                key="saved-toast"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 20 }}
-                className="absolute bottom-32 left-1/2 -translate-x-1/2 z-30 flex items-center gap-3 px-4 py-3 rounded-2xl bg-black/80 backdrop-blur-md border border-white/20 text-white text-sm font-mono whitespace-nowrap">
+            {savedClip &&
+          <motion.div
+            key="saved-toast"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            className="absolute bottom-32 left-1/2 -translate-x-1/2 z-30 flex items-center gap-3 px-4 py-3 rounded-2xl bg-black/80 backdrop-blur-md border border-white/20 text-white text-sm font-mono whitespace-nowrap">
                 <Film className="w-4 h-4 text-primary" />
                 Clip saved!
-                <button onClick={() => { switchTab('/gallery'); navigate('/gallery'); }} className="text-primary underline text-xs">View Gallery</button>
+                <button onClick={() => {switchTab('/gallery');navigate('/gallery');}} className="text-primary underline text-xs">View Gallery</button>
               </motion.div>
-            )}
-            {uploadStatus === 'uploading' && (
-              <motion.div
-                key="upload-toast"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 20 }}
-                className="absolute bottom-32 left-1/2 -translate-x-1/2 z-30 flex items-center gap-3 px-4 py-3 rounded-2xl bg-black/80 backdrop-blur-md border border-white/20 text-white text-sm font-mono whitespace-nowrap">
+          }
+            {uploadStatus === 'uploading' &&
+          <motion.div
+            key="upload-toast"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            className="absolute bottom-32 left-1/2 -translate-x-1/2 z-30 flex items-center gap-3 px-4 py-3 rounded-2xl bg-black/80 backdrop-blur-md border border-white/20 text-white text-sm font-mono whitespace-nowrap">
                 <div className="w-3 h-3 border-2 border-white/40 border-t-white rounded-full animate-spin" />
                 Saving to gallery…
               </motion.div>
-            )}
-            {uploadStatus === 'error' && (
-              <motion.div
-                key="error-toast"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 20 }}
-                className="absolute bottom-32 left-1/2 -translate-x-1/2 z-30 flex items-center gap-3 px-4 py-3 rounded-2xl bg-red-900/80 backdrop-blur-md border border-red-500/40 text-white text-sm font-mono">
+          }
+            {uploadStatus === 'error' &&
+          <motion.div
+            key="error-toast"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            className="absolute bottom-32 left-1/2 -translate-x-1/2 z-30 flex items-center gap-3 px-4 py-3 rounded-2xl bg-red-900/80 backdrop-blur-md border border-red-500/40 text-white text-sm font-mono">
                 ⚠ Gallery save failed: {uploadError || 'check you are signed in'}
               </motion.div>
-            )}
+          }
           </AnimatePresence>
 
           {/* ── TOP HUD — portrait only ── */}
@@ -423,7 +423,7 @@ export default function Camera() {
                 <span className="text-xs font-mono text-white/80 uppercase tracking-widest">
                   {loopEnabled ? 'LOOP' : isDelayed ? 'DELAYED' : 'LIVE'}
                 </span>
-                <button onClick={() => { switchTab('/gallery'); navigate('/gallery'); }}
+                <button onClick={() => {switchTab('/gallery');navigate('/gallery');}}
               className="ml-1 flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/10 border border-white/20 text-white/70 text-[10px] font-mono hover:bg-white/20 transition-colors">
                   <Film className="w-2.5 h-2.5" />GALLERY
                 </button>
@@ -504,11 +504,11 @@ export default function Camera() {
           </div>
 
           {/* ── CONTROLS PANEL — adapts portrait/landscape ── */}
-          {isLandscape ? (
-          <>
+          {isLandscape ?
+        <>
             {/* ── LANDSCAPE LEFT: Record + Camera + Stop ── */}
             <div className="absolute left-0 top-0 bottom-0 z-30 flex flex-col items-center justify-center gap-4 px-2"
-              style={{ background: 'linear-gradient(to right, rgba(0,0,0,0.82) 0%, transparent 100%)', width: '70px' }}>
+          style={{ background: 'linear-gradient(to right, rgba(0,0,0,0.82) 0%, transparent 100%)', width: '70px' }}>
               <div className="flex flex-col items-center gap-0.5">
                 <div className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
                 <span className="text-[6px] font-mono text-white/50 uppercase tracking-widest text-center leading-tight">
@@ -516,86 +516,86 @@ export default function Camera() {
                 </span>
               </div>
               <button
-                onClick={isRecording ? stopRecording : startRecording}
-                className={`flex flex-col items-center justify-center w-12 h-12 rounded-full backdrop-blur-md border font-mono transition-all active:scale-95 ${
-                  isRecording ? 'bg-red-500/80 border-red-400/60 text-white' : 'bg-white/15 border-white/30 text-white/80'
-                }`}
-              >
-                {isRecording ? (
-                  <>
+              onClick={isRecording ? stopRecording : startRecording}
+              className={`flex flex-col items-center justify-center w-12 h-12 rounded-full backdrop-blur-md border font-mono transition-all active:scale-95 ${
+              isRecording ? 'bg-red-500/80 border-red-400/60 text-white' : 'bg-white/15 border-white/30 text-white/80'}`
+              }>
+              
+                {isRecording ?
+              <>
                     <Square className="w-3.5 h-3.5 fill-white mb-0.5" />
                     <span className="tabular-nums text-[7px]">
                       {String(Math.floor(recordingTime / 60)).padStart(2, '0')}:{String(recordingTime % 60).padStart(2, '0')}
                     </span>
-                  </>
-                ) : (
-                  <Circle className="w-5 h-5 fill-red-400 text-red-400" />
-                )}
+                  </> :
+
+              <Circle className="w-5 h-5 fill-red-400 text-red-400" />
+              }
               </button>
               <button
-                onClick={handleSwitchCamera}
-                className="flex flex-col items-center rounded-xl bg-white/10 backdrop-blur-md border border-white/20 text-[8px] font-mono overflow-hidden active:scale-95 transition-all"
-              >
+              onClick={handleSwitchCamera}
+              className="flex flex-col items-center rounded-xl bg-white/10 backdrop-blur-md border border-white/20 text-[8px] font-mono overflow-hidden active:scale-95 transition-all">
+              
                 <span className={`px-3 py-1 w-full text-center transition-colors ${facingMode === 'environment' ? 'bg-white text-black' : 'text-white/50'}`}>R</span>
                 <span className={`px-3 py-1 w-full text-center transition-colors ${facingMode === 'user' ? 'bg-white text-black' : 'text-white/50'}`}>F</span>
               </button>
               <button
-                onClick={handleStop}
-                className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center active:scale-95 transition-transform"
-              >
+              onClick={handleStop}
+              className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center active:scale-95 transition-transform">
+              
                 <CameraOff className="w-4 h-4 text-white/70" />
               </button>
             </div>
 
             {/* ── LANDSCAPE RIGHT: Sliders ── */}
             <div className="absolute right-0 top-0 bottom-0 z-30"
-              style={{ background: 'linear-gradient(to left, rgba(0,0,0,0.82) 0%, transparent 100%)', width: '158px' }}>
+          style={{ background: 'linear-gradient(to left, rgba(0,0,0,0.82) 0%, transparent 100%)', width: '158px' }}>
               <div className="h-full px-3 space-y-2 overflow-y-auto overscroll-contain"
-                style={{ paddingTop: 'calc(0.75rem + env(safe-area-inset-top))', paddingBottom: '0.75rem' }}>
+            style={{ paddingTop: 'calc(0.75rem + env(safe-area-inset-top))', paddingBottom: '0.75rem' }}>
                 <div className="space-y-1">
                   <div className="flex items-center justify-between">
                     <span className="text-[7px] font-mono uppercase tracking-widest text-white/40">Scrub</span>
                     <div className="flex items-center gap-1">
-                      {isDelayed && (
-                        <button onClick={() => setDelayOffset(0)}
-                          className="flex items-center gap-0.5 px-1 py-0.5 rounded bg-accent/20 border border-accent/30 text-accent text-[7px] font-mono">
+                      {isDelayed &&
+                    <button onClick={() => setDelayOffset(0)}
+                    className="flex items-center gap-0.5 px-1 py-0.5 rounded bg-accent/20 border border-accent/30 text-accent text-[7px] font-mono">
                           <Play className="w-1.5 h-1.5" />L
                         </button>
-                      )}
+                    }
                       <span className="text-[7px] font-mono text-white tabular-nums">{isDelayed ? `−${delaySeconds}s` : 'live'}</span>
                     </div>
                   </div>
                   <ScrubBar value={delayOffset} max={Math.max(1, bufferFill - 1)} onChange={setDelayOffset} bufferFill={bufferFill} maxBufferSize={maxBufferSize} />
                 </div>
                 <button onClick={toggleLoop}
-                  className={`w-full flex items-center gap-1.5 px-2 py-1 rounded-lg border text-[8px] font-mono transition-all ${loopEnabled ? 'bg-accent/30 border-accent/50 text-white' : 'bg-white/5 border-white/10 text-white/40'}`}>
+              className={`w-full flex items-center gap-1.5 px-2 py-1 rounded-lg border text-[8px] font-mono transition-all ${loopEnabled ? 'bg-accent/30 border-accent/50 text-white' : 'bg-white/5 border-white/10 text-white/40'}`}>
                   <Repeat2 className="w-2.5 h-2.5" />Loop
                 </button>
-                {loopEnabled && (
-                  <div className="space-y-1.5">
+                {loopEnabled &&
+              <div className="space-y-1.5">
                     <CompactSlider label="D" valueLabel={`${(loopDepth / 30).toFixed(1)}s`} value={loopDepth} min={5} max={Math.max(5, bufferFill - 1)} step={1} onChange={setLoopDepth} />
                     <CompactSlider label="S" valueLabel={`${loopSpeed}x`} value={loopSpeed} min={0.25} max={4} step={0.25} onChange={setLoopSpeed} />
                   </div>
-                )}
+              }
                 <button onClick={toggleGhost}
-                  className={`w-full flex items-center gap-1.5 px-2 py-1 rounded-lg border text-[8px] font-mono transition-all ${ghostEnabled ? 'bg-primary/30 border-primary/50 text-white' : 'bg-white/5 border-white/10 text-white/40'}`}>
+              className={`w-full flex items-center gap-1.5 px-2 py-1 rounded-lg border text-[8px] font-mono transition-all ${ghostEnabled ? 'bg-primary/30 border-primary/50 text-white' : 'bg-white/5 border-white/10 text-white/40'}`}>
                   <Layers className="w-2.5 h-2.5" />
                   {ghostCountdown !== null ? `Ghost ${ghostCountdown}s` : 'Ghost'}
                 </button>
-                {ghostEnabled && (
-                  <div className="space-y-1.5">
+                {ghostEnabled &&
+              <div className="space-y-1.5">
                     <CompactSlider label="I" valueLabel={`${ghostInterval}f`} value={ghostInterval} min={1} max={30} step={1} onChange={setGhostInterval} />
                     <CompactSlider label="L" valueLabel={`${ghostCount}`} value={ghostCount} min={2} max={4} step={1} onChange={setGhostCount} />
                     <CompactSlider label="O" valueLabel={`${Math.round(ghostOpacity * 100)}%`} value={ghostOpacity} min={0.05} max={1} step={0.05} onChange={setGhostOpacity} />
                   </div>
-                )}
-                <button onClick={() => { switchTab('/gallery'); navigate('/gallery'); }}
-                  className="w-full flex items-center gap-1.5 px-2 py-1 rounded-lg border bg-white/5 border-white/10 text-white/40 text-[8px] font-mono">
+              }
+                <button onClick={() => {switchTab('/gallery');navigate('/gallery');}}
+              className="w-full flex items-center gap-1.5 px-2 py-1 rounded-lg border bg-white/5 border-white/10 text-white/40 text-[8px] font-mono">
                   <Film className="w-2.5 h-2.5" />Gallery
                 </button>
               </div>
             </div>
-          </>) : (
+          </> : (
 
         /* ── PORTRAIT: bottom panel ── */
         <div className="absolute bottom-0 left-0 right-0 z-10" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 70%, transparent 100%)', maxHeight: '65vh', display: 'flex', flexDirection: 'column' }}>
@@ -700,6 +700,6 @@ function CompactSlider({ label, valueLabel, value, min, max, step, onChange }) {
         <ControlSlider value={value} min={min} max={max} step={step} onChange={onChange} />
       </div>
       <span className="text-[8px] font-mono text-white/60 w-8 text-right shrink-0 tabular-nums">{valueLabel}</span>
-    </div>
-  );
+    </div>);
+
 }
