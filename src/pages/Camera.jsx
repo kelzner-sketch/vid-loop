@@ -149,12 +149,20 @@ export default function Camera() {
     });
   };
 
-  // Track orientation changes without restarting camera (debounced)
+  // Track orientation changes — restart camera if active (iOS kills stream on rotation)
   useEffect(() => {
     let timer;
     const update = () => {
       clearTimeout(timer);
-      timer = setTimeout(() => setIsLandscape(window.innerWidth > window.innerHeight), 150);
+      timer = setTimeout(async () => {
+        const landscape = window.innerWidth > window.innerHeight;
+        setIsLandscape(landscape);
+        if (isActive) {
+          clearBuffer();
+          setBufferFill(0);
+          await start(facingMode);
+        }
+      }, 300);
     };
     window.addEventListener('resize', update);
     window.addEventListener('orientationchange', update);
@@ -163,7 +171,7 @@ export default function Camera() {
       window.removeEventListener('orientationchange', update);
       clearTimeout(timer);
     };
-  }, []);
+  }, [isActive, facingMode, start, clearBuffer]);
 
   // Capture frames into the ring buffer at ~30fps
   const captureLoop = useCallback(() => {
