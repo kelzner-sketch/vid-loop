@@ -389,7 +389,6 @@ export default function Camera() {
             {/* Logo mark */}
             <div className="relative">
               <img src="https://media.base44.com/images/public/6a2067de3230ec7bd237c422/26d8fea39_vid-loop-icon.png" alt="VidLoop" className="w-24 h-24 rounded-3xl" />
-              <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full animate-pulse bg-[#ff0000]" />
             </div>
 
             <div className="text-center space-y-2">
