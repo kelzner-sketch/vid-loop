@@ -386,6 +386,7 @@ export default function Camera() {
             ghostCount={ghostCount}
             ghostOpacity={ghostOpacity}
             isActive={isActive}
+            isPro={isPro}
             canvasRefOut={canvasRef} />
           
           </div>

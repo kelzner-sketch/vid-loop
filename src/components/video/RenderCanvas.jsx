@@ -1,6 +1,9 @@
 import React, { useRef, useEffect, useCallback } from 'react';
 
-export default function RenderCanvas({ videoRef, getFrame, delayOffset, ghostEnabled, ghostInterval, ghostCount, ghostOpacity, isActive, canvasRefOut }) {
+const FREE_MAX_W = 360;
+const FREE_MAX_H = 640;
+
+export default function RenderCanvas({ videoRef, getFrame, delayOffset, ghostEnabled, ghostInterval, ghostCount, ghostOpacity, isActive, canvasRefOut, isPro }) {
   const canvasRef = useRef(null);
   const rafRef = useRef(null);
   const containerRef = useRef(null);
@@ -9,13 +12,13 @@ export default function RenderCanvas({ videoRef, getFrame, delayOffset, ghostEna
   // to be torn down and restarted when they change — avoids any gap in the
   // canvas stream that would break an in-progress recording.
   const propsRef = useRef({});
-  propsRef.current = { videoRef, getFrame, delayOffset, ghostEnabled, ghostInterval, ghostCount, ghostOpacity, isActive };
+  propsRef.current = { videoRef, getFrame, delayOffset, ghostEnabled, ghostInterval, ghostCount, ghostOpacity, isActive, isPro };
 
   // Stable render loop — reads latest props from propsRef each frame.
   // Never recreated, so canvas.captureStream() is never broken by prop changes
   // or orientation-triggered re-renders.
   const render = useCallback(() => {
-    const { videoRef: vRef, getFrame, delayOffset, ghostEnabled, ghostInterval, ghostCount, ghostOpacity, isActive } = propsRef.current;
+    const { videoRef: vRef, getFrame, delayOffset, ghostEnabled, ghostInterval, ghostCount, ghostOpacity, isActive, isPro } = propsRef.current;
     const canvas = canvasRef.current;
     const video = vRef?.current;
 
@@ -27,15 +30,22 @@ export default function RenderCanvas({ videoRef, getFrame, delayOffset, ghostEna
     const ctx = canvas.getContext('2d');
 
     // Resize canvas to match its CSS container — survives orientation changes
+    // Free tier: cap at 360×640 pixels for the recording output
     const container = containerRef.current;
     if (container) {
       const dpr = window.devicePixelRatio || 1;
-      const targetW = Math.round(container.clientWidth * dpr);
-      const targetH = Math.round(container.clientHeight * dpr);
+      let targetW = Math.round(container.clientWidth * dpr);
+      let targetH = Math.round(container.clientHeight * dpr);
+      if (!isPro) {
+        const scale = Math.min(1, FREE_MAX_W / targetW, FREE_MAX_H / targetH);
+        targetW = Math.round(targetW * scale);
+        targetH = Math.round(targetH * scale);
+      }
       if (canvas.width !== targetW || canvas.height !== targetH) {
         canvas.width = targetW;
         canvas.height = targetH;
-        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        const cssScale = isPro ? dpr : dpr * Math.min(1, FREE_MAX_W / Math.round(container.clientWidth * dpr), FREE_MAX_H / Math.round(container.clientHeight * dpr));
+        ctx.setTransform(cssScale, 0, 0, cssScale, 0, 0);
       }
     }
 
