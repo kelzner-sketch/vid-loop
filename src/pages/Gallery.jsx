@@ -409,12 +409,16 @@ export default function Gallery() {
                             e.stopPropagation();
                             try {
                               const ext = clip.file_url.includes('mp4') ? 'mp4' : 'webm';
-                              const res = await fetch(clip.file_url);
-                              const blob = await res.blob();
+                              const filename = `${clip.title || `vidloop-${clip.id}`}.${ext}`;
+                              const res = await base44.functions.invoke('downloadClip', {
+                                file_url: clip.file_url,
+                                filename
+                              });
+                              const blob = res.data;
                               const blobUrl = URL.createObjectURL(blob);
                               const a = document.createElement('a');
                               a.href = blobUrl;
-                              a.download = `${clip.title || `vidloop-${clip.id}`}.${ext}`;
+                              a.download = filename;
                               a.click();
                               setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
                             } catch (err) {
