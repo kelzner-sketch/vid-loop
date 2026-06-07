@@ -234,17 +234,6 @@ export default function Camera() {
     setDelayOffset(0);
   };
 
-  const handleRecordPress = useCallback(() => {
-    if (!isPro) { setShowProModal(true); return; }
-    startRecording();
-  }, [isPro, startRecording]);
-
-  // When free user dismisses the Pro modal, start recording at capped resolution
-  const handleProModalClose = useCallback(() => {
-    setShowProModal(false);
-    startRecording();
-  }, [startRecording]);
-
   const startRecording = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -330,6 +319,17 @@ export default function Camera() {
       });
     }, 1000);
   }, []);
+
+  const handleRecordPress = useCallback(() => {
+    if (!isPro) { setShowProModal(true); return; }
+    startRecording();
+  }, [isPro, startRecording]);
+
+  // When free user dismisses the Pro modal, start recording at capped resolution
+  const handleProModalClose = useCallback(() => {
+    setShowProModal(false);
+    startRecording();
+  }, [startRecording]);
 
   const stopRecording = useCallback(() => {
     mediaRecorderRef.current?.stop();
