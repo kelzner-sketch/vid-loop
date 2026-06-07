@@ -52,6 +52,7 @@ export default function Camera() {
   const [isLandscape, setIsLandscape] = useState(() => window.innerWidth > window.innerHeight);
   const [recordingTime, setRecordingTime] = useState(0);
   const [savedClip, setSavedClip] = useState(null); // {url, duration} shown after save
+  const [uploadStatus, setUploadStatus] = useState(null); // 'uploading' | 'error'
   const captureRef = useRef(null);
   const mediaRecorderRef = useRef(null);
   const recordingChunksRef = useRef([]);
@@ -252,17 +253,23 @@ export default function Camera() {
 
       // Upload to storage and save to gallery
       try {
-        const file = new File([blob], `vid-loop-${Date.now()}.${isMP4 ? 'mp4' : 'webm'}`, { type: mimeType });
+        setUploadStatus('uploading');
+        const timestamp = Date.now();
+        const ext = isMP4 ? 'mp4' : 'webm';
+        const file = new File([blob], `vid-loop-${timestamp}.${ext}`, { type: mimeType });
         const { file_url } = await base44.integrations.Core.UploadFile({ file });
         await base44.entities.Clip.create({
           file_url,
           duration: recordingTimerRef._lastTime || null,
           title: `Clip ${new Date().toLocaleTimeString()}`
         });
+        setUploadStatus(null);
         setSavedClip({ url: file_url });
         setTimeout(() => setSavedClip(null), 5000);
       } catch (e) {
-        // upload failed silently — local download already triggered
+        console.error('Upload failed:', e);
+        setUploadStatus('error');
+        setTimeout(() => setUploadStatus(null), 4000);
       }
       URL.revokeObjectURL(localUrl);
     };
@@ -358,21 +365,41 @@ export default function Camera() {
           
           </div>
 
-          {/* ── SAVED CLIP TOAST ── */}
+          {/* ── TOASTS ── */}
           <AnimatePresence>
-            {savedClip &&
-          <motion.div
-            key="saved-toast"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-            className="absolute bottom-32 left-1/2 -translate-x-1/2 z-30 flex items-center gap-3 px-4 py-3 rounded-2xl bg-black/80 backdrop-blur-md border border-white/20 text-white text-sm font-mono whitespace-nowrap">
-            
+            {savedClip && (
+              <motion.div
+                key="saved-toast"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 20 }}
+                className="absolute bottom-32 left-1/2 -translate-x-1/2 z-30 flex items-center gap-3 px-4 py-3 rounded-2xl bg-black/80 backdrop-blur-md border border-white/20 text-white text-sm font-mono whitespace-nowrap">
                 <Film className="w-4 h-4 text-primary" />
                 Clip saved!
                 <button onClick={() => { switchTab('/gallery'); navigate('/gallery'); }} className="text-primary underline text-xs">View Gallery</button>
               </motion.div>
-          }
+            )}
+            {uploadStatus === 'uploading' && (
+              <motion.div
+                key="upload-toast"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 20 }}
+                className="absolute bottom-32 left-1/2 -translate-x-1/2 z-30 flex items-center gap-3 px-4 py-3 rounded-2xl bg-black/80 backdrop-blur-md border border-white/20 text-white text-sm font-mono whitespace-nowrap">
+                <div className="w-3 h-3 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                Saving to gallery…
+              </motion.div>
+            )}
+            {uploadStatus === 'error' && (
+              <motion.div
+                key="error-toast"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 20 }}
+                className="absolute bottom-32 left-1/2 -translate-x-1/2 z-30 flex items-center gap-3 px-4 py-3 rounded-2xl bg-red-900/80 backdrop-blur-md border border-red-500/40 text-white text-sm font-mono whitespace-nowrap">
+                ⚠ Gallery save failed — check you're signed in
+              </motion.div>
+            )}
           </AnimatePresence>
 
           {/* ── TOP HUD — portrait only ── */}
