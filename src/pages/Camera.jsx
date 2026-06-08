@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
-import { Camera as CameraIcon, CameraOff, Layers, Clock, Eye, Play, Circle, Square, Download, SwitchCamera, Repeat2, Film } from 'lucide-react';
+import { Camera as CameraIcon, CameraOff, Layers, Clock, Eye, Play, Circle, Square, Download, SwitchCamera, Repeat2, Film, Shuffle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useTabNav } from '@/components/TabNavigator';
@@ -56,6 +56,13 @@ export default function Camera() {
   const loopRafRef = useRef(null);
   const loopEnabledRef = useRef(false);
 
+  // Chaos mode
+  const [chaosEnabled, setChaosEnabled] = useState(false);
+  const [chaosIntensity, setChaosIntensity] = useState(0.5); // 0–1
+  const chaosEnabledRef = useRef(false);
+  const chaosIntensityRef = useRef(0.5);
+  const chaosTimerRef = useRef(null);
+
   const [bufferFill, setBufferFill] = useState(0);
   const [isLandscape, setIsLandscape] = useState(() => window.innerWidth > window.innerHeight);
   const [recordingTime, setRecordingTime] = useState(0);
@@ -103,6 +110,54 @@ export default function Camera() {
 
   // Keep refs in sync so the RAF loop always reads latest values
   loopEnabledRef.current = loopEnabled;
+  chaosEnabledRef.current = chaosEnabled;
+  chaosIntensityRef.current = chaosIntensity;
+
+  // Chaos loop — randomly mutates speed, depth, and position at random intervals
+  useEffect(() => {
+    if (!chaosEnabled) {
+      clearTimeout(chaosTimerRef.current);
+      return;
+    }
+    const scheduleChaos = () => {
+      const intensity = chaosIntensityRef.current;
+      // Interval between mutations: high intensity = more frequent (100ms–1s range)
+      const minMs = 80;
+      const maxMs = 1200 - intensity * 1000;
+      const delay = minMs + Math.random() * (maxMs - minMs);
+
+      chaosTimerRef.current = setTimeout(() => {
+        if (!chaosEnabledRef.current) return;
+        const roll = Math.random();
+        if (roll < 0.4) {
+          // Mutate loop speed
+          const newSpeed = 0.25 + Math.random() * intensity * 6;
+          setLoopSpeed(parseFloat(newSpeed.toFixed(2)));
+        } else if (roll < 0.7) {
+          // Mutate loop depth
+          const buf = getBufferLength();
+          if (buf > 5) {
+            const newDepth = Math.floor(5 + Math.random() * (buf - 5));
+            setLoopDepth(newDepth);
+            loopStateRef.current.pos = Math.min(loopStateRef.current.pos, newDepth);
+          }
+        } else {
+          // Jump position
+          const buf = getBufferLength();
+          if (buf > 1) {
+            const jump = Math.floor(Math.random() * buf);
+            delayOffsetRef.current = jump;
+            setDelayOffset(jump);
+            loopStateRef.current.pos = jump;
+            loopStateRef.current.dir = Math.random() > 0.5 ? 1 : -1;
+          }
+        }
+        scheduleChaos();
+      }, delay);
+    };
+    scheduleChaos();
+    return () => clearTimeout(chaosTimerRef.current);
+  }, [chaosEnabled, getBufferLength]);
 
   // Ping-pong loop — drives delayOffset automatically
   useEffect(() => {
@@ -142,11 +197,16 @@ export default function Camera() {
   const toggleLoop = () => {
     setLoopEnabled((prev) => {
       if (prev) {
-        // turning off — snap back to live
+        // turning off — snap back to live and stop chaos
         setDelay(0);
+        setChaosEnabled(false);
       }
       return !prev;
     });
+  };
+
+  const toggleChaos = () => {
+    setChaosEnabled((prev) => !prev);
   };
 
   // Track orientation changes — just update layout flag
@@ -249,6 +309,7 @@ export default function Camera() {
     setDelay(0);
     // Reset loop to on so it's ready next time camera starts
     setLoopEnabled(true);
+    setChaosEnabled(false);
   };
 
   const startRecording = useCallback(() => {
@@ -677,6 +738,19 @@ export default function Camera() {
                       </div>
                       <span className="text-xs font-mono text-white/60 w-12 text-right shrink-0 tabular-nums">{loopSpeed}x</span>
                     </div>
+                    <button onClick={toggleChaos}
+                      className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg border text-xs font-mono transition-all pointer-events-auto ${chaosEnabled ? 'bg-destructive/40 border-destructive/60 text-white animate-pulse' : 'bg-white/5 border-white/10 text-white/40'}`}>
+                      <Shuffle className="w-3.5 h-3.5" />Chaos
+                    </button>
+                    {chaosEnabled && (
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-mono uppercase tracking-widest text-white/40 w-8 shrink-0">~</span>
+                        <div className="flex-1">
+                          <ControlSlider value={chaosIntensity} min={0.1} max={1} step={0.1} onChange={setChaosIntensity} />
+                        </div>
+                        <span className="text-xs font-mono text-white/60 w-12 text-right shrink-0 tabular-nums">{Math.round(chaosIntensity * 100)}%</span>
+                      </div>
+                    )}
                   </div>
               }
                 <button onClick={toggleGhost}
@@ -755,6 +829,17 @@ export default function Camera() {
                          <div className="space-y-3 pt-1">
                            <GhostSliderRow label="Depth" valueLabel={`${(loopDepth / 30).toFixed(1)}s`} value={loopDepth} min={5} max={Math.max(5, bufferFill - 1)} step={1} onChange={setLoopDepth} />
                            <GhostSliderRow label="Speed" valueLabel={`${loopSpeed}x`} value={loopSpeed} min={0.25} max={4} step={0.25} onChange={setLoopSpeed} />
+                           <div className="flex items-center gap-2 pt-1">
+                             <button onClick={toggleChaos}
+                               className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-mono transition-all ${chaosEnabled ? 'bg-destructive/40 border-destructive/60 text-white animate-pulse' : 'bg-white/5 border-white/10 text-white/40'}`}>
+                               <Shuffle className="w-3.5 h-3.5" />Chaos
+                             </button>
+                             {chaosEnabled && (
+                               <div className="flex-1">
+                                 <ControlSlider value={chaosIntensity} min={0.1} max={1} step={0.1} onChange={setChaosIntensity} />
+                               </div>
+                             )}
+                           </div>
                          </div>
                    </motion.div>
                    }
