@@ -257,8 +257,8 @@ export default function Camera() {
 
     // Create recording canvas: 16:9 aspect ratio
     const recordCanvas = document.createElement('canvas');
-    recordCanvas.width = isPro ? 1280 : 640;  // HD vs SD
-    recordCanvas.height = isPro ? 720 : 360;  // 16:9 aspect ratio
+    recordCanvas.width = isPro ? 960 : 640;  // qHD vs SD
+    recordCanvas.height = isPro ? 540 : 360;  // 16:9 aspect ratio
     const rctx = recordCanvas.getContext('2d');
 
     // Fill with black (for letterboxing)
