@@ -113,7 +113,8 @@ export default function Camera() {
   chaosEnabledRef.current = chaosEnabled;
   chaosIntensityRef.current = chaosIntensity;
 
-  // Chaos loop — randomly mutates speed, depth, and position at random intervals
+  // Chaos — randomly jumps the scrub position to a random spot in the buffer,
+  // holds it briefly, then releases. Intensity controls frequency of jumps.
   useEffect(() => {
     if (!chaosEnabled) {
       clearTimeout(chaosTimerRef.current);
@@ -121,39 +122,29 @@ export default function Camera() {
     }
     const scheduleChaos = () => {
       const intensity = chaosIntensityRef.current;
-      // Interval between mutations: high intensity = more frequent (100ms–1s range)
-      const minMs = 80;
-      const maxMs = 1200 - intensity * 1000;
-      const delay = minMs + Math.random() * (maxMs - minMs);
+      // Time between jumps: high intensity = more frequent (80ms–1500ms)
+      const gapMs = 80 + (1 - intensity) * 1420;
 
       chaosTimerRef.current = setTimeout(() => {
         if (!chaosEnabledRef.current) return;
-        const roll = Math.random();
-        if (roll < 0.4) {
-          // Mutate loop speed
-          const newSpeed = 0.25 + Math.random() * intensity * 6;
-          setLoopSpeed(parseFloat(newSpeed.toFixed(2)));
-        } else if (roll < 0.7) {
-          // Mutate loop depth
-          const buf = getBufferLength();
-          if (buf > 5) {
-            const newDepth = Math.floor(5 + Math.random() * (buf - 5));
-            setLoopDepth(newDepth);
-            loopStateRef.current.pos = Math.min(loopStateRef.current.pos, newDepth);
-          }
+        const buf = getBufferLength();
+        if (buf > 2) {
+          // Jump to a random position in the buffer
+          const jump = Math.floor(1 + Math.random() * (buf - 1));
+          delayOffsetRef.current = jump;
+          setDelayOffset(jump);
+          // Hold it briefly then release back to the loop
+          const holdMs = 60 + Math.random() * 300;
+          chaosTimerRef.current = setTimeout(() => {
+            if (!chaosEnabledRef.current) return;
+            // Snap back to wherever the loop is now
+            delayOffsetRef.current = loopStateRef.current.pos;
+            scheduleChaos();
+          }, holdMs);
         } else {
-          // Jump position
-          const buf = getBufferLength();
-          if (buf > 1) {
-            const jump = Math.floor(Math.random() * buf);
-            delayOffsetRef.current = jump;
-            setDelayOffset(jump);
-            loopStateRef.current.pos = jump;
-            loopStateRef.current.dir = Math.random() > 0.5 ? 1 : -1;
-          }
+          scheduleChaos();
         }
-        scheduleChaos();
-      }, delay);
+      }, gapMs);
     };
     scheduleChaos();
     return () => clearTimeout(chaosTimerRef.current);
