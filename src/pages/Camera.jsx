@@ -523,7 +523,6 @@ export default function Camera() {
             ghostEnabled={ghostActive}
             ghostInterval={ghostInterval}
             ghostCount={ghostCount}
-            ghostOpacity={ghostOpacity}
             isActive={isActive}
             isPro={isPro}
             canvasRefOut={canvasRef} />
@@ -768,21 +767,14 @@ export default function Camera() {
                       <span className="text-xs font-mono text-white/60 w-12 text-right shrink-0 tabular-nums">{ghostInterval}f</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-mono uppercase tracking-widest text-white/40 w-8 shrink-0">L</span>
-                      <div className="flex-1">
-                        <ControlSlider value={ghostCount} min={2} max={4} step={1} onChange={setGhostCount} />
-                      </div>
-                      <span className="text-xs font-mono text-white/60 w-12 text-right shrink-0 tabular-nums">{ghostCount}</span>
+                     <span className="text-xs font-mono uppercase tracking-widest text-white/40 w-8 shrink-0">L</span>
+                     <div className="flex-1">
+                       <ControlSlider value={ghostCount} min={2} max={4} step={1} onChange={setGhostCount} />
+                     </div>
+                     <span className="text-xs font-mono text-white/60 w-12 text-right shrink-0 tabular-nums">{ghostCount}</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-mono uppercase tracking-widest text-white/40 w-8 shrink-0">O</span>
-                      <div className="flex-1">
-                        <ControlSlider value={ghostOpacity} min={0.05} max={1} step={0.05} onChange={setGhostOpacity} />
-                      </div>
-                      <span className="text-xs font-mono text-white/60 w-12 text-right shrink-0 tabular-nums">{Math.round(ghostOpacity * 100)}%</span>
                     </div>
-                  </div>
-              }
+                    }
                 <button onClick={() => {if (isRecording) {alert('Stop recording before viewing gallery');return;}switchTab('/gallery');navigate('/gallery');}}
               className="w-full flex items-center gap-2 px-3 py-2 rounded-lg border bg-white/5 border-white/10 text-white/40 text-xs font-mono pointer-events-auto">
                   <Film className="w-3.5 h-3.5" />Gallery
@@ -861,8 +853,8 @@ export default function Camera() {
                     {ghostEnabled &&
                     <motion.div key="ghost-panel" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.3 }} className="overflow-hidden pointer-events-auto">
                           <div className="space-y-3 pt-1">
+                            <GhostSliderRow label="Interval" valueLabel={`${ghostInterval}f`} value={ghostInterval} min={1} max={30} step={1} onChange={setGhostInterval} />
                             <GhostSliderRow label="Layers" valueLabel={`${ghostCount}`} value={ghostCount} min={2} max={4} step={1} onChange={setGhostCount} />
-                            <GhostSliderRow label="Opacity" valueLabel={`${Math.round(ghostOpacity * 100)}%`} value={ghostOpacity} min={0.05} max={1} step={0.05} onChange={setGhostOpacity} />
                           </div>
                     </motion.div>
                     }

@@ -3,7 +3,7 @@ import React, { useRef, useEffect, useCallback } from 'react';
 const FREE_MAX_W = 360;
 const FREE_MAX_H = 640;
 
-export default function RenderCanvas({ videoRef, getFrame, delayOffset, delayOffsetRef, ghostEnabled, ghostInterval, ghostCount, ghostOpacity, isActive, canvasRefOut, isPro }) {
+export default function RenderCanvas({ videoRef, getFrame, delayOffset, delayOffsetRef, ghostEnabled, ghostInterval, ghostCount, isActive, canvasRefOut, isPro }) {
   const canvasRef = useRef(null);
   const rafRef = useRef(null);
   const containerRef = useRef(null);
@@ -12,13 +12,13 @@ export default function RenderCanvas({ videoRef, getFrame, delayOffset, delayOff
   // to be torn down and restarted when they change — avoids any gap in the
   // canvas stream that would break an in-progress recording.
   const propsRef = useRef({});
-  propsRef.current = { videoRef, getFrame, delayOffset, delayOffsetRef, ghostEnabled, ghostInterval, ghostCount, ghostOpacity, isActive, isPro };
+  propsRef.current = { videoRef, getFrame, delayOffset, delayOffsetRef, ghostEnabled, ghostInterval, ghostCount, isActive, isPro };
 
   // Stable render loop — reads latest props from propsRef each frame.
   // Never recreated, so canvas.captureStream() is never broken by prop changes
   // or orientation-triggered re-renders.
   const render = useCallback(() => {
-    const { videoRef: vRef, getFrame, delayOffset: delayOffsetProp, delayOffsetRef, ghostEnabled, ghostInterval, ghostCount, ghostOpacity, isActive, isPro } = propsRef.current;
+    const { videoRef: vRef, getFrame, delayOffset: delayOffsetProp, delayOffsetRef, ghostEnabled, ghostInterval, ghostCount, isActive, isPro } = propsRef.current;
     const delayOffset = delayOffsetRef ? delayOffsetRef.current : delayOffsetProp;
     const canvas = canvasRef.current;
     const video = vRef?.current;
@@ -68,7 +68,7 @@ export default function RenderCanvas({ videoRef, getFrame, delayOffset, delayOff
 
     if (ghostEnabled) {
       const count = ghostCount ?? 6;
-      const maxAlpha = ghostOpacity ?? 0.8;
+      const maxAlpha = 1;
       const interval = ghostInterval ?? 4;
 
       // Base: current frame at full opacity
