@@ -776,8 +776,6 @@ export default function Camera() {
                     {ghostEnabled &&
                     <motion.div key="ghost-panel" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.3 }} className="overflow-hidden pointer-events-auto">
                           <div className="space-y-3 pt-1">
-                            <GhostSliderRow label="Delay" valueLabel={ghostDelay === 0 ? 'off' : `${ghostDelay}s`} value={ghostDelay} min={0} max={10} step={1} onChange={setGhostDelay} />
-                            <GhostSliderRow label="Interval" valueLabel={`${ghostInterval}f`} value={ghostInterval} min={1} max={30} step={1} onChange={setGhostInterval} />
                             <GhostSliderRow label="Layers" valueLabel={`${ghostCount}`} value={ghostCount} min={2} max={4} step={1} onChange={setGhostCount} />
                             <GhostSliderRow label="Opacity" valueLabel={`${Math.round(ghostOpacity * 100)}%`} value={ghostOpacity} min={0.05} max={1} step={0.05} onChange={setGhostOpacity} />
                           </div>
