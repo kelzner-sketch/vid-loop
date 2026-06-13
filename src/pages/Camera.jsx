@@ -150,33 +150,29 @@ export default function Camera() {
     return () => clearTimeout(chaosTimerRef.current);
   }, [chaosEnabled, getBufferLength]);
 
-  // Ping-pong loop — drives delayOffset automatically
+  // Backward-only loop — sweeps from 0 → loopDepth, then snaps back to 0 and repeats
   useEffect(() => {
     if (!loopEnabled) {
       if (loopRafRef.current) cancelAnimationFrame(loopRafRef.current);
       return;
     }
     const tick = () => {
-    if (!loopEnabledRef.current) return;
-    const state = loopStateRef.current;
-    state.pos += state.dir * loopSpeed;
-    if (state.pos >= loopDepth) {
-      state.pos = loopDepth;
-      state.dir = -1;
-    } else if (state.pos <= 0) {
-      state.pos = 0;
-      state.dir = 1;
-    }
-    const rounded = Math.round(state.pos);
-    delayOffsetRef.current = rounded;
-    // Throttle React state updates to ~10fps to avoid re-render jitter
-    if (!tick._lastUpdate || performance.now() - tick._lastUpdate > 100) {
-      tick._lastUpdate = performance.now();
-      setDelayOffset(rounded);
-    }
-    loopRafRef.current = requestAnimationFrame(tick);
+      if (!loopEnabledRef.current) return;
+      const state = loopStateRef.current;
+      state.pos += loopSpeed;
+      if (state.pos >= loopDepth) {
+        state.pos = 0; // snap back to live and rewind again
+      }
+      const rounded = Math.round(state.pos);
+      delayOffsetRef.current = rounded;
+      // Throttle React state updates to ~10fps to avoid re-render jitter
+      if (!tick._lastUpdate || performance.now() - tick._lastUpdate > 100) {
+        tick._lastUpdate = performance.now();
+        setDelayOffset(rounded);
+      }
+      loopRafRef.current = requestAnimationFrame(tick);
     };
-    loopStateRef.current = { dir: 1, pos: 0 };
+    loopStateRef.current = { pos: 0 };
     loopRafRef.current = requestAnimationFrame(tick);
     return () => {
       if (loopRafRef.current) cancelAnimationFrame(loopRafRef.current);
