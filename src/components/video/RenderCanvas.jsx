@@ -51,7 +51,7 @@ export default function RenderCanvas({ videoRef, getFrame, delayOffset, delayOff
     ctx.fillStyle = '#000000';
     ctx.fillRect(0, 0, cw, ch);
 
-    const drawCover = (source, alpha = 1) => {
+    const drawCover = (source, alpha = 1, blendMode = 'source-over') => {
       if (!source) return;
       const srcW = source.videoWidth || source.width;
       const srcH = source.videoHeight || source.height;
@@ -59,7 +59,7 @@ export default function RenderCanvas({ videoRef, getFrame, delayOffset, delayOff
       const scale = Math.max(cw / srcW, ch / srcH);
       const drawW = srcW * scale;
       const drawH = srcH * scale;
-      ctx.globalCompositeOperation = 'source-over';
+      ctx.globalCompositeOperation = blendMode;
       ctx.globalAlpha = alpha;
       ctx.drawImage(source, (cw - drawW) / 2, (ch - drawH) / 2, drawW, drawH);
     };
@@ -68,17 +68,19 @@ export default function RenderCanvas({ videoRef, getFrame, delayOffset, delayOff
 
     if (ghostEnabled) {
       const count = ghostCount ?? 6;
-      const maxAlpha = 1;
       const interval = ghostInterval ?? 4;
 
       // Base: current frame at full opacity
       drawCover(currentFrame, 1);
 
-      // Ghost layers: newest (i=1) most opaque → oldest (i=count) most transparent
+      // Ghost layers with multiply blend: darkens overlapping bright areas
+      // giving the moody, shadowy trail effect
       for (let i = 1; i <= count; i++) {
         const frame = getFrame(delayOffset + i * interval);
         if (!frame) continue;
-        drawCover(frame, maxAlpha * (1 - (i - 1) / count));
+        // Newer ghosts more opaque, older ones fade out
+        const alpha = 0.75 * (1 - (i - 1) / count);
+        drawCover(frame, alpha, 'multiply');
       }
     } else {
       drawCover(currentFrame, 1);
