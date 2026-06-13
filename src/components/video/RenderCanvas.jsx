@@ -70,18 +70,17 @@ export default function RenderCanvas({ videoRef, getFrame, delayOffset, delayOff
       const count = ghostCount ?? 6;
       const interval = ghostInterval ?? 4;
 
-      // Draw ghost layers first (oldest → newest), then current frame on top
-      // This gives the reference look: trails are visible but current frame is dominant
-      for (let i = count; i >= 1; i--) {
+      // Base: current frame at full opacity
+      drawCover(currentFrame, 1);
+
+      // Ghost layers on top with source-over — newer ghosts more visible, older fade out
+      // Higher alpha than before so the layering is clearly visible
+      for (let i = 1; i <= count; i++) {
         const frame = getFrame(delayOffset + i * interval);
         if (!frame) continue;
-        // Oldest layers very faint, newest layers more visible
-        const alpha = 0.55 * (1 - (i - 1) / count);
+        const alpha = 0.65 * (1 - (i - 1) / count);
         drawCover(frame, alpha, 'source-over');
       }
-
-      // Current frame on top with slight transparency so oldest ghosts still bleed through
-      drawCover(currentFrame, 0.88);
     } else {
       drawCover(currentFrame, 1);
     }
