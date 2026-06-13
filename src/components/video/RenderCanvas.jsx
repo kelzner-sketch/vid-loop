@@ -70,18 +70,18 @@ export default function RenderCanvas({ videoRef, getFrame, delayOffset, delayOff
       const count = ghostCount ?? 6;
       const interval = ghostInterval ?? 4;
 
-      // Base: current frame at full opacity
-      drawCover(currentFrame, 1);
-
-      // Ghost layers with multiply blend: darkens overlapping bright areas
-      // giving the moody, shadowy trail effect
-      for (let i = 1; i <= count; i++) {
+      // Draw ghost layers first (oldest → newest), then current frame on top
+      // This gives the reference look: trails are visible but current frame is dominant
+      for (let i = count; i >= 1; i--) {
         const frame = getFrame(delayOffset + i * interval);
         if (!frame) continue;
-        // Newer ghosts more opaque, older ones fade out
-        const alpha = 0.75 * (1 - (i - 1) / count);
-        drawCover(frame, alpha, 'multiply');
+        // Oldest layers very faint, newest layers more visible
+        const alpha = 0.55 * (1 - (i - 1) / count);
+        drawCover(frame, alpha, 'source-over');
       }
+
+      // Current frame on top with slight transparency so oldest ghosts still bleed through
+      drawCover(currentFrame, 0.88);
     } else {
       drawCover(currentFrame, 1);
     }
