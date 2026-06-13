@@ -309,8 +309,8 @@ export default function Camera() {
 
     // Create recording canvas: 16:9 aspect ratio
     const recordCanvas = document.createElement('canvas');
-    recordCanvas.width = isPro ? 960 : 640;  // qHD vs SD
-    recordCanvas.height = isPro ? 540 : 360;  // 16:9 aspect ratio
+    recordCanvas.width = isPro ? 720 : 480;  // HD vs SD
+    recordCanvas.height = isPro ? 405 : 270;  // 16:9 aspect ratio
     const rctx = recordCanvas.getContext('2d');
 
     // Fill with black (for letterboxing)
@@ -358,7 +358,7 @@ export default function Camera() {
     MediaRecorder.isTypeSupported('video/webm') ? 'video/webm' :
     '';
     console.log('[Record] mimeType selected:', mimeType || '(empty - browser default)');
-    const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : {});
+    const recorder = new MediaRecorder(stream, { ...(mimeType ? { mimeType } : {}), videoBitsPerSecond: 2_500_000 });
     recordingChunksRef.current = [];
     recorder.ondataavailable = (e) => {if (e.data.size > 0) recordingChunksRef.current.push(e.data);};
     
