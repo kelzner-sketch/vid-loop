@@ -179,7 +179,7 @@ export default function Camera() {
     };
   }, [loopEnabled, loopDepth, loopSpeed]);
 
-  const setDelay = (v) => { delayOffsetRef.current = v; setDelayOffset(v); };
+  const setDelay = (v) => {delayOffsetRef.current = v;setDelayOffset(v);};
 
   const toggleLoop = () => {
     setLoopEnabled((prev) => {
@@ -305,8 +305,8 @@ export default function Camera() {
 
     // Create recording canvas: 16:9 aspect ratio
     const recordCanvas = document.createElement('canvas');
-    recordCanvas.width = isPro ? 720 : 480;  // HD vs SD
-    recordCanvas.height = isPro ? 405 : 270;  // 16:9 aspect ratio
+    recordCanvas.width = isPro ? 720 : 480; // HD vs SD
+    recordCanvas.height = isPro ? 405 : 270; // 16:9 aspect ratio
     const rctx = recordCanvas.getContext('2d');
 
     // Fill with black (for letterboxing)
@@ -357,7 +357,7 @@ export default function Camera() {
     const recorder = new MediaRecorder(stream, { ...(mimeType ? { mimeType } : {}), videoBitsPerSecond: 2_500_000 });
     recordingChunksRef.current = [];
     recorder.ondataavailable = (e) => {if (e.data.size > 0) recordingChunksRef.current.push(e.data);};
-    
+
     recorder.onstop = async () => {
       const actualMimeType = recorder.mimeType || mimeType || 'video/webm';
       console.log('[Record] actual recorder mimeType:', actualMimeType);
@@ -377,7 +377,7 @@ export default function Camera() {
         const clip = await base44.entities.Clip.create({
           title: `Clip ${new Date().toLocaleTimeString()}`,
           file_url,
-          duration: recordingTimerRef._lastTime || 0,
+          duration: recordingTimerRef._lastTime || 0
         });
 
         setUploadStatus(null);
@@ -391,7 +391,7 @@ export default function Camera() {
         setTimeout(() => setUploadStatus(null), 8000);
       }
     };
-    
+
     recorder.start();
     mediaRecorderRef.current = recorder;
     setIsRecording(true);
@@ -460,7 +460,7 @@ export default function Camera() {
           exit={{ opacity: 0 }}
           className="absolute inset-0 z-20 flex flex-col items-center bg-[hsl(var(--popover))] overflow-y-auto overscroll-contain">
           
-            <div className="flex flex-col items-center gap-6 px-8 py-10 w-full min-h-full justify-center">
+            <div className="flex flex-col items-center gap-6 px-8 py-10 w-full min-h-full justify-center bg-[hsl(var(--input))]">
               {/* Logo mark */}
               <div className="relative">
                 <img src="https://media.base44.com/images/public/6a2067de3230ec7bd237c422/80f561db9_vid-loop-icon.png" alt="VidLoop" className="w-20 h-20" />
@@ -651,12 +651,12 @@ export default function Camera() {
                 </span>
               </div>
               <button
-               onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleRecordPress(e); }}
-               disabled={uploadStatus === 'uploading'}
-               type="button"
-               className={`flex flex-col items-center justify-center w-12 h-12 rounded-full backdrop-blur-md border font-mono transition-all active:scale-95 disabled:opacity-50 pointer-events-auto ${
-               isRecording ? 'bg-red-500/80 border-red-400/60 text-white' : 'bg-white/15 border-white/30 text-white/80'}`
-               }>
+              onClick={(e) => {e.preventDefault();e.stopPropagation();handleRecordPress(e);}}
+              disabled={uploadStatus === 'uploading'}
+              type="button"
+              className={`flex flex-col items-center justify-center w-12 h-12 rounded-full backdrop-blur-md border font-mono transition-all active:scale-95 disabled:opacity-50 pointer-events-auto ${
+              isRecording ? 'bg-red-500/80 border-red-400/60 text-white' : 'bg-white/15 border-white/30 text-white/80'}`
+              }>
               
                 {isRecording ?
               <>
@@ -725,18 +725,18 @@ export default function Camera() {
                       <span className="text-xs font-mono text-white/60 w-12 text-right shrink-0 tabular-nums">{loopSpeed}x</span>
                     </div>
                     <button onClick={toggleChaos}
-                      className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg border text-xs font-mono transition-all pointer-events-auto ${chaosEnabled ? 'bg-destructive/40 border-destructive/60 text-white animate-pulse' : 'bg-white/5 border-white/10 text-white/40'}`}>
+                className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg border text-xs font-mono transition-all pointer-events-auto ${chaosEnabled ? 'bg-destructive/40 border-destructive/60 text-white animate-pulse' : 'bg-white/5 border-white/10 text-white/40'}`}>
                       <Shuffle className="w-3.5 h-3.5" />Chaos
                     </button>
-                    {chaosEnabled && (
-                      <div className="flex items-center gap-2">
+                    {chaosEnabled &&
+                <div className="flex items-center gap-2">
                         <span className="text-xs font-mono uppercase tracking-widest text-white/40 w-8 shrink-0">~</span>
                         <div className="flex-1">
                           <ControlSlider value={chaosIntensity} min={0.1} max={1} step={0.1} onChange={setChaosIntensity} />
                         </div>
                         <span className="text-xs font-mono text-white/60 w-12 text-right shrink-0 tabular-nums">{Math.round(chaosIntensity * 100)}%</span>
                       </div>
-                    )}
+                }
                   </div>
               }
                 <button onClick={toggleGhost}
@@ -761,7 +761,7 @@ export default function Camera() {
                      <span className="text-xs font-mono text-white/60 w-12 text-right shrink-0 tabular-nums">{ghostCount}</span>
                     </div>
                     </div>
-                    }
+              }
                 <button onClick={() => {if (isRecording) {alert('Stop recording before viewing gallery');return;}switchTab('/gallery');navigate('/gallery');}}
               className="w-full flex items-center gap-2 px-3 py-2 rounded-lg border bg-white/5 border-white/10 text-white/40 text-xs font-mono pointer-events-auto">
                   <Film className="w-3.5 h-3.5" />Gallery
@@ -799,52 +799,52 @@ export default function Camera() {
                 {/* Loop (ping-pong) controls */}
                  <div className="space-y-3">
                    <button onClick={toggleLoop}
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-mono transition-all ${loopEnabled ? 'bg-accent/30 border-accent/50 text-white' : 'bg-white/5 border-white/10 text-white/40'}`}>
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-mono transition-all ${loopEnabled ? 'bg-accent/30 border-accent/50 text-white' : 'bg-white/5 border-white/10 text-white/40'}`}>
                      <Repeat2 className="w-3.5 h-3.5" />
                      Loop
                    </button>
                    {loopEnabled &&
-                   <motion.div key="loop-panel" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.3 }} className="overflow-hidden pointer-events-auto">
+              <motion.div key="loop-panel" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.3 }} className="overflow-hidden pointer-events-auto">
                          <div className="space-y-3 pt-1">
                            <GhostSliderRow label="Depth" valueLabel={`${(loopDepth / 30).toFixed(1)}s`} value={loopDepth} min={5} max={Math.max(5, bufferFill - 1)} step={1} onChange={setLoopDepth} />
                            <GhostSliderRow label="Speed" valueLabel={`${loopSpeed}x`} value={loopSpeed} min={0.25} max={4} step={0.25} onChange={setLoopSpeed} />
                            <div className="flex items-center gap-2 pt-1">
                              <button onClick={toggleChaos}
-                               className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-mono transition-all ${chaosEnabled ? 'bg-destructive/40 border-destructive/60 text-white animate-pulse' : 'bg-white/5 border-white/10 text-white/40'}`}>
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-mono transition-all ${chaosEnabled ? 'bg-destructive/40 border-destructive/60 text-white animate-pulse' : 'bg-white/5 border-white/10 text-white/40'}`}>
                                <Shuffle className="w-3.5 h-3.5" />Chaos
                              </button>
-                             {chaosEnabled && (
-                               <div className="flex-1">
+                             {chaosEnabled &&
+                    <div className="flex-1">
                                  <ControlSlider value={chaosIntensity} min={0.1} max={1} step={0.1} onChange={setChaosIntensity} />
                                </div>
-                             )}
+                    }
                            </div>
                          </div>
                    </motion.div>
-                   }
+              }
                  </div>
 
                  {/* Ghost controls */}
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
                       <button onClick={toggleGhost}
-                 className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-mono transition-all ${ghostEnabled ? 'bg-primary/30 border-primary/50 text-white' : 'bg-white/5 border-white/10 text-white/40'}`}>
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-mono transition-all ${ghostEnabled ? 'bg-primary/30 border-primary/50 text-white' : 'bg-white/5 border-white/10 text-white/40'}`}>
                         <Layers className="w-3.5 h-3.5" />
                         {ghostCountdown !== null ? `Ghost in ${ghostCountdown}s…` : 'Ghost Blend'}
                       </button>
                       <button onClick={handleStop}
-                 className="w-9 h-9 rounded-full bg-white/10 border border-white/15 flex items-center justify-center active:scale-95 transition-transform">
+                className="w-9 h-9 rounded-full bg-white/10 border border-white/15 flex items-center justify-center active:scale-95 transition-transform">
                         <CameraOff className="w-4 h-4 text-white/70" />
                       </button>
                     </div>
                     {ghostEnabled &&
-                    <motion.div key="ghost-panel" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.3 }} className="overflow-hidden pointer-events-auto">
+              <motion.div key="ghost-panel" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.3 }} className="overflow-hidden pointer-events-auto">
                           <div className="space-y-3 pt-1">
                             <GhostSliderRow label="Interval" valueLabel={`${ghostInterval}f`} value={ghostInterval} min={1} max={30} step={1} onChange={setGhostInterval} />
                             <GhostSliderRow label="Layers" valueLabel={`${ghostCount}`} value={ghostCount} min={2} max={4} step={1} onChange={setGhostCount} />
                           </div>
                     </motion.div>
-                    }
+              }
                   </div>
               </div>
             </div>)
