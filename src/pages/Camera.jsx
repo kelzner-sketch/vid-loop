@@ -460,7 +460,7 @@ export default function Camera() {
           exit={{ opacity: 0 }}
           className="absolute inset-0 z-20 flex flex-col items-center bg-[hsl(var(--popover))] overflow-y-auto overscroll-contain">
           
-            <div className="flex flex-col items-center gap-6 px-8 py-10 w-full min-h-full justify-center bg-[hsl(var(--input))]">
+            <div className="flex flex-col items-center gap-6 px-8 py-10 w-full min-h-full justify-center bg-[hsl(var(--sidebar-foreground))]">
               {/* Logo mark */}
               <div className="relative">
                 <img src="https://media.base44.com/images/public/6a2067de3230ec7bd237c422/80f561db9_vid-loop-icon.png" alt="VidLoop" className="w-20 h-20" />
