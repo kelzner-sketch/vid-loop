@@ -445,7 +445,7 @@ export default function Camera() {
               </div>
 
               <div className="text-center space-y-2">
-                <h1 className="tracking-tight text-foreground lowercase text-center text-4xl font-light [font-family:'Plus_Jakarta_Sans',_sans-serif]">vid-loop</h1>
+                <h1 className="tracking-tight text-foreground lowercase text-center text-4xl font-light [font-family:'Comfortaa',_sans-serif]">vid-loop</h1>
                 <p className="text-sm leading-relaxed max-w-xs">Live camera tool that lets you scrub back through the last few seconds of footage, layer motion ghost trails, and loop clips in a ping-pong effect. Record and share directly from your phone.</p>
               </div>
 
