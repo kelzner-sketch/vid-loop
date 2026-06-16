@@ -144,6 +144,7 @@ export default function Settings() {
           <p className="text-xs text-muted-foreground leading-relaxed">
             Live camera with ring-buffer scrubbing, ghost layering, and ping-pong looping. No account needed — everything runs on your phone.
           </p>
+          <a href="mailto:kthedizzlest@gmail.com" className="inline-block text-xs text-accent hover:underline mt-1">kthedizzlest@gmail.com</a>
         </div>
 
         <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground px-1">How it works</p>
