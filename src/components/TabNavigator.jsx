@@ -13,11 +13,12 @@ export function useTabNav() {
   return useContext(TabContext);
 }
 
-export const ROOT_TABS = ['/', '/gallery', '/settings'];
+export const ROOT_TABS = ['/', '/gallery', '/settings', '/privacy'];
 export const PAGE_TITLES = {
   '/': 'Vid-Loop',
   '/gallery': 'Saved Clips',
   '/settings': 'Settings',
+  '/privacy': 'Privacy Policy',
 };
 
 export function TabNavigatorProvider({ children }) {
@@ -28,6 +29,7 @@ export function TabNavigatorProvider({ children }) {
     '/': [{ path: '/' }],
     '/gallery': [{ path: '/gallery' }],
     '/settings': [{ path: '/settings' }],
+    '/privacy': [{ path: '/privacy' }],
   });
   const [activeTab, setActiveTab] = useState('/');
   const [slideDirection, setSlideDirection] = useState(0); // -1=left, 0=none, 1=right
