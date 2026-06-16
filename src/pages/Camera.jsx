@@ -666,7 +666,6 @@ export default function Camera() {
                   <div className="space-y-2 pt-0.5">
                     <CompactSlider label="Interval" valueLabel={`${ghostInterval}f`} value={ghostInterval} min={1} max={30} step={1} onChange={setGhostInterval} />
                     <CompactSlider label="Layers" valueLabel={`${ghostCount}`} value={ghostCount} min={2} max={4} step={1} onChange={setGhostCount} />
-                    <CompactSlider label="Exposure" valueLabel={`${Math.round(ghostOpacity * 100)}%`} value={ghostOpacity} min={0.1} max={1} step={0.05} onChange={setGhostOpacity} />
                   </div>
                 </motion.div>
               </div>
@@ -745,7 +744,6 @@ export default function Camera() {
                           <div className="space-y-3 pt-1">
                             <GhostSliderRow label="Interval" valueLabel={`${ghostInterval}f`} value={ghostInterval} min={1} max={30} step={1} onChange={setGhostInterval} />
                             <GhostSliderRow label="Layers" valueLabel={`${ghostCount}`} value={ghostCount} min={2} max={4} step={1} onChange={setGhostCount} />
-                            <GhostSliderRow label="Exposure" valueLabel={`${Math.round(ghostOpacity * 100)}%`} value={ghostOpacity} min={0.1} max={1} step={0.05} onChange={setGhostOpacity} />
                           </div>
                     </motion.div>
               }
