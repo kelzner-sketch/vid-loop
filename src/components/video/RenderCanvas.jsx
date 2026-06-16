@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useCallback } from 'react';
 
-export default function RenderCanvas({ videoRef, getFrame, delayOffset, delayOffsetRef, ghostEnabled, ghostInterval, ghostCount, isActive, canvasRefOut }) {
+export default function RenderCanvas({ videoRef, getFrame, delayOffset, delayOffsetRef, ghostEnabled, ghostInterval, ghostCount, ghostOpacity, isActive, canvasRefOut }) {
   const canvasRef = useRef(null);
   const rafRef = useRef(null);
   const containerRef = useRef(null);
@@ -9,13 +9,13 @@ export default function RenderCanvas({ videoRef, getFrame, delayOffset, delayOff
   // to be torn down and restarted when they change — avoids any gap in the
   // canvas stream that would break an in-progress recording.
   const propsRef = useRef({});
-  propsRef.current = { videoRef, getFrame, delayOffset, delayOffsetRef, ghostEnabled, ghostInterval, ghostCount, isActive };
+  propsRef.current = { videoRef, getFrame, delayOffset, delayOffsetRef, ghostEnabled, ghostInterval, ghostCount, ghostOpacity, isActive };
 
   // Stable render loop — reads latest props from propsRef each frame.
   // Never recreated, so canvas.captureStream() is never broken by prop changes
   // or orientation-triggered re-renders.
   const render = useCallback(() => {
-    const { videoRef: vRef, getFrame, delayOffset: delayOffsetProp, delayOffsetRef, ghostEnabled, ghostInterval, ghostCount, isActive } = propsRef.current;
+    const { videoRef: vRef, getFrame, delayOffset: delayOffsetProp, delayOffsetRef, ghostEnabled, ghostInterval, ghostCount, ghostOpacity, isActive } = propsRef.current;
     const delayOffset = delayOffsetRef ? delayOffsetRef.current : delayOffsetProp;
     const canvas = canvasRef.current;
     const video = vRef?.current;
@@ -74,7 +74,7 @@ export default function RenderCanvas({ videoRef, getFrame, delayOffset, delayOff
       for (let i = 1; i <= count; i++) {
         const frame = getFrame(delayOffset + i * interval);
         if (!frame) continue;
-        const alpha = 0.7 * (1 - (i - 1) / count);
+        const alpha = (ghostOpacity ?? 0.8) * 0.7 * (1 - (i - 1) / count);
         drawCover(frame, alpha, 'multiply');
       }
     } else {
