@@ -422,7 +422,6 @@ export default function Camera() {
   }, [startRecording, isRecording, stopRecording]);
 
   const delaySeconds = (delayOffset / 30).toFixed(2);
-  const fillPercent = Math.round(bufferFill / maxBufferSize * 100);
   const isDelayed = delayOffset > 0;
 
   return (
@@ -536,79 +535,43 @@ export default function Camera() {
           }
           </AnimatePresence>
 
-          {/* ── TOP HUD — portrait only ── */}
-          {!isLandscape && <div className="absolute top-0 left-0 right-0 z-10 flex items-start justify-between px-5 pb-6"
-        style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, transparent 100%)', paddingTop: 'calc(3rem + env(safe-area-inset-top))' }}>
+          {/* ── TOP CONTROLS — portrait only ── */}
+          {!isLandscape && <div className="absolute top-0 right-0 z-10 flex items-center gap-2 px-5 pb-4"
+        style={{ paddingTop: 'calc(3rem + env(safe-area-inset-top))' }}>
 
-            {/* Left: status + gallery */}
-            <div className="flex flex-col gap-1.5">
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-accent animate-pulse" />
-                <span className="text-xs font-mono text-white/80 uppercase tracking-widest">
-                  {loopEnabled ? 'LOOP' : isDelayed ? 'DELAYED' : 'LIVE'}
-                </span>
-                <button onClick={() => {switchTab('/gallery');navigate('/gallery');}}
-              className="ml-1 flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/10 border border-white/20 text-white/70 text-[10px] font-mono hover:bg-white/20 transition-colors">
-                  <Film className="w-2.5 h-2.5" />GALLERY
-                </button>
-              </div>
-              {isDelayed &&
-            <motion.div
-              initial={{ opacity: 0, y: -4 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="px-2.5 py-1 rounded-lg bg-white/10 backdrop-blur-md border border-white/10">
-              
-                  <span className="text-sm font-mono text-white">−{delaySeconds}s</span>
-                </motion.div>
+            <button
+            onClick={isRecording ? stopRecording : handleRecordPress}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full backdrop-blur-md border font-mono text-xs transition-all active:scale-95 ${
+            isRecording ?
+            'bg-red-500/80 border-red-400/60 text-white' :
+            'bg-black/30 border-white/10 text-white/80'}`
+            }>
+              {isRecording ?
+            <>
+                  <Square className="w-3 h-3 fill-white" />
+                  <span className="tabular-nums">
+                    {String(Math.floor(recordingTime / 60)).padStart(2, '0')}:{String(recordingTime % 60).padStart(2, '0')}
+                  </span>
+                </> :
+            <>
+                  <Circle className="w-3 h-3 fill-red-400 text-red-400" />
+                  REC
+                </>
             }
-            </div>
+            </button>
 
-            {/* Right: record + flip + stop */}
-            <div className="flex items-center gap-2">
-              {/* Record button */}
-              <button
-              onClick={isRecording ? stopRecording : handleRecordPress}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full backdrop-blur-md border font-mono text-xs transition-all active:scale-95 ${
-              isRecording ?
-              'bg-red-500/80 border-red-400/60 text-white' :
-              'bg-white/10 border-white/20 text-white/80'}`
-              }>
-                {isRecording ?
-              <>
-                    <Square className="w-3 h-3 fill-white" />
-                    <span className="tabular-nums">
-                      {String(Math.floor(recordingTime / 60)).padStart(2, '0')}:{String(recordingTime % 60).padStart(2, '0')}
-                    </span>
-                  </> :
-              <>
-                    <Circle className="w-3 h-3 fill-red-400 text-red-400" />
-                    REC
-                  </>
-              }
-              </button>
+            <button
+            onClick={handleSwitchCamera}
+            className="w-9 h-9 rounded-full bg-black/30 backdrop-blur-md border border-white/10 flex items-center justify-center active:scale-95 transition-all">
+              <SwitchCamera className="w-4 h-4 text-white" />
+            </button>
 
-              {/* Switch camera — compact icon */}
-              <button
-              onClick={handleSwitchCamera}
-              className="w-9 h-9 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center active:scale-95 transition-all">
-                <SwitchCamera className="w-4 h-4 text-white" />
-              </button>
-
-              <button
-              onClick={handleStop}
-              className="w-9 h-9 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center active:scale-95 transition-transform">
-                <CameraOff className="w-4 h-4 text-white" />
-              </button>
-            </div>
+            <button
+            onClick={handleStop}
+            className="w-9 h-9 rounded-full bg-black/30 backdrop-blur-md border border-white/10 flex items-center justify-center active:scale-95 transition-transform">
+              <CameraOff className="w-4 h-4 text-white" />
+            </button>
           </div>}
-
-          {/* ── BUFFER PROGRESS BAR ── */}
-          <div className="absolute top-0 left-0 right-0 z-20 h-0.5">
-            <div
-            className="h-full bg-accent transition-all duration-300"
-            style={{ width: `${fillPercent}%` }} />
-          
-          </div>
 
           {/* ── CONTROLS PANEL — adapts portrait/landscape ── */}
           {isLandscape ?
@@ -616,12 +579,6 @@ export default function Camera() {
             {/* ── LANDSCAPE LEFT: Record + Camera + Stop ── */}
             <div className="absolute left-0 top-0 bottom-0 z-30 flex flex-col items-center justify-center gap-4 px-2 pointer-events-auto"
           style={{ background: 'linear-gradient(to right, rgba(0,0,0,0.82) 0%, transparent 100%)', width: '70px' }}>
-              <div className="flex flex-col items-center gap-0.5">
-                <div className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
-                <span className="text-[6px] font-mono text-white/50 uppercase tracking-widest text-center leading-tight">
-                  {loopEnabled ? 'LOOP' : isDelayed ? 'DLY' : 'LIVE'}
-                </span>
-              </div>
               <button
               onClick={(e) => {e.preventDefault();e.stopPropagation();handleRecordPress(e);}}
               disabled={uploadStatus === 'uploading'}
