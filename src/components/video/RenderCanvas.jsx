@@ -70,13 +70,12 @@ export default function RenderCanvas({ videoRef, getFrame, delayOffset, delayOff
       // Base: current frame at full opacity
       drawCover(currentFrame, 1);
 
-      // Ghost layers on top with source-over — newer ghosts more visible, older fade out
-      // Higher alpha than before so the layering is clearly visible
+      // Ghost layers on top with multiply — past frames darken what's beneath them
       for (let i = 1; i <= count; i++) {
         const frame = getFrame(delayOffset + i * interval);
         if (!frame) continue;
-        const alpha = 0.65 * (1 - (i - 1) / count);
-        drawCover(frame, alpha, 'source-over');
+        const alpha = 0.7 * (1 - (i - 1) / count);
+        drawCover(frame, alpha, 'multiply');
       }
     } else {
       drawCover(currentFrame, 1);
