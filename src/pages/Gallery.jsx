@@ -166,23 +166,42 @@ export default function Gallery() {
   const shareClip = async (clip) => {
     setSharingId(clip.id);
     const title = clip.title || 'VidLoop clip';
+    const shareText = `${title} — made with vid-loop #vid-loop`;
+
     try {
-      if (navigator.share) {
-        try {
-          await navigator.share({ title, url: clip.file_url });
-        } catch (e) {
-          if (e.name !== 'AbortError') throw e;
-        }
+      // Try sharing the video file directly (Instagram appears as target on mobile)
+      const ext = clip.file_url.includes('mp4') ? 'mp4' : 'webm';
+      const mimeType = ext === 'mp4' ? 'video/mp4' : 'video/webm';
+      const response = await fetch(clip.file_url);
+      const blob = await response.blob();
+      const file = new File([blob], `${title}.${ext}`, { type: mimeType });
+
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({ files: [file], title: shareText, text: shareText });
+      } else if (navigator.share) {
+        await navigator.share({ title: shareText, text: shareText, url: clip.file_url });
       } else {
         await navigator.clipboard.writeText(clip.file_url);
-        alert('Link copied to clipboard!');
+        alert('Link copied! #vid-loop');
       }
     } catch (e) {
+      if (e.name === 'AbortError') { setSharingId(null); return; }
+      // Fallback: download for manual sharing
       try {
-        await navigator.clipboard.writeText(clip.file_url);
-        alert('Link copied to clipboard!');
-      } catch (clipboardError) {
-        console.error('Share error:', clipboardError);
+        const blob = await fetch(clip.file_url).then(r => r.blob());
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${title}.${clip.file_url.includes('mp4') ? 'mp4' : 'webm'}`;
+        a.click();
+        URL.revokeObjectURL(url);
+        alert('Video downloaded — post it to Instagram with #vid-loop!');
+      } catch (err) {
+        console.error('Share error:', err);
+        try {
+          await navigator.clipboard.writeText(clip.file_url);
+          alert('Link copied! #vid-loop');
+        } catch (_) {}
       }
     } finally {
       setSharingId(null);
