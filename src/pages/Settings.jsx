@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Film, Camera, Layers, Repeat2, Trash2, Zap } from 'lucide-react';
+import { Film, Camera, Layers, Repeat2, Trash2, Zap, Shuffle } from 'lucide-react';
 import MobileHeader from '@/components/MobileHeader';
 import UserProfile from '@/components/UserProfile';
 import { useAuth } from '@/lib/AuthContext';
@@ -15,6 +15,7 @@ const tips = [
   { icon: Camera, title: 'Scrub', desc: 'Drag the timeline to replay the last ~10 seconds of footage.' },
   { icon: Layers, title: 'Ghost Blend', desc: 'Overlays multiple past frames to visualize motion trails.' },
   { icon: Repeat2, title: 'Loop', desc: 'Ping-pongs through a window of buffered frames automatically.' },
+  { icon: Shuffle, title: 'Chaos', desc: 'Randomly jumps the scrub position to create glitchy, unpredictable effects.' },
   { icon: Film, title: 'Record', desc: 'Tap REC to capture the canvas output as a video clip.' },
 ];
 
@@ -32,6 +33,7 @@ export default function Settings() {
   const [ghostInterval, setGhostInterval] = useState(prefs.ghostInterval ?? 4);
   const [ghostCount, setGhostCount] = useState(prefs.ghostCount ?? 6);
   const [ghostOpacity, setGhostOpacity] = useState(prefs.ghostOpacity ?? 0.8);
+  const [chaosIntensity, setChaosIntensity] = useState(prefs.chaosIntensity ?? 0.5);
   const [loopDepth, setLoopDepth] = useState(prefs.loopDepth ?? 30);
   const [loopSpeed, setLoopSpeed] = useState(prefs.loopSpeed ?? 1);
 
@@ -42,6 +44,7 @@ export default function Settings() {
       if (user.preferences.ghostInterval !== undefined) setGhostInterval(user.preferences.ghostInterval);
       if (user.preferences.ghostCount !== undefined) setGhostCount(user.preferences.ghostCount);
       if (user.preferences.ghostOpacity !== undefined) setGhostOpacity(user.preferences.ghostOpacity);
+      if (user.preferences.chaosIntensity !== undefined) setChaosIntensity(user.preferences.chaosIntensity);
       if (user.preferences.loopDepth !== undefined) setLoopDepth(user.preferences.loopDepth);
       if (user.preferences.loopSpeed !== undefined) setLoopSpeed(user.preferences.loopSpeed);
     }
@@ -53,7 +56,7 @@ export default function Settings() {
     clearTimeout(debounceRef.current);
     const updatedPrefs = {
       ...prefs,
-      ghostDelay, ghostInterval, ghostCount, ghostOpacity, loopDepth, loopSpeed,
+      ghostDelay, ghostInterval, ghostCount, ghostOpacity, chaosIntensity, loopDepth, loopSpeed,
     };
     localStorage.setItem('vidloop_prefs', JSON.stringify(updatedPrefs));
     if (user) {
@@ -62,7 +65,7 @@ export default function Settings() {
       }, 1000);
     }
     return () => clearTimeout(debounceRef.current);
-  }, [ghostDelay, ghostInterval, ghostCount, ghostOpacity, loopDepth, loopSpeed, user]);
+  }, [ghostDelay, ghostInterval, ghostCount, ghostOpacity, chaosIntensity, loopDepth, loopSpeed, user]);
 
   const handleDeleteAccount = async () => {
     setDeleting(true);
@@ -157,16 +160,19 @@ export default function Settings() {
         {/* Ghost & Loop Settings */}
         <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground px-1 pt-4">Ghost Blend Controls</p>
         <div className="rounded-2xl bg-card border border-border px-5 py-4 space-y-4">
-          <ControlSetting label="Delay" sublabel="Seconds before ghost activates" value={ghostDelay} min={0} max={10} step={1} onChange={setGhostDelay} formatValue={(v) => v === 0 ? 'off' : `${v}s`} />
           <ControlSetting label="Interval" sublabel="Frames between layers" value={ghostInterval} min={1} max={30} step={1} onChange={setGhostInterval} formatValue={(v) => `${v}f`} />
           <ControlSetting label="Layers" sublabel="Number of ghost trails" value={ghostCount} min={2} max={10} step={1} onChange={setGhostCount} formatValue={(v) => `${v}`} />
-          <ControlSetting label="Opacity" sublabel="Fade intensity" value={ghostOpacity} min={0.05} max={1} step={0.05} onChange={setGhostOpacity} formatValue={(v) => `${Math.round(v * 100)}%`} />
         </div>
 
         <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground px-1 pt-4">Loop Controls</p>
         <div className="rounded-2xl bg-card border border-border px-5 py-4 space-y-4">
           <ControlSetting label="Depth" sublabel="Duration of ping-pong loop" value={loopDepth} min={5} max={180} step={1} onChange={setLoopDepth} formatValue={(v) => `${(v / 30).toFixed(1)}s`} />
           <ControlSetting label="Speed" sublabel="Playback speed multiplier" value={loopSpeed} min={0.25} max={4} step={0.25} onChange={setLoopSpeed} formatValue={(v) => `${v}x`} />
+        </div>
+
+        <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground px-1 pt-4">Chaos Controls</p>
+        <div className="rounded-2xl bg-card border border-border px-5 py-4 space-y-4">
+          <ControlSetting label="Intensity" sublabel="Frequency of random jumps" value={chaosIntensity} min={0.1} max={1} step={0.1} onChange={setChaosIntensity} formatValue={(v) => `${Math.round(v * 100)}%`} />
         </div>
 
         {/* Delete Account */}
