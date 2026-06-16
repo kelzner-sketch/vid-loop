@@ -577,9 +577,15 @@ export default function Camera() {
           {/* ── CONTROLS PANEL — adapts portrait/landscape ── */}
           {isLandscape ?
         <>
-            {/* ── LANDSCAPE LEFT: Record + Camera + Stop ── */}
-            <div className="absolute left-0 top-0 bottom-0 z-30 flex flex-col items-center justify-center gap-4 px-2 pointer-events-auto"
-          style={{ background: 'linear-gradient(to right, #000000 0%, transparent 100%)', width: '70px' }}>
+            {/* ── LANDSCAPE LEFT: Gallery + Record + Camera + Stop ── */}
+            <div className="absolute left-0 top-0 bottom-0 z-30 flex flex-col items-center justify-center gap-3 px-2 pointer-events-auto"
+          style={{ background: 'linear-gradient(to right, #000000 0%, transparent 100%)', width: '72px' }}>
+              <button onClick={() => {if (isRecording) {alert('Stop recording before viewing gallery');return;}switchTab('/gallery');navigate('/gallery');}}
+              className="flex flex-col items-center justify-center w-12 h-12 rounded-full bg-white/10 backdrop-blur-md border border-white/20 active:scale-95 transition-all pointer-events-auto"
+              type="button">
+                <Film className="w-5 h-5 text-white/60" />
+                <span className="text-[8px] font-mono text-white/40 mt-0.5">Gallery</span>
+              </button>
               <button
               onClick={(e) => {e.preventDefault();e.stopPropagation();handleRecordPress(e);}}
               disabled={uploadStatus === 'uploading'}
@@ -591,7 +597,7 @@ export default function Camera() {
                 {isRecording ?
               <>
                     <Square className="w-3.5 h-3.5 fill-white mb-0.5" />
-                    <span className="tabular-nums text-[7px]">
+                    <span className="tabular-nums text-[8px]">
                       {String(Math.floor(recordingTime / 60)).padStart(2, '0')}:{String(recordingTime % 60).padStart(2, '0')}
                     </span>
                   </> :
@@ -601,7 +607,7 @@ export default function Camera() {
               </button>
               <button
               onClick={handleSwitchCamera}
-              className="flex flex-col items-center rounded-xl bg-white/10 backdrop-blur-md border border-white/20 text-[8px] font-mono overflow-hidden active:scale-95 transition-all pointer-events-auto">
+              className="flex flex-col items-center rounded-xl bg-white/10 backdrop-blur-md border border-white/20 text-[9px] font-mono overflow-hidden active:scale-95 transition-all pointer-events-auto">
               
                 <span className={`px-3 py-1 w-full text-center transition-colors ${facingMode === 'environment' ? 'bg-white text-black' : 'text-white/50'}`}>R</span>
                 <span className={`px-3 py-1 w-full text-center transition-colors ${facingMode === 'user' ? 'bg-white text-black' : 'text-white/50'}`}>F</span>
@@ -616,61 +622,53 @@ export default function Camera() {
 
             {/* ── LANDSCAPE RIGHT: Sliders ── */}
             <div className="absolute right-0 top-0 bottom-0 z-30 flex flex-col"
-          style={{ background: 'linear-gradient(to left, #000000 0%, transparent 100%)', width: '240px' }}>
-              <div className="flex-1 px-4 space-y-2 overflow-y-auto overscroll-contain pointer-events-auto"
-            style={{ paddingTop: '1rem' }}>
-                <div className="space-y-1 pointer-events-auto">
+          style={{ background: 'linear-gradient(to left, #000000 0%, transparent 100%)', width: '280px' }}>
+              <div className="flex-1 px-5 space-y-2.5 overflow-y-auto overscroll-contain pointer-events-auto"
+            style={{ paddingTop: '1.25rem' }}>
+                <div className="space-y-1.5 pointer-events-auto">
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-mono uppercase tracking-widest text-white/40">Scrub</span>
+                    <span className="text-xs font-mono uppercase tracking-widest text-white/40">Scrub</span>
                     <div className="flex items-center gap-1.5">
                       {isDelayed &&
                     <button onClick={() => setDelay(0)}
-                    className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-accent/20 border border-accent/30 text-accent text-[10px] font-mono pointer-events-auto">
-                          <Play className="w-2 h-2" />L
+                    className="flex items-center gap-1 px-2 py-0.5 rounded bg-accent/20 border border-accent/30 text-accent text-xs font-mono pointer-events-auto">
+                          <Play className="w-2.5 h-2.5" />LIVE
                         </button>
                     }
-                      <span className="text-[10px] font-mono text-white tabular-nums">{isDelayed ? `−${delaySeconds}s` : 'live'}</span>
+                      <span className="text-xs font-mono text-white tabular-nums">{isDelayed ? `−${delaySeconds}s` : 'live'}</span>
                     </div>
                   </div>
                   <ScrubBar value={delayOffset} max={Math.max(1, bufferFill - 1)} onChange={setDelay} bufferFill={bufferFill} maxBufferSize={maxBufferSize} />
                 </div>
                 <button onClick={toggleLoop}
-              className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg border text-[10px] font-mono transition-all pointer-events-auto ${loopEnabled ? 'bg-accent/30 border-accent/50 text-white' : 'bg-white/5 border-white/10 text-white/40'}`}>
-                  <Repeat2 className="w-3 h-3" />Loop
+              className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg border text-xs font-mono transition-all pointer-events-auto ${loopEnabled ? 'bg-accent/30 border-accent/50 text-white' : 'bg-white/5 border-white/10 text-white/40'}`}>
+                  <Repeat2 className="w-3.5 h-3.5" />Loop
                 </button>
                 <motion.div key="loop-landscape" initial={false} animate={{ height: loopEnabled ? 'auto' : 0, opacity: loopEnabled ? 1 : 0 }} transition={{ duration: 0.25 }} className="overflow-hidden pointer-events-auto">
-                  <div className="space-y-1.5 pt-0.5">
-                    <CompactSlider label="D" valueLabel={`${(loopDepth / 30).toFixed(1)}s`} value={loopDepth} min={5} max={Math.max(5, bufferFill - 1)} step={1} onChange={setLoopDepth} />
-                    <CompactSlider label="S" valueLabel={`${loopSpeed}x`} value={loopSpeed} min={0.25} max={4} step={0.25} onChange={setLoopSpeed} />
+                  <div className="space-y-2 pt-0.5">
+                    <CompactSlider label="Depth" valueLabel={`${(loopDepth / 30).toFixed(1)}s`} value={loopDepth} min={5} max={Math.max(5, bufferFill - 1)} step={1} onChange={setLoopDepth} />
+                    <CompactSlider label="Speed" valueLabel={`${loopSpeed}x`} value={loopSpeed} min={0.25} max={4} step={0.25} onChange={setLoopSpeed} />
                     <button onClick={toggleChaos}
-                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg border text-[10px] font-mono transition-all pointer-events-auto ${chaosEnabled ? 'bg-destructive/40 border-destructive/60 text-white animate-pulse' : 'bg-white/5 border-white/10 text-white/40'}`}>
-                      <Shuffle className="w-3 h-3" />Chaos
+                className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg border text-xs font-mono transition-all pointer-events-auto ${chaosEnabled ? 'bg-destructive/40 border-destructive/60 text-white animate-pulse' : 'bg-white/5 border-white/10 text-white/40'}`}>
+                      <Shuffle className="w-3.5 h-3.5" />Chaos
                     </button>
                     <motion.div initial={false} animate={{ height: chaosEnabled ? 'auto' : 0, opacity: chaosEnabled ? 1 : 0 }} transition={{ duration: 0.2 }} className="overflow-hidden">
-                      <CompactSlider label="~" valueLabel={`${Math.round(chaosIntensity * 100)}%`} value={chaosIntensity} min={0.1} max={1} step={0.1} onChange={setChaosIntensity} />
+                      <CompactSlider label="Intensity" valueLabel={`${Math.round(chaosIntensity * 100)}%`} value={chaosIntensity} min={0.1} max={1} step={0.1} onChange={setChaosIntensity} />
                     </motion.div>
                   </div>
                 </motion.div>
                 <button onClick={toggleGhost}
-              className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg border text-[10px] font-mono transition-all pointer-events-auto ${ghostEnabled ? 'bg-primary/30 border-primary/50 text-white' : 'bg-white/5 border-white/10 text-white/40'}`}>
-                  <Layers className="w-3 h-3" />
+              className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg border text-xs font-mono transition-all pointer-events-auto ${ghostEnabled ? 'bg-primary/30 border-primary/50 text-white' : 'bg-white/5 border-white/10 text-white/40'}`}>
+                  <Layers className="w-3.5 h-3.5" />
                   {ghostCountdown !== null ? `Ghost ${ghostCountdown}s` : 'Ghost'}
                 </button>
                 <motion.div key="ghost-landscape" initial={false} animate={{ height: ghostEnabled ? 'auto' : 0, opacity: ghostEnabled ? 1 : 0 }} transition={{ duration: 0.25 }} className="overflow-hidden pointer-events-auto">
-                  <div className="space-y-1.5 pt-0.5">
-                    <CompactSlider label="I" valueLabel={`${ghostInterval}f`} value={ghostInterval} min={1} max={30} step={1} onChange={setGhostInterval} />
-                    <CompactSlider label="L" valueLabel={`${ghostCount}`} value={ghostCount} min={2} max={4} step={1} onChange={setGhostCount} />
-                    <CompactSlider label="E" valueLabel={`${Math.round(ghostOpacity * 100)}%`} value={ghostOpacity} min={0.1} max={1} step={0.05} onChange={setGhostOpacity} />
+                  <div className="space-y-2 pt-0.5">
+                    <CompactSlider label="Interval" valueLabel={`${ghostInterval}f`} value={ghostInterval} min={1} max={30} step={1} onChange={setGhostInterval} />
+                    <CompactSlider label="Layers" valueLabel={`${ghostCount}`} value={ghostCount} min={2} max={4} step={1} onChange={setGhostCount} />
+                    <CompactSlider label="Exposure" valueLabel={`${Math.round(ghostOpacity * 100)}%`} value={ghostOpacity} min={0.1} max={1} step={0.05} onChange={setGhostOpacity} />
                   </div>
                 </motion.div>
-              </div>
-              {/* Sticky gallery button — always reachable */}
-              <div className="shrink-0 px-4 pointer-events-auto"
-            style={{ paddingBottom: '1rem', background: 'linear-gradient(to top, rgba(0,0,0,0.9) 60%, transparent 100%)' }}>
-                <button onClick={() => {if (isRecording) {alert('Stop recording before viewing gallery');return;}switchTab('/gallery');navigate('/gallery');}}
-              className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg border bg-white/5 border-white/10 text-white/40 text-[10px] font-mono pointer-events-auto">
-                  <Film className="w-3 h-3" />Gallery
-                </button>
               </div>
             </div>
           </> : (
@@ -778,12 +776,12 @@ function GhostSliderRow({ label, valueLabel, value, min, max, step, onChange }) 
 
 function CompactSlider({ label, valueLabel, value, min, max, step, onChange }) {
   return (
-    <div className="flex items-center gap-2">
-      <span className="text-[8px] font-mono uppercase tracking-widest text-white/40 w-6 shrink-0">{label}</span>
+    <div className="flex items-center gap-2.5">
+      <span className="text-[10px] font-mono uppercase tracking-widest text-white/40 w-14 shrink-0">{label}</span>
       <div className="flex-1">
         <ControlSlider value={value} min={min} max={max} step={step} onChange={onChange} />
       </div>
-      <span className="text-[8px] font-mono text-white/60 w-8 text-right shrink-0 tabular-nums">{valueLabel}</span>
+      <span className="text-[10px] font-mono text-white/60 w-10 text-right shrink-0 tabular-nums">{valueLabel}</span>
     </div>);
 
 }
