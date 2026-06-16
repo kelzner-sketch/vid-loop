@@ -579,7 +579,7 @@ export default function Camera() {
         <>
             {/* ── LANDSCAPE LEFT: Record + Camera + Stop ── */}
             <div className="absolute left-0 top-0 bottom-0 z-30 flex flex-col items-center justify-center gap-4 px-2 pointer-events-auto"
-          style={{ background: 'linear-gradient(to right, rgba(0,0,0,0.82) 0%, transparent 100%)', width: '70px' }}>
+          style={{ background: '#000000', width: '70px' }}>
               <button
               onClick={(e) => {e.preventDefault();e.stopPropagation();handleRecordPress(e);}}
               disabled={uploadStatus === 'uploading'}
@@ -616,7 +616,7 @@ export default function Camera() {
 
             {/* ── LANDSCAPE RIGHT: Sliders ── */}
             <div className="absolute right-0 top-0 bottom-0 z-30 flex flex-col"
-          style={{ background: 'linear-gradient(to left, rgba(0,0,0,0.82) 0%, transparent 100%)', width: '240px' }}>
+          style={{ background: '#000000', width: '240px' }}>
               <div className="flex-1 px-4 space-y-2 overflow-y-auto overscroll-contain pointer-events-auto"
             style={{ paddingTop: '1rem' }}>
                 <div className="space-y-1 pointer-events-auto">
