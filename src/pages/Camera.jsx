@@ -13,8 +13,6 @@ import RenderCanvas from '@/components/video/RenderCanvas';
 import ControlSlider from '@/components/video/ControlSlider';
 import ScrubBar from '@/components/video/ScrubBar';
 import { useRecording } from '@/lib/RecordingContext';
-import { usePro } from '@/lib/ProContext';
-import ProModal from '@/components/ProModal';
 import { useFFmpegConvert } from '@/components/video/useFFmpegConvert';
 
 
@@ -22,8 +20,6 @@ export default function Camera() {
   const navigate = useNavigate();
   const { switchTab } = useTabNav();
   const { isRecording, setIsRecording } = useRecording();
-  const { isPro } = usePro();
-  const [showProModal, setShowProModal] = useState(false);
   const { videoRef, isActive, error, start, stop } = useCamera();
   const { pushFrame, getFrame, getBufferLength, clearBuffer, maxBufferSize } = useFrameBuffer();
   const { convert } = useFFmpegConvert();
@@ -305,8 +301,8 @@ export default function Camera() {
 
     // Create recording canvas: 16:9 aspect ratio
     const recordCanvas = document.createElement('canvas');
-    recordCanvas.width = isPro ? 720 : 480; // HD vs SD
-    recordCanvas.height = isPro ? 405 : 270; // 16:9 aspect ratio
+    recordCanvas.width = 720; // HD
+    recordCanvas.height = 405; // 16:9 aspect ratio
     const rctx = recordCanvas.getContext('2d');
 
     // Fill with black (for letterboxing)
@@ -403,7 +399,7 @@ export default function Camera() {
         return t + 1;
       });
     }, 1000);
-  }, [isPro, base44]);
+  }, [base44]);
 
   const stopRecording = useCallback(() => {
     mediaRecorderRef.current?.stop();
@@ -418,30 +414,12 @@ export default function Camera() {
       e.stopPropagation();
       e.preventDefault();
     }
-    console.log('Record button clicked, isPro:', isPro, 'isRecording:', isRecording, 'canvas:', canvasRef.current ? 'exists' : 'missing');
     if (isRecording) {
-      console.log('Stopping recording');
       stopRecording();
       return;
     }
-    try {
-      if (!isPro) {
-        console.log('Showing Pro modal (free tier)');
-        setShowProModal(true);
-        return;
-      }
-      console.log('Starting recording (pro)');
-      startRecording();
-    } catch (err) {
-      console.error('Record handler error:', err);
-    }
-  }, [isPro, startRecording, isRecording, stopRecording]);
-
-  // Pro modal close: 'record' = record free, 'dismiss' or undefined = just close
-  const handleProModalClose = useCallback((action) => {
-    setShowProModal(false);
-    if (action === 'record') startRecording();
-  }, [startRecording]);
+    startRecording();
+  }, [startRecording, isRecording, stopRecording]);
 
   const delaySeconds = (delayOffset / 30).toFixed(2);
   const fillPercent = Math.round(bufferFill / maxBufferSize * 100);
@@ -487,11 +465,6 @@ export default function Camera() {
         }
       </AnimatePresence>
 
-      {/* Pro modal */}
-      <AnimatePresence>
-        {showProModal && <ProModal onClose={handleProModalClose} context="record" />}
-      </AnimatePresence>
-
       {/* ── LIVE VIEW ── */}
       {isActive &&
       <>
@@ -511,7 +484,6 @@ export default function Camera() {
             ghostInterval={ghostInterval}
             ghostCount={ghostCount}
             isActive={isActive}
-            isPro={isPro}
             canvasRefOut={canvasRef} />
           
           </div>

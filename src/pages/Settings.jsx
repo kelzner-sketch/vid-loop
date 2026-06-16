@@ -5,9 +5,6 @@ import UserProfile from '@/components/UserProfile';
 import { useAuth } from '@/lib/AuthContext';
 import { base44 } from '@/api/base44Client';
 import ControlSlider from '@/components/video/ControlSlider';
-import { usePro } from '@/lib/ProContext';
-import ProModal from '@/components/ProModal';
-import { AnimatePresence } from 'framer-motion';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel,
   AlertDialogContent, AlertDialogDescription, AlertDialogFooter,
@@ -23,31 +20,7 @@ const tips = [
 
 export default function Settings() {
   const { user } = useAuth();
-  const { isPro, refresh } = usePro();
-  const [showProModal, setShowProModal] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const [restoring, setRestoring] = useState(false);
-  const [restoreMsg, setRestoreMsg] = useState(null);
-
-  const handleRestorePurchase = async () => {
-    setRestoring(true);
-    setRestoreMsg(null);
-    try {
-      const res = await base44.functions.invoke('getProStatus', {});
-      const proResult = !!res.data?.is_pro;
-      if (proResult) {
-        await refresh();
-        setRestoreMsg('✓ Pro restored!');
-      } else {
-        setRestoreMsg('No purchase found for this account.');
-      }
-    } catch {
-      setRestoreMsg('Could not check — please try again.');
-    } finally {
-      setRestoring(false);
-      setTimeout(() => setRestoreMsg(null), 4000);
-    }
-  };
   
   // Load persisted control prefs
   const loadPrefs = () => {
@@ -101,49 +74,26 @@ export default function Settings() {
     <div className="fixed inset-0 bg-background flex flex-col overflow-hidden">
       <MobileHeader title="About" />
 
-      <AnimatePresence>
-        {showProModal && <ProModal onClose={() => setShowProModal(false)} />}
-      </AnimatePresence>
-
       <div className="flex-1 overflow-y-auto px-5 py-6 space-y-4" style={{ paddingBottom: 'calc(1rem + env(safe-area-inset-bottom) + 56px)' }}>
         {user && <UserProfile />}
 
-        {/* Pro upgrade / status card */}
-        {isPro ? (
+        {/* Pro status card */}
+        {user ? (
           <div className="flex items-center gap-3 px-4 py-3.5 rounded-2xl bg-primary/10 border border-primary/30">
             <Zap className="w-4 h-4 text-primary shrink-0" />
             <div>
               <p className="text-sm font-semibold text-primary">VidLoop Pro</p>
-              <p className="text-xs text-muted-foreground">HD · MP4 · 30s buffer active</p>
+              <p className="text-xs text-muted-foreground">HD recording · MP4 export · Full buffer unlocked</p>
             </div>
           </div>
         ) : (
-          <button
-            onClick={() => setShowProModal(true)}
-            className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl bg-primary/10 border border-primary/30 text-left hover:bg-primary/20 transition-colors active:scale-[0.98]"
-          >
+          <a href="/register" className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl bg-primary/10 border border-primary/30 text-left hover:bg-primary/20 transition-colors active:scale-[0.98]">
             <Zap className="w-4 h-4 text-primary shrink-0" />
             <div className="flex-1">
-              <p className="text-sm font-semibold text-primary">Upgrade to Pro — $2.99/mo</p>
-              <p className="text-xs text-muted-foreground">HD · MP4 export · 30s scrub buffer</p>
+              <p className="text-sm font-semibold text-primary">Sign Up for Pro</p>
+              <p className="text-xs text-muted-foreground">Create a free account to unlock HD recording, MP4 export, and full buffer</p>
             </div>
-          </button>
-        )}
-
-        {/* Restore Purchase */}
-        {!isPro && (
-          <div className="space-y-1">
-            <button
-              onClick={handleRestorePurchase}
-              disabled={restoring}
-              className="w-full text-xs text-muted-foreground py-2 hover:text-foreground transition-colors disabled:opacity-50"
-            >
-              {restoring ? 'Checking…' : 'Restore Purchase'}
-            </button>
-            {restoreMsg && (
-              <p className="text-xs text-center text-primary">{restoreMsg}</p>
-            )}
-          </div>
+          </a>
         )}
 
         {/* Auth Section */}
