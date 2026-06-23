@@ -117,8 +117,7 @@ export default function Gallery() {
   };
 
   const loadClips = async () => {
-    if (!user) { setLoading(false); return; }
-    const data = await base44.entities.Clip.filter({ created_by_id: user.id }, '-created_date');
+    const data = await base44.entities.Clip.list('-created_date');
     setClips(data);
     setLoading(false);
   };
@@ -315,10 +314,6 @@ export default function Gallery() {
         onTouchEnd={handleTouchEnd}
         style={{ paddingBottom: 'calc(1rem + env(safe-area-inset-bottom) + 56px)' }}>
         
-        {user && <UserProfile />}
-
-
-
         {loading ?
         <div className="flex items-center justify-center h-40">
             <div className="w-6 h-6 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
