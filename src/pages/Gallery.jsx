@@ -149,14 +149,16 @@ export default function Gallery() {
     };
     window.addEventListener('clip-saved', onClipSaved);
 
-    // Load initial clips
-    loadClips();
-
     return () => {
       unsubscribe();
       window.removeEventListener('clip-saved', onClipSaved);
     };
   }, []);
+
+  // Reload clips whenever the user changes (e.g. after sign-in)
+  useEffect(() => {
+    loadClips();
+  }, [user]);
 
   const deleteClip = (id) => {
     setClips((prev) => prev.filter((c) => c.id !== id));
