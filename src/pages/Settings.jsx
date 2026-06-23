@@ -80,34 +80,7 @@ export default function Settings() {
       <div className="flex-1 overflow-y-auto px-5 py-6 space-y-4" style={{ paddingBottom: 'calc(1rem + env(safe-area-inset-bottom) + 56px)' }}>
         {user && <UserProfile />}
 
-        {/* Pro status card */}
-        {user ? (
-          <div className="flex items-center gap-3 px-4 py-3.5 rounded-2xl bg-primary/10 border border-primary/30">
-            <Zap className="w-4 h-4 text-primary shrink-0" />
-            <div>
-              <p className="text-sm font-semibold text-primary">VidLoop Pro</p>
-              <p className="text-xs text-muted-foreground">HD recording · MP4 export · Full buffer unlocked</p>
-            </div>
-          </div>
-        ) : (
-          <a href="/register" className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl bg-primary/10 border border-primary/30 text-left hover:bg-primary/20 transition-colors active:scale-[0.98]">
-            <Zap className="w-4 h-4 text-primary shrink-0" />
-            <div className="flex-1">
-              <p className="text-sm font-semibold text-primary">Sign Up for Pro</p>
-              <p className="text-xs text-muted-foreground">Create a free account to unlock HD recording, MP4 export, and full buffer</p>
-            </div>
-          </a>
-        )}
 
-        {/* Auth Section */}
-        {!user && (
-          <>
-            <div className="flex gap-2 text-xs">
-              <a href="/login" className="flex-1 px-4 py-2 rounded-xl border border-border bg-card text-center text-foreground hover:bg-muted transition-colors">Sign In</a>
-              <a href="/register" className="flex-1 px-4 py-2 rounded-xl border border-primary/30 bg-primary/10 text-center text-primary hover:bg-primary/20 transition-colors">Sign Up</a>
-            </div>
-          </>
-        )}
 
         {user && (
           <>
