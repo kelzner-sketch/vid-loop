@@ -662,7 +662,7 @@ export default function Camera() {
                       <button onClick={() => setLoopMode('oneway')} className={`flex-1 py-1 rounded-lg border text-[10px] font-mono transition-all ${loopMode === 'oneway' ? 'bg-accent/40 border-accent/60 text-white' : 'bg-white/5 border-white/10 text-white/40'}`}>→ One-Way</button>
                     </div>
                     <CompactSlider label="Depth" valueLabel={`${(loopDepth / 30).toFixed(1)}s`} value={loopDepth} min={15} max={Math.min(540, Math.max(15, bufferFill - 1))} step={15} onChange={setLoopDepth} />
-                    <CompactSlider label="Speed" valueLabel={`${loopSpeed}x`} value={loopSpeed} min={0.25} max={4} step={0.25} onChange={setLoopSpeed} />
+                    <CompactSlider label="Speed" valueLabel={`${loopSpeed}x`} value={loopSpeed} min={1.25} max={4} step={0.25} onChange={setLoopSpeed} />
                     <button onClick={toggleChaos}
                 className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg border text-xs font-mono transition-all pointer-events-auto ${chaosEnabled ? 'bg-destructive/40 border-destructive/60 text-white animate-pulse' : 'bg-white/5 border-white/10 text-white/40'}`}>
                       <Shuffle className="w-3.5 h-3.5" />Chaos
@@ -728,7 +728,7 @@ export default function Camera() {
                              <button onClick={() => setLoopMode('oneway')} className={`flex-1 py-1 rounded-lg border text-xs font-mono transition-all ${loopMode === 'oneway' ? 'bg-accent/40 border-accent/60 text-white' : 'bg-white/5 border-white/10 text-white/40'}`}>→ One-Way</button>
                            </div>
                            <GhostSliderRow label="Depth" valueLabel={`${(loopDepth / 30).toFixed(1)}s`} value={loopDepth} min={15} max={Math.min(540, Math.max(15, bufferFill - 1))} step={15} onChange={setLoopDepth} />
-                           <GhostSliderRow label="Speed" valueLabel={`${loopSpeed}x`} value={loopSpeed} min={0.25} max={4} step={0.25} onChange={setLoopSpeed} />
+                           <GhostSliderRow label="Speed" valueLabel={`${loopSpeed}x`} value={loopSpeed} min={1.25} max={4} step={0.25} onChange={setLoopSpeed} />
                            <div className="flex items-center gap-2 pt-1">
                              <button onClick={toggleChaos}
                     className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-mono transition-all ${chaosEnabled ? 'bg-destructive/40 border-destructive/60 text-white animate-pulse' : 'bg-white/5 border-white/10 text-white/40'}`}>
