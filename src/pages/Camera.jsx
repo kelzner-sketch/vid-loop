@@ -507,7 +507,7 @@ export default function Camera() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
-            className="absolute bottom-32 left-1/2 -translate-x-1/2 z-30 flex items-center gap-3 px-4 py-3 rounded-2xl bg-black/80 backdrop-blur-md border border-white/20 text-white text-sm font-mono whitespace-nowrap">
+            className="absolute bottom-32 left-0 right-0 mx-auto w-fit z-30 flex items-center gap-3 px-4 py-3 rounded-2xl bg-black/80 backdrop-blur-md border border-white/20 text-white text-sm font-mono whitespace-nowrap">
                 <Film className="w-4 h-4 text-primary" />
                 Clip saved!
                 <button onClick={() => {switchTab('/gallery');navigate('/gallery');}} className="text-primary underline text-xs">View Gallery</button>
@@ -519,7 +519,7 @@ export default function Camera() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
-            className="absolute bottom-32 left-1/2 -translate-x-1/2 z-30 flex items-center gap-3 px-4 py-3 rounded-2xl bg-black/80 backdrop-blur-md border border-white/20 text-white text-sm font-mono whitespace-nowrap">
+            className="absolute bottom-32 left-0 right-0 mx-auto w-fit z-30 flex items-center gap-3 px-4 py-3 rounded-2xl bg-black/80 backdrop-blur-md border border-white/20 text-white text-sm font-mono whitespace-nowrap">
                 <div className="w-3 h-3 border-2 border-white/40 border-t-white rounded-full animate-spin" />
                 Converting to MP4…
               </motion.div>
@@ -530,7 +530,7 @@ export default function Camera() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
-            className="absolute bottom-32 left-1/2 -translate-x-1/2 z-30 flex items-center gap-3 px-4 py-3 rounded-2xl bg-black/80 backdrop-blur-md border border-white/20 text-white text-sm font-mono whitespace-nowrap">
+            className="absolute bottom-32 left-0 right-0 mx-auto w-fit z-30 flex items-center gap-3 px-4 py-3 rounded-2xl bg-black/80 backdrop-blur-md border border-white/20 text-white text-sm font-mono whitespace-nowrap">
                 <div className="w-3 h-3 border-2 border-white/40 border-t-white rounded-full animate-spin" />
                 Saving to gallery…
               </motion.div>
@@ -590,7 +590,7 @@ export default function Camera() {
         <>
             {/* ── LANDSCAPE LEFT: Gallery + Record + Camera + Stop ── */}
             <div className="absolute left-0 top-0 bottom-0 z-30 flex flex-col items-center justify-center gap-3 px-2 pointer-events-auto"
-          style={{ background: 'linear-gradient(to right, #000000 0%, transparent 100%)', width: '72px' }}>
+          style={{ width: '72px' }}>
               <button onClick={() => {if (isRecording) {alert('Stop recording before viewing gallery');return;}switchTab('/gallery');navigate('/gallery');}}
               className="flex flex-col items-center justify-center w-12 h-12 rounded-full bg-white/10 backdrop-blur-md border border-white/20 active:scale-95 transition-all pointer-events-auto"
               type="button">
@@ -633,7 +633,7 @@ export default function Camera() {
 
             {/* ── LANDSCAPE RIGHT: Sliders ── */}
             <div className="absolute right-0 top-0 bottom-0 z-30 flex flex-col"
-          style={{ background: 'linear-gradient(to left, #000000 0%, transparent 100%)', width: '280px' }}>
+          style={{ width: '280px' }}>
               <div className="flex-1 px-5 space-y-2.5 overflow-y-auto overscroll-contain pointer-events-auto"
             style={{ paddingTop: '1.25rem' }}>
                 <div className="space-y-1.5 pointer-events-auto">
