@@ -65,21 +65,22 @@ export default function RenderCanvas({ videoRef, getFrame, delayOffset, delayOff
 
     if (ghostEnabled) {
       const count = ghostCount ?? 4;
-      const interval = ghostInterval ?? 4;
+      const interval = ghostInterval ?? 8; // larger default spread so trails are visually distinct
       const opacity = ghostOpacity ?? 0.8;
 
-      // Draw oldest ghost first (most transparent), newest ghost last, then sharp live frame on top.
-      // This puts motion trails BEHIND the current frame — matching the DigiGardin frame-delay look.
-      // Additive blending makes bright edges glow and stack naturally.
+      // Draw oldest ghost first (most transparent), working toward the current frame.
+      // Trails spread into the past from the current frame position.
+      // Use source-over so the effect works in any lighting, not just bright scenes.
       for (let i = count; i >= 1; i--) {
-        const frame = getFrame(delayOffset + i * interval);
+        const pastOffset = delayOffset + i * interval;
+        const frame = getFrame(pastOffset);
         if (!frame) continue;
-        // Fade out older frames more aggressively: oldest = near 0, closest = near opacity
-        const alpha = opacity * Math.pow((count - i + 1) / count, 2);
-        drawCover(frame, alpha, 'lighter');
+        // Linear fade: oldest trail is faintest, nearest trail is strongest
+        const alpha = opacity * (count - i + 1) / count;
+        drawCover(frame, alpha, 'source-over');
       }
 
-      // Sharp current frame drawn last — always crisp on top of the trails
+      // Sharp current frame on top — always crisp
       drawCover(currentFrame, 1, 'source-over');
     } else {
       drawCover(currentFrame, 1);

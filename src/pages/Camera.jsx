@@ -46,11 +46,13 @@ export default function Camera() {
 
   // Ping-pong loop mode
   const [loopEnabled, setLoopEnabled] = useState(prefs.loopEnabled ?? true);
+  const [loopMode, setLoopMode] = useState(prefs.loopMode ?? 'pingpong'); // 'pingpong' | 'oneway'
   const [loopDepth, setLoopDepth] = useState(prefs.loopDepth ?? 150); // 5s at 30fps default
   const [loopSpeed, setLoopSpeed] = useState(prefs.loopSpeed ?? 2); // frames advanced per render tick
   const loopStateRef = useRef({ dir: 1, pos: 0 }); // internal mutable state, no re-render
   const loopRafRef = useRef(null);
   const loopEnabledRef = useRef(false);
+  const loopModeRef = useRef('pingpong');
 
   // Chaos mode
   const [chaosEnabled, setChaosEnabled] = useState(false);
@@ -83,6 +85,7 @@ export default function Camera() {
       if (dbPrefs.loopDepth !== undefined) setLoopDepth(dbPrefs.loopDepth);
       if (dbPrefs.loopSpeed !== undefined) setLoopSpeed(dbPrefs.loopSpeed);
       if (dbPrefs.loopEnabled !== undefined) setLoopEnabled(dbPrefs.loopEnabled);
+      if (dbPrefs.loopMode !== undefined) setLoopMode(dbPrefs.loopMode);
       if (dbPrefs.facingMode !== undefined) setFacingMode(dbPrefs.facingMode);
     }
   }, [user]);
@@ -92,7 +95,7 @@ export default function Camera() {
   useEffect(() => {
     clearTimeout(debounceRef.current);
     const prefs = {
-      facingMode, loopDepth, loopSpeed,
+      facingMode, loopDepth, loopSpeed, loopMode,
       ghostDelay, ghostInterval, ghostCount, ghostOpacity
     };
     localStorage.setItem('vidloop_prefs', JSON.stringify(prefs));
@@ -106,6 +109,7 @@ export default function Camera() {
 
   // Keep refs in sync so the RAF loop always reads latest values
   loopEnabledRef.current = loopEnabled;
+  loopModeRef.current = loopMode;
   chaosEnabledRef.current = chaosEnabled;
   chaosIntensityRef.current = chaosIntensity;
 
@@ -146,7 +150,7 @@ export default function Camera() {
     return () => clearTimeout(chaosTimerRef.current);
   }, [chaosEnabled, getBufferLength]);
 
-  // Ping-pong loop — sweeps 0 → loopDepth → 0 → loopDepth … smoothly
+  // Loop — ping-pong (0 ↔ loopDepth) or one-way (0 → loopDepth → snap back → repeat)
   useEffect(() => {
     if (!loopEnabled) {
       if (loopRafRef.current) cancelAnimationFrame(loopRafRef.current);
@@ -155,18 +159,20 @@ export default function Camera() {
     const tick = () => {
       if (!loopEnabledRef.current) return;
       const state = loopStateRef.current;
+      const mode = loopModeRef.current;
       state.pos += loopSpeed * state.dir;
-      // Bounce at the ends
-      if (state.pos >= loopDepth) {
-        state.pos = loopDepth;
-        state.dir = -1; // reverse: head back toward live
-      } else if (state.pos <= 0) {
-        state.pos = 0;
-        state.dir = 1; // reverse: head back into the past
+
+      if (mode === 'pingpong') {
+        // Bounce at ends
+        if (state.pos >= loopDepth) { state.pos = loopDepth; state.dir = -1; }
+        else if (state.pos <= 0) { state.pos = 0; state.dir = 1; }
+      } else {
+        // One-way: sweep into the past, then snap back to live and repeat
+        if (state.pos >= loopDepth) { state.pos = 0; }
       }
+
       const rounded = Math.round(state.pos);
       delayOffsetRef.current = rounded;
-      // Throttle React state updates to ~10fps to avoid re-render jitter
       if (!tick._lastUpdate || performance.now() - tick._lastUpdate > 100) {
         tick._lastUpdate = performance.now();
         setDelayOffset(rounded);
@@ -178,7 +184,7 @@ export default function Camera() {
     return () => {
       if (loopRafRef.current) cancelAnimationFrame(loopRafRef.current);
     };
-  }, [loopEnabled, loopDepth, loopSpeed]);
+  }, [loopEnabled, loopDepth, loopSpeed, loopMode]);
 
   const setDelay = (v) => {delayOffsetRef.current = v;setDelayOffset(v);};
 
@@ -651,6 +657,10 @@ export default function Camera() {
                 </button>
                 <motion.div key="loop-landscape" initial={false} animate={{ height: loopEnabled ? 'auto' : 0, opacity: loopEnabled ? 1 : 0 }} transition={{ duration: 0.25 }} className="overflow-hidden pointer-events-auto">
                   <div className="space-y-2 pt-0.5">
+                    <div className="flex items-center gap-1.5">
+                      <button onClick={() => setLoopMode('pingpong')} className={`flex-1 py-1 rounded-lg border text-[10px] font-mono transition-all ${loopMode === 'pingpong' ? 'bg-accent/40 border-accent/60 text-white' : 'bg-white/5 border-white/10 text-white/40'}`}>↔ Ping-Pong</button>
+                      <button onClick={() => setLoopMode('oneway')} className={`flex-1 py-1 rounded-lg border text-[10px] font-mono transition-all ${loopMode === 'oneway' ? 'bg-accent/40 border-accent/60 text-white' : 'bg-white/5 border-white/10 text-white/40'}`}>→ One-Way</button>
+                    </div>
                     <CompactSlider label="Depth" valueLabel={`${(loopDepth / 30).toFixed(1)}s`} value={loopDepth} min={15} max={Math.min(540, Math.max(15, bufferFill - 1))} step={15} onChange={setLoopDepth} />
                     <CompactSlider label="Speed" valueLabel={`${loopSpeed}x`} value={loopSpeed} min={0.25} max={4} step={0.25} onChange={setLoopSpeed} />
                     <button onClick={toggleChaos}
@@ -713,6 +723,10 @@ export default function Camera() {
                    {loopEnabled &&
               <motion.div key="loop-panel" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.3 }} className="overflow-hidden pointer-events-auto">
                          <div className="space-y-3 pt-1">
+                           <div className="flex items-center gap-2">
+                             <button onClick={() => setLoopMode('pingpong')} className={`flex-1 py-1 rounded-lg border text-xs font-mono transition-all ${loopMode === 'pingpong' ? 'bg-accent/40 border-accent/60 text-white' : 'bg-white/5 border-white/10 text-white/40'}`}>↔ Ping-Pong</button>
+                             <button onClick={() => setLoopMode('oneway')} className={`flex-1 py-1 rounded-lg border text-xs font-mono transition-all ${loopMode === 'oneway' ? 'bg-accent/40 border-accent/60 text-white' : 'bg-white/5 border-white/10 text-white/40'}`}>→ One-Way</button>
+                           </div>
                            <GhostSliderRow label="Depth" valueLabel={`${(loopDepth / 30).toFixed(1)}s`} value={loopDepth} min={15} max={Math.min(540, Math.max(15, bufferFill - 1))} step={15} onChange={setLoopDepth} />
                            <GhostSliderRow label="Speed" valueLabel={`${loopSpeed}x`} value={loopSpeed} min={0.25} max={4} step={0.25} onChange={setLoopSpeed} />
                            <div className="flex items-center gap-2 pt-1">
