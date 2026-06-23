@@ -590,7 +590,7 @@ export default function Camera() {
         <>
             {/* ── LANDSCAPE LEFT: Gallery + Record + Camera + Stop ── */}
             <div className="absolute left-0 top-0 bottom-0 z-30 flex flex-col items-center justify-center gap-3 px-2 pointer-events-auto"
-          style={{ width: '72px' }}>
+          style={{ width: '72px', background: 'transparent' }}>
               <button onClick={() => {if (isRecording) {alert('Stop recording before viewing gallery');return;}switchTab('/gallery');navigate('/gallery');}}
               className="flex flex-col items-center justify-center w-12 h-12 rounded-full bg-white/10 backdrop-blur-md border border-white/20 active:scale-95 transition-all pointer-events-auto"
               type="button">
@@ -633,9 +633,9 @@ export default function Camera() {
 
             {/* ── LANDSCAPE RIGHT: Sliders ── */}
             <div className="absolute right-0 top-0 bottom-0 z-30 flex flex-col"
-          style={{ width: '280px' }}>
+          style={{ width: '280px', background: 'transparent' }}>
               <div className="flex-1 px-5 space-y-2.5 overflow-y-auto overscroll-contain pointer-events-auto"
-            style={{ paddingTop: '1.25rem' }}>
+            style={{ paddingTop: '1.25rem', background: 'transparent' }}>
                 <div className="space-y-1.5 pointer-events-auto">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-mono uppercase tracking-widest text-white/40">Scrub</span>
