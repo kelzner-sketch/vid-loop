@@ -34,7 +34,7 @@ export default function Settings() {
   const [ghostCount, setGhostCount] = useState(prefs.ghostCount ?? 6);
   const [ghostOpacity, setGhostOpacity] = useState(prefs.ghostOpacity ?? 0.8);
   const [chaosIntensity, setChaosIntensity] = useState(prefs.chaosIntensity ?? 0.5);
-  const [loopDepth, setLoopDepth] = useState(prefs.loopDepth ?? 30);
+  const [loopDepth, setLoopDepth] = useState(prefs.loopDepth ?? 150);
   const [loopSpeed, setLoopSpeed] = useState(prefs.loopSpeed ?? 1);
 
   // Load settings from database if authenticated
@@ -167,7 +167,7 @@ export default function Settings() {
 
         <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground px-1 pt-4">Loop Controls</p>
         <div className="rounded-2xl bg-card border border-border px-5 py-4 space-y-4">
-          <ControlSetting label="Depth" sublabel="Duration of ping-pong loop" value={loopDepth} min={5} max={180} step={1} onChange={setLoopDepth} formatValue={(v) => `${(v / 30).toFixed(1)}s`} />
+          <ControlSetting label="Depth" sublabel="Duration of ping-pong loop" value={loopDepth} min={15} max={540} step={15} onChange={setLoopDepth} formatValue={(v) => `${(v / 30).toFixed(1)}s`} />
           <ControlSetting label="Speed" sublabel="Playback speed multiplier" value={loopSpeed} min={0.25} max={4} step={0.25} onChange={setLoopSpeed} formatValue={(v) => `${v}x`} />
         </div>
 

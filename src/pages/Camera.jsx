@@ -46,8 +46,8 @@ export default function Camera() {
 
   // Ping-pong loop mode
   const [loopEnabled, setLoopEnabled] = useState(prefs.loopEnabled ?? true);
-  const [loopDepth, setLoopDepth] = useState(prefs.loopDepth ?? 42); // 1.4s at 30fps // frames to ping-pong through
-  const [loopSpeed, setLoopSpeed] = useState(prefs.loopSpeed ?? 3.5); // frames advanced per render tick
+  const [loopDepth, setLoopDepth] = useState(prefs.loopDepth ?? 150); // 5s at 30fps default
+  const [loopSpeed, setLoopSpeed] = useState(prefs.loopSpeed ?? 2); // frames advanced per render tick
   const loopStateRef = useRef({ dir: 1, pos: 0 }); // internal mutable state, no re-render
   const loopRafRef = useRef(null);
   const loopEnabledRef = useRef(false);
@@ -146,7 +146,7 @@ export default function Camera() {
     return () => clearTimeout(chaosTimerRef.current);
   }, [chaosEnabled, getBufferLength]);
 
-  // Backward-only loop — sweeps from 0 → loopDepth, then snaps back to 0 and repeats
+  // Ping-pong loop — sweeps 0 → loopDepth → 0 → loopDepth … smoothly
   useEffect(() => {
     if (!loopEnabled) {
       if (loopRafRef.current) cancelAnimationFrame(loopRafRef.current);
@@ -155,9 +155,14 @@ export default function Camera() {
     const tick = () => {
       if (!loopEnabledRef.current) return;
       const state = loopStateRef.current;
-      state.pos += loopSpeed;
+      state.pos += loopSpeed * state.dir;
+      // Bounce at the ends
       if (state.pos >= loopDepth) {
-        state.pos = 0; // snap back to live and rewind again
+        state.pos = loopDepth;
+        state.dir = -1; // reverse: head back toward live
+      } else if (state.pos <= 0) {
+        state.pos = 0;
+        state.dir = 1; // reverse: head back into the past
       }
       const rounded = Math.round(state.pos);
       delayOffsetRef.current = rounded;
@@ -168,7 +173,7 @@ export default function Camera() {
       }
       loopRafRef.current = requestAnimationFrame(tick);
     };
-    loopStateRef.current = { pos: 0 };
+    loopStateRef.current = { dir: 1, pos: 0 };
     loopRafRef.current = requestAnimationFrame(tick);
     return () => {
       if (loopRafRef.current) cancelAnimationFrame(loopRafRef.current);
@@ -646,7 +651,7 @@ export default function Camera() {
                 </button>
                 <motion.div key="loop-landscape" initial={false} animate={{ height: loopEnabled ? 'auto' : 0, opacity: loopEnabled ? 1 : 0 }} transition={{ duration: 0.25 }} className="overflow-hidden pointer-events-auto">
                   <div className="space-y-2 pt-0.5">
-                    <CompactSlider label="Depth" valueLabel={`${(loopDepth / 30).toFixed(1)}s`} value={loopDepth} min={5} max={Math.max(5, bufferFill - 1)} step={1} onChange={setLoopDepth} />
+                    <CompactSlider label="Depth" valueLabel={`${(loopDepth / 30).toFixed(1)}s`} value={loopDepth} min={15} max={Math.min(540, Math.max(15, bufferFill - 1))} step={15} onChange={setLoopDepth} />
                     <CompactSlider label="Speed" valueLabel={`${loopSpeed}x`} value={loopSpeed} min={0.25} max={4} step={0.25} onChange={setLoopSpeed} />
                     <button onClick={toggleChaos}
                 className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg border text-xs font-mono transition-all pointer-events-auto ${chaosEnabled ? 'bg-destructive/40 border-destructive/60 text-white animate-pulse' : 'bg-white/5 border-white/10 text-white/40'}`}>
@@ -708,7 +713,7 @@ export default function Camera() {
                    {loopEnabled &&
               <motion.div key="loop-panel" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.3 }} className="overflow-hidden pointer-events-auto">
                          <div className="space-y-3 pt-1">
-                           <GhostSliderRow label="Depth" valueLabel={`${(loopDepth / 30).toFixed(1)}s`} value={loopDepth} min={5} max={Math.max(5, bufferFill - 1)} step={1} onChange={setLoopDepth} />
+                           <GhostSliderRow label="Depth" valueLabel={`${(loopDepth / 30).toFixed(1)}s`} value={loopDepth} min={15} max={Math.min(540, Math.max(15, bufferFill - 1))} step={15} onChange={setLoopDepth} />
                            <GhostSliderRow label="Speed" valueLabel={`${loopSpeed}x`} value={loopSpeed} min={0.25} max={4} step={0.25} onChange={setLoopSpeed} />
                            <div className="flex items-center gap-2 pt-1">
                              <button onClick={toggleChaos}

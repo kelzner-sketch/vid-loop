@@ -1,6 +1,6 @@
 import { useRef, useCallback } from 'react';
 
-const MAX_BUFFER_SIZE = 150; // ~5 seconds at 30fps
+const MAX_BUFFER_SIZE = 600; // ~20 seconds at 30fps
 
 export default function useFrameBuffer() {
   const bufferRef = useRef([]);
