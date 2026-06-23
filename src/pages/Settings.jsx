@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Film, Camera, Layers, Repeat2, Trash2, Zap, Shuffle } from 'lucide-react';
+import { Film, Camera, Layers, Repeat2, Trash2, Shuffle } from 'lucide-react';
 import MobileHeader from '@/components/MobileHeader';
 import UserProfile from '@/components/UserProfile';
+import GoogleIcon from '@/components/GoogleIcon';
 import { useAuth } from '@/lib/AuthContext';
 import { base44 } from '@/api/base44Client';
 import ControlSlider from '@/components/video/ControlSlider';
@@ -80,36 +81,21 @@ export default function Settings() {
       <div className="flex-1 overflow-y-auto px-5 py-6 space-y-4" style={{ paddingBottom: 'calc(1rem + env(safe-area-inset-bottom) + 56px)' }}>
         {user && <UserProfile />}
 
-
-
-        {user && (
-          <>
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <button className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl bg-card border border-destructive/30 text-destructive hover:bg-destructive/10 transition-colors">
-                  <Trash2 className="w-4 h-4 shrink-0" />
-                  <span className="text-sm font-medium">Sign Out</span>
-                </button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Sign out?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    You'll need to sign back in to save your clips and settings.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction
-                    onClick={() => base44.auth.logout('/')}
-                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                  >
-                    Yes, sign out
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          </>
+        {!user && (
+          <div className="rounded-2xl bg-card border border-border px-5 py-5 space-y-3">
+            <p className="text-sm font-medium text-foreground">Sign in to save clips & settings</p>
+            <button
+              onClick={() => base44.auth.loginWithProvider('google', '/settings')}
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-card border border-border text-sm font-medium text-foreground hover:bg-muted transition-colors"
+            >
+              <GoogleIcon className="w-4 h-4" />
+              Continue with Google
+            </button>
+            <div className="flex gap-2">
+              <a href="/login" className="flex-1 px-3 py-2 rounded-xl border border-border bg-muted text-center text-xs text-muted-foreground hover:bg-muted/80 transition-colors">Sign In</a>
+              <a href="/register" className="flex-1 px-3 py-2 rounded-xl border border-primary/30 bg-primary/10 text-center text-xs text-primary hover:bg-primary/20 transition-colors">Sign Up</a>
+            </div>
+          </div>
         )}
 
         <div className="rounded-2xl bg-card border border-border px-5 py-4 space-y-1">

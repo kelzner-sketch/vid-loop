@@ -117,7 +117,8 @@ export default function Gallery() {
   };
 
   const loadClips = async () => {
-    const data = await base44.entities.Clip.list('-created_date');
+    if (!user) { setLoading(false); return; }
+    const data = await base44.entities.Clip.filter({ created_by_id: user.id }, '-created_date');
     setClips(data);
     setLoading(false);
   };
@@ -314,6 +315,29 @@ export default function Gallery() {
         onTouchEnd={handleTouchEnd}
         style={{ paddingBottom: 'calc(1rem + env(safe-area-inset-bottom) + 56px)' }}>
         
+        {!user && (
+          <div className="rounded-2xl bg-card border border-border px-5 py-5 space-y-3">
+            <div className="flex items-center gap-2 mb-1">
+              <LogIn className="w-4 h-4 text-primary" />
+              <p className="text-sm font-medium text-foreground">Sign in to save clips</p>
+            </div>
+            <p className="text-xs text-muted-foreground">Create a free account to record and store your clips to the gallery.</p>
+            <button
+              onClick={() => base44.auth.loginWithProvider('google', '/gallery')}
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-card border border-border text-sm font-medium text-foreground hover:bg-muted transition-colors"
+            >
+              <GoogleIcon className="w-4 h-4" />
+              Continue with Google
+            </button>
+            <div className="flex gap-2 pt-1">
+              <a href="/login" className="flex-1 px-3 py-2 rounded-xl border border-border bg-muted text-center text-xs text-muted-foreground hover:bg-muted/80 transition-colors">Sign In</a>
+              <a href="/register" className="flex-1 px-3 py-2 rounded-xl border border-primary/30 bg-primary/10 text-center text-xs text-primary hover:bg-primary/20 transition-colors">Sign Up</a>
+            </div>
+          </div>
+        )}
+
+        {user && <UserProfile />}
+
         {loading ?
         <div className="flex items-center justify-center h-40">
             <div className="w-6 h-6 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
