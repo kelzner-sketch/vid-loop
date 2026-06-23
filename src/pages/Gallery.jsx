@@ -73,25 +73,7 @@ export default function Gallery() {
     
     for (const clip of selectedClips) {
       try {
-        const ext = clip.file_url.includes('mp4') ? 'mp4' : 'webm';
-        const filename = `${clip.title || `vidloop-${clip.id}`}.${ext}`;
-        const res = await base44.functions.invoke('downloadClip', {
-          file_url: clip.file_url,
-          filename
-        });
-        const { base64 } = res.data;
-        const binaryStr = atob(base64);
-        const bytes = new Uint8Array(binaryStr.length);
-        for (let i = 0; i < binaryStr.length; i++) bytes[i] = binaryStr.charCodeAt(i);
-        const blob = new Blob([bytes], { type: 'video/mp4' });
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(a.href);
-        // Small delay between downloads
+        await saveToDevice(clip);
         await new Promise((r) => setTimeout(r, 400));
       } catch (e) {
         console.error('Download error:', e);
@@ -159,6 +141,28 @@ export default function Gallery() {
   useEffect(() => {
     loadClips();
   }, [user]);
+
+  const saveToDevice = async (clip) => {
+    const ext = clip.file_url.includes('mp4') ? 'mp4' : 'webm';
+    const mimeType = ext === 'mp4' ? 'video/mp4' : 'video/webm';
+    const filename = `${clip.title || `vidloop-${clip.id}`}.${ext}`;
+
+    const blob = await fetch(clip.file_url).then(r => r.blob());
+    const file = new File([blob], filename, { type: mimeType });
+
+    // On mobile, Web Share with a file triggers "Save to Photos / Camera Roll"
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({ files: [file], title: filename });
+    } else {
+      // Desktop fallback: direct blob download
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 100);
+    }
+  };
 
   const deleteClip = (id) => {
     setClips((prev) => prev.filter((c) => c.id !== id));
@@ -429,33 +433,9 @@ export default function Gallery() {
                         <Loader2 className="w-3 h-3 text-primary animate-spin" /> :
                         <Share2 className="w-3 h-3 text-muted-foreground" />}
                           </button>
-                          <button onClick={async (e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            try {
-                              const ext = clip.file_url.includes('mp4') ? 'mp4' : 'webm';
-                              const filename = `${clip.title || `vidloop-${clip.id}`}.${ext}`;
-                              const res = await base44.functions.invoke('downloadClip', {
-                                file_url: clip.file_url,
-                                filename
-                              });
-                              const { base64 } = res.data;
-                              const binaryStr = atob(base64);
-                              const bytes = new Uint8Array(binaryStr.length);
-                              for (let i = 0; i < binaryStr.length; i++) bytes[i] = binaryStr.charCodeAt(i);
-                              const blob = new Blob([bytes], { type: 'application/octet-stream' });
-                              const blobUrl = URL.createObjectURL(blob);
-                              const a = document.createElement('a');
-                              a.href = blobUrl;
-                              a.download = filename;
-                              a.click();
-                              setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
-                            } catch (err) {
-                              console.error('Download failed:', err);
-                            }
-                          }}
-                        className="w-6 h-6 rounded bg-muted flex items-center justify-center hover:bg-primary/20 transition-colors">
-                            <Download className="w-3 h-3 text-muted-foreground" />
+                          <button onClick={async (e) => { e.preventDefault(); e.stopPropagation(); await saveToDevice(clip); }}
+                          className="w-6 h-6 rounded bg-muted flex items-center justify-center hover:bg-primary/20 transition-colors">
+                           <Download className="w-3 h-3 text-muted-foreground" />
                           </button>
                           <button onClick={() => deleteClip(clip.id)}
                         className="w-6 h-6 rounded bg-muted flex items-center justify-center hover:bg-destructive/20 transition-colors">
