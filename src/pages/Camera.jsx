@@ -47,8 +47,8 @@ export default function Camera() {
   // Ping-pong loop mode
   const [loopEnabled, setLoopEnabled] = useState(prefs.loopEnabled ?? true);
   const [loopMode, setLoopMode] = useState(prefs.loopMode ?? 'pingpong'); // 'pingpong' | 'oneway'
-  const [loopDepth, setLoopDepth] = useState(prefs.loopDepth ?? 150); // 5s at 30fps default
-  const [loopSpeed, setLoopSpeed] = useState(prefs.loopSpeed ?? 2); // frames advanced per render tick
+  const [loopDepth, setLoopDepth] = useState(prefs.loopDepth ?? 225); // 7.5s at 30fps default
+  const [loopSpeed, setLoopSpeed] = useState(prefs.loopSpeed ?? 3.5); // frames advanced per render tick
   const loopStateRef = useRef({ dir: 1, pos: 0 }); // internal mutable state, no re-render
   const loopRafRef = useRef(null);
   const loopEnabledRef = useRef(false);

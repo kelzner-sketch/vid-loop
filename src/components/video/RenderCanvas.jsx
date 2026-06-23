@@ -65,22 +65,22 @@ export default function RenderCanvas({ videoRef, getFrame, delayOffset, delayOff
 
     if (ghostEnabled) {
       const count = ghostCount ?? 4;
-      const interval = ghostInterval ?? 4;
+      const interval = ghostInterval ?? 8;
       const opacity = ghostOpacity ?? 0.8;
 
-      // Ghost trail: draw oldest first (most faded), working up to the current frame.
-      // Each ghost samples frames progressively further into the past.
-      // We always spread from frame 0 (live/newest) regardless of delayOffset,
-      // so the trails show the recent motion history behind the current image.
-      for (let i = count; i >= 1; i--) {
-        const frame = getFrame(i * interval); // always relative to live (index 0)
-        if (!frame) continue;
-        const alpha = opacity * (count - i + 1) / count;
-        drawCover(frame, alpha, 'source-over');
-      }
-
-      // Current (possibly delayed) frame on top — always crisp
+      // Draw current frame first as the base
       drawCover(currentFrame, 1, 'source-over');
+
+      // Layer ghost trails on top using 'lighter' (additive) blending —
+      // this makes them visibly glow over the live image rather than being
+      // washed out. Nearest ghost is strongest, oldest is faintest.
+      for (let i = 1; i <= count; i++) {
+        const frame = getFrame(i * interval);
+        if (!frame) continue;
+        // Nearest ghost = highest alpha, oldest = lowest
+        const alpha = opacity * (count - i + 1) / count * 0.6;
+        drawCover(frame, alpha, 'lighter');
+      }
     } else {
       drawCover(currentFrame, 1);
     }
