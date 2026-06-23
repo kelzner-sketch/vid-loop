@@ -64,19 +64,23 @@ export default function RenderCanvas({ videoRef, getFrame, delayOffset, delayOff
     const currentFrame = delayOffset === 0 ? video : (getFrame(delayOffset) || video);
 
     if (ghostEnabled) {
-      const count = ghostCount ?? 6;
+      const count = ghostCount ?? 4;
       const interval = ghostInterval ?? 4;
+      const opacity = ghostOpacity ?? 0.8;
 
-      // Base: current frame at full opacity
-      drawCover(currentFrame, 1);
-
-      // Ghost layers on top — past frames overlay on the current one
-      for (let i = 1; i <= count; i++) {
+      // Draw oldest ghost first (most transparent), newest ghost last, then sharp live frame on top.
+      // This puts motion trails BEHIND the current frame — matching the DigiGardin frame-delay look.
+      // Additive blending makes bright edges glow and stack naturally.
+      for (let i = count; i >= 1; i--) {
         const frame = getFrame(delayOffset + i * interval);
         if (!frame) continue;
-        const alpha = (ghostOpacity ?? 0.8) * (1 - (i - 1) / count);
-        drawCover(frame, alpha, 'source-over');
+        // Fade out older frames more aggressively: oldest = near 0, closest = near opacity
+        const alpha = opacity * Math.pow((count - i + 1) / count, 2);
+        drawCover(frame, alpha, 'lighter');
       }
+
+      // Sharp current frame drawn last — always crisp on top of the trails
+      drawCover(currentFrame, 1, 'source-over');
     } else {
       drawCover(currentFrame, 1);
     }
