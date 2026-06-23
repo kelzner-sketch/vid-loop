@@ -72,7 +72,6 @@ export default function Camera() {
   const recordingChunksRef = useRef([]);
   const recordingTimerRef = useRef(null);
   const canvasRef = useRef(null); // forwarded from RenderCanvas
-  const mirrorRafRef = useRef(null);
 
   // Load settings from database if authenticated
   useEffect(() => {
@@ -310,46 +309,7 @@ export default function Camera() {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    // Create recording canvas: 16:9 aspect ratio
-    const recordCanvas = document.createElement('canvas');
-    recordCanvas.width = 720; // HD
-    recordCanvas.height = 405; // 16:9 aspect ratio
-    const rctx = recordCanvas.getContext('2d');
-
-    // Fill with black (for letterboxing)
-    rctx.fillStyle = '#000000';
-    rctx.fillRect(0, 0, recordCanvas.width, recordCanvas.height);
-
-    // Mirror the main canvas into recording canvas with crop-to-fill (no black bars)
-    const mirrorLoop = () => {
-      const srcAspect = canvas.width / canvas.height;
-      const destAspect = recordCanvas.width / recordCanvas.height;
-      let sx, sy, sw, sh;
-
-      if (srcAspect > destAspect) {
-        // Source is wider: crop left/right
-        sw = canvas.height * destAspect;
-        sh = canvas.height;
-        sx = (canvas.width - sw) / 2;
-        sy = 0;
-      } else {
-        // Source is taller: crop top/bottom
-        sw = canvas.width;
-        sh = canvas.width / destAspect;
-        sx = 0;
-        sy = (canvas.height - sh) / 2;
-      }
-
-      rctx.drawImage(canvas, sx, sy, sw, sh, 0, 0, recordCanvas.width, recordCanvas.height);
-      mirrorRafRef.current = requestAnimationFrame(mirrorLoop);
-    };
-    mirrorRafRef.current = requestAnimationFrame(mirrorLoop);
-
-    if (!recordCanvas) {
-      console.error('Canvas not available for recording');
-      return;
-    }
-    const stream = recordCanvas.captureStream(30);
+    const stream = canvas.captureStream(30);
     if (!stream) {
       console.error('Failed to capture stream from canvas');
       return;
@@ -415,7 +375,6 @@ export default function Camera() {
   const stopRecording = useCallback(() => {
     mediaRecorderRef.current?.stop();
     clearInterval(recordingTimerRef.current);
-    if (mirrorRafRef.current) cancelAnimationFrame(mirrorRafRef.current);
     setIsRecording(false);
     setRecordingTime(0);
   }, []);
