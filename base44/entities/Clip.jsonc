@@ -23,6 +23,8 @@
     "file_url"
   ],
   "permissions": {
-    "public": true
+    "public": true,
+    "public_write": true,
+    "public_delete": true
   }
 }

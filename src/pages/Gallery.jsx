@@ -101,11 +101,11 @@ export default function Gallery() {
     exitSelectMode();
   };
 
-  const deleteSelected = () => {
+  const deleteSelected = async () => {
     const ids = new Set(selected);
     setClips((prev) => prev.filter((c) => !ids.has(c.id)));
     exitSelectMode();
-    Promise.all([...ids].map((id) => base44.entities.Clip.delete(id)));
+    await Promise.all([...ids].map((id) => base44.entities.Clip.delete(id)));
   };
 
   const startEdit = (clip) => {setEditingId(clip.id);setEditingTitle(clip.title || '');};
