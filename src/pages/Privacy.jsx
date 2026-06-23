@@ -98,10 +98,7 @@ export default function Privacy() {
           <section className="space-y-3">
             <h2 className="text-base font-medium text-foreground">8. Contact</h2>
             <p>
-              If you have questions about this privacy policy, contact us at{' '}
-              <a href="mailto:k.elzner@gmail.com" className="text-accent hover:underline">
-                k.elzner@gmail.com
-              </a>.
+              If you have questions about this privacy policy, please reach out through the app.
             </p>
           </section>
 
